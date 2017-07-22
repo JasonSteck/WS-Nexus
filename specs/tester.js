@@ -24,6 +24,7 @@
   };
 
   window.it = (str, func) => {
+    if(typeof func !== 'function') throw new Error(`Missing function in 'it' block of "${str}"`);
     currentContext.its.push([str, func]);
   };
 
