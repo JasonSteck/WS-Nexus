@@ -1,4 +1,4 @@
-function nexusHost() {
+function newNexusHost() {
   const pub = {};
 
   return pub;

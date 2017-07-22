@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <title> Test Runner </title>
-  <script src="tester.js"></script>
-  <script src="tester-spec.js"></script>
+  <script> console.clear() </script>
+   <script src="tester.js"></script>
+  <!--<script src="tester-spec.js"></script>-->
   <script src="../nexus-host.js"></script>
+  <script src="../nexus-host-spec.js"></script>
 </head>
 <body>
   <div id="progress"> </div>
   <script>
-    document.body.onload = runSpecs
+    document.body.onload = ()=>runSpecs(true)
   </script>
 </body>
 </html>

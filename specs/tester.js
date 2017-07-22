@@ -33,6 +33,7 @@
 
 
   /*  during tests  */
+  let debugMode = false;
   function ResultsClass() {
     this.all = [];
     this.failed = [];
@@ -48,13 +49,17 @@
   };
 
   function TestResultClass(test) {
+    this.testPath = null;
     this.test = test;
     this.result = NO_EXPECTATIONS;
     this.failReasons = [];
+
+    this.testPath = currentContext.descriptionChain.slice(0);
+    this.testPath.push(test[0]);
   }
   TestResultClass.prototype.failExpectation = function(reason, stack){
     this.result = FAIL;
-    this.failReasons.push(reason+'. stack:'+stack);
+    this.failReasons.push(reason+'\n'+stack);
   };
   TestResultClass.prototype.passExpectation = function() {
     if(this.result === NO_EXPECTATIONS) {
@@ -65,24 +70,101 @@
   let results = null;
   let currentTestResult = null;
 
+  function getErrorStack() {
+    return (new Error()).stack.split('\n').slice(2,4).join('\n');
+  }
+
+  function isEqual(a,b) {
+    if(typeof a !== typeof b) return false;
+    if(a === Object(a)){
+      return objectsEqual(a,b);
+    } else if(Array.isArray(a)) {
+      return arraysEqual(a,b)
+    } else {
+      return a == b;
+    }
+  }
+
+  function objectsEqual(a, b) {
+    let aProps = Object.getOwnPropertyNames(a);
+    let bProps = Object.getOwnPropertyNames(b);
+
+    if (aProps.length !== bProps.length) return false;
+
+    for (let i = 0; i < aProps.length; i++) {
+      let propName = aProps[i];
+
+      if (!isEqual(a[propName], b[propName])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function arraysEqual(a, b) {
+    if (a === b) return true;
+    if (a.length !== b.length) return false;
+
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
+  function getOutputFormat(exp) {
+    if(typeof exp === 'function') {
+      return exp.toString();
+    }
+    return JSON.stringify(exp);
+  }
+
   window.expect = (exp) => {
     return {
       toEqual: other => {
-        if(exp == other){
+        if(isEqual(exp,other)){
           currentTestResult.passExpectation();
         } else {
-          currentTestResult.failExpectation(`Expected ${exp} to equal ${other}`, (new Error()).stack);
+          let a = getOutputFormat(exp);
+          let b = getOutputFormat(other);
+          currentTestResult.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorStack());
+          if(debugMode){
+            consoleFailMessage(failMessage(currentTestResult));
+            debugger;
+          }
         }
       },
       toBe: other => {
         if(exp === other){
           currentTestResult.passExpectation();
         } else {
-          currentTestResult.failExpectation(`Expected ${exp} to be ${other}`, (new Error()).stack);
+          let a = getOutputFormat(exp);
+          let b = getOutputFormat(other);
+          currentTestResult.failExpectation(`Expected ${a} \n   to be ${b}`, getErrorStack());
+          if(debugMode){
+            consoleFailMessage(failMessage(currentTestResult));
+            debugger;
+          }
         }
       },
     }
   };
+
+  function indentLines(lines, pad = '  '){
+    let padding = '';
+    return lines.map(desc => {
+      return [padding+desc, padding+=pad][0];
+    })
+  }
+
+  function failMessage(testResult) {
+    let descriptions = indentLines(testResult.testPath).join('\n');
+    return `${descriptions} \n${testResult.failReasons.join('\n')}`;
+  }
+
+  function consoleFailMessage(msg) {
+    console.log('%c Failure:', 'color: red; font-weight: bold;');
+    console.log(msg);
+  }
 
   /*  spec execution  */
   function parseContext(context) {
@@ -119,26 +201,37 @@
     context.contexts.forEach(runContext)
   }
 
-  window.runSpecs = () => {
+  window.runSpecs = (debug) => {
+    debugMode = debug;
     results = new ResultsClass();
     // parse specs
     parseContext(topContext);
 
     // run specs
     runContext(topContext);
+
+    let total = results.all.length;
+    let totalPlural = total===1? '' : 's';
+
     if(results.noExpectations.length > 0) {
       results.noExpectations.forEach(result => {
-        console.log('No Expectations: ', result.test);
+        console.log('No Expectations! \n%s\n', indentLines(result.testPath).join('\n'), result.test[1]);
       });
     } else if(results.failed.length > 0) {
       results.failed.forEach(result => {
-        console.log('Failed: ', result);
+        if(!debugMode) {
+          consoleFailMessage(failMessage(result));
+        }
       });
+      let failCount = results.failed.length;
+      console.log('\nTests Finished: %d Failure%s / %d Test%s', failCount, failCount===1?'':'s', total, totalPlural);
     } else {
       results.all.forEach( result => {
-        console.log('Passed: ', result.test[0]);
-      })
+        console.log('Passed: %s', result.testPath.join(' '));
+      });
+      console.log('\nTests Finished: %d Successes%s / %d Test%s', total, totalPlural, total, totalPlural);
     }
     return results;
   };
 })();
+
