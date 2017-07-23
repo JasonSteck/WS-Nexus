@@ -119,34 +119,64 @@
     return JSON.stringify(exp);
   }
 
-  window.expect = (exp) => {
-    return {
-      toEqual: other => {
-        if(isEqual(exp,other)){
-          currentTestResult.passExpectation();
-        } else {
-          let a = getOutputFormat(exp);
-          let b = getOutputFormat(other);
-          currentTestResult.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorStack());
+  window.expect = (actual) => {
+    if(typeof actual === 'function') {
+      return {
+        toThrow: exception => {
+          try {
+            actual();
+          } catch (err) {
+            if(err == exception ||
+              (err.name!==undefined &&
+              err.message!==undefined &&
+              err.name === exception.name &&
+              isEqual(err.message, exception.message))) {
+              currentTestResult.passExpectation();
+              return;
+            }
+            currentTestResult.failExpectation(`Expected ${actual} \nto throw "${exception}"\n but got "${err}"`, getErrorStack());
+            if(debugMode){
+              consoleFailMessage(failMessage(currentTestResult));
+              debugger;
+            }
+            return;
+          }
+          currentTestResult.failExpectation(`Expected ${acutal} \nto throw "${exception}" but didn't get anything`, getErrorStack());
           if(debugMode){
             consoleFailMessage(failMessage(currentTestResult));
             debugger;
           }
-        }
-      },
-      toBe: other => {
-        if(exp === other){
-          currentTestResult.passExpectation();
-        } else {
-          let a = getOutputFormat(exp);
-          let b = getOutputFormat(other);
-          currentTestResult.failExpectation(`Expected ${a} \n   to be ${b}`, getErrorStack());
-          if(debugMode){
-            consoleFailMessage(failMessage(currentTestResult));
-            debugger;
+        },
+      }
+    } else {
+      return {
+        toEqual: expected => {
+          if(isEqual(actual,expected)){
+            currentTestResult.passExpectation();
+          } else {
+            let a = getOutputFormat(actual);
+            let b = getOutputFormat(expected);
+            currentTestResult.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorStack());
+            if(debugMode){
+              consoleFailMessage(failMessage(currentTestResult));
+              debugger;
+            }
           }
-        }
-      },
+        },
+        toBe: expected => {
+          if(actual === expected){
+            currentTestResult.passExpectation();
+          } else {
+            let a = getOutputFormat(actual);
+            let b = getOutputFormat(expected);
+            currentTestResult.failExpectation(`Expected ${a} \n   to be ${b}`, getErrorStack());
+            if(debugMode){
+              consoleFailMessage(failMessage(currentTestResult));
+              debugger;
+            }
+          }
+        },
+      }
     }
   };
 
