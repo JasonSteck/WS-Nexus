@@ -1,11 +1,12 @@
 describe('nexus-host.js', function() {
-  describe('newNexusHost()', function() {
-    beforeEach(function() {
-      this.get = () => this.host = newNexusHost();
-    });
+  beforeEach(function() {
+    this.get = () => this.host = newNexusHost();
+  });
 
-    it('returns an object with the right properties', function() {
-       expect(this.get()).toEqual({});
-    });
+    // describe('#register(nexusServer, hostName, [hostId])', function() {
+    //   it('throws an error if the nexusServer address is not provided', function() {
+    //     expect(1).toBe(1);
+    //   });
+    // });
   });
 });
