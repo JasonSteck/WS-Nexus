@@ -127,8 +127,8 @@
             actual();
           } catch (err) {
             if(err == exception ||
-              (err.name!==undefined &&
-              err.message!==undefined &&
+              (err.name !== undefined &&
+              err.message!== undefined &&
               err.name === exception.name &&
               isEqual(err.message, exception.message))) {
               currentTestResult.passExpectation();
@@ -141,7 +141,7 @@
             }
             return;
           }
-          currentTestResult.failExpectation(`Expected ${acutal} \nto throw "${exception}" but didn't get anything`, getErrorStack());
+          currentTestResult.failExpectation(`Expected ${actual} \nto throw "${exception}" but didn't get anything`, getErrorStack());
           if(debugMode){
             consoleFailMessage(failMessage(currentTestResult));
             debugger;
@@ -244,11 +244,7 @@
     let total = results.all.length;
     let totalPlural = total===1? '' : 's';
 
-    if(results.noExpectations.length > 0) {
-      results.noExpectations.forEach(result => {
-        console.log('No Expectations! \n%s\n', indentLines(result.testPath).join('\n'), result.test[1]);
-      });
-    } else if(results.failed.length > 0) {
+    if(results.failed.length > 0) {
       results.failed.forEach(result => {
         if(!debugMode) {
           consoleFailMessage(failMessage(result));
@@ -262,6 +258,12 @@
       });
       console.log('\nTests Finished: %d Successes%s / %d Test%s', total, totalPlural, total, totalPlural);
     }
+    if(results.noExpectations.length > 0) {
+      results.noExpectations.forEach(result => {
+        console.warn('No Expectations in: \n%s', indentLines(result.testPath).join('\n'), result.test[1]);
+      });
+    }
+
     return results;
   };
 })();

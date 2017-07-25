@@ -124,13 +124,16 @@ describe('expect', function() {
   describe('(function)', function() {
     describe('.toThrow', function() {
       it('to match a generic error', function() {
-        expect(()=>{throw new Error('hi')}).toThrow(new Error('hi'));
+        expect(() => { throw new Error('hi') }).toThrow(new Error('hi'));
       });
       it('to match a custom error', function() {
         function myError(message){this.name='myError'; this.message=message}
         myError.prototype = Object.create(Error.prototype);
 
-        expect(()=>{throw new myError('hi')}).toThrow(new myError('hi'));
+        expect(() => { throw new myError('hi') }).toThrow(new myError('hi'));
+      });
+      it('to match strings', function() {
+        expect(() => { throw 'hi' }).toThrow('hi');
       });
     });
   });
