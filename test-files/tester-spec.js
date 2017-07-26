@@ -154,3 +154,24 @@ describe('expect', function() {
     });
   });
 });
+
+
+//===================== Spies =====================//
+describe('spy(obj)', function() {
+  describe('.method', function() {
+    describe('[setup and teardown]', function() {
+      let aMethod = function(){};
+      let anObj = { aMethod: aMethod };
+
+      it('replaces the method on the object', function() {
+        let m = spy(anObj).aMethod;
+        expect(anObj.aMethod).not.toBe(aMethod);
+        expect(anObj.aMethod).toBe(m);
+      });
+
+      it('restores the method after the test', function() {
+        expect(anObj.aMethod).toBe(aMethod);
+      });
+    });
+  });
+});

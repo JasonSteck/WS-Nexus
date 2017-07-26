@@ -35,6 +35,8 @@
 
   /*  during tests  */
   let debugMode = false;
+  let spies = [];
+
   function ResultsClass() {
     this.all = [];
     this.failed = [];
@@ -193,33 +195,48 @@
   }
 
   window.expect = (actual) => {
-    if(typeof actual === 'function') {
-      return {
-        toThrow: exception => {
-          toThrow(actual, exception, false);
-        },
-      }
-    } else {
-      return {
-        not: {
-          toThrow: expected => {
-            toThrow(actual, expected, true);
-          },
-          toEqual: expected => {
-            toEqual(actual, expected, true);
-          },
-          toBe: expected => {
-            toBe(actual, expected, true);
-          },
+    return {
+      not: {
+        toThrow: expected => {
+          toThrow(actual, expected, true);
         },
         toEqual: expected => {
-          toEqual(actual, expected, false);
+          toEqual(actual, expected, true);
         },
         toBe: expected => {
-          toBe(actual, expected, false);
+          toBe(actual, expected, true);
         },
-      }
+      },
+      toThrow: exception => {
+        toThrow(actual, exception, false);
+      },
+      toEqual: expected => {
+        toEqual(actual, expected, false);
+      },
+      toBe: expected => {
+        toBe(actual, expected, false);
+      },
     }
+  };
+
+  function newSpy(str, obj, original) {
+    function spy(){
+
+    }
+    spy.methodName = str;
+    spy.object = obj;
+    spy.original = original;
+
+    spies.push(spy);
+    return spy;
+  }
+
+  window.spy = function(obj) {
+    return new Proxy({}, {
+      get: function(_, str) {
+        return obj[str] = newSpy(str, obj, obj[str]);
+      },
+    });
   };
 
   function indentLines(lines, pad = '  '){
@@ -270,6 +287,11 @@
       context.afterEachChain.forEach(ae => ae.call(obj));
       results.addResult(currentTestResult);
       currentTestResult = null;
+
+      spies.forEach(s => {
+        s.object[s.methodName] = s.original;
+      });
+      spies = [];
     });
     context.contexts.forEach(runContext)
   }
