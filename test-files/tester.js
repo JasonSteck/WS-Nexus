@@ -72,7 +72,16 @@
   let currentTestResult = null;
 
   function getErrorStack() {
-    return (new Error()).stack.split('\n').slice(2,4).join('\n');
+    return (new Error()).stack.split('\n').slice(5,6).join('\n');
+  }
+
+  function failWithConsole(msg) {
+    currentTestResult.failExpectation(msg, getErrorStack());
+    if(debugMode){
+      consoleFailMessage(failMessage(currentTestResult));
+      return true;
+    }
+    return false;
   }
 
   function isEqual(a,b) {
@@ -119,62 +128,95 @@
     return JSON.stringify(exp);
   }
 
+  function toEqual(actual, expected, not) {
+    if(isEqual(actual,expected) ^ not){
+      currentTestResult.passExpectation();
+    } else {
+      let a = getOutputFormat(actual);
+      let b = getOutputFormat(expected);
+      currentTestResult.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorStack());
+      if (debugMode) {
+        consoleFailMessage(failMessage(currentTestResult));
+        debugger;
+      }
+    }
+  }
+
+  function toBe(actual, expected, not) {
+    if((actual === expected) ^ not){
+      currentTestResult.passExpectation();
+    } else {
+      let a = getOutputFormat(actual);
+      let b = getOutputFormat(expected);
+      currentTestResult.failExpectation(`Expected ${a} \n   to be ${b}`, getErrorStack());
+      if(debugMode){
+        consoleFailMessage(failMessage(currentTestResult));
+        debugger;
+      }
+    }
+  }
+
+  function toThrow(actual, exception, not) {
+    let threw = false;
+    let correctlyThrew = false;
+    let error = null;
+    try {
+      actual();
+    } catch (err) {
+      error = err;
+      if(err == exception ||
+        (err.name !== undefined &&
+        err.message!== undefined &&
+        err.name === exception.name &&
+        isEqual(err.message, exception.message))) {
+
+        correctlyThrew = true;
+      }
+      threw = true;
+    }
+    if(not) {
+      if(correctlyThrew) {
+        if(failWithConsole(`Expected ${actual} \nnot to throw "${exception}"\n but it did`)) debugger;
+      } else {
+        currentTestResult.passExpectation();
+      }
+    } else {
+      if(correctlyThrew) {
+        currentTestResult.passExpectation();
+      } else if(threw) {
+        let notString = not?'not':'';
+        if(failWithConsole(`Expected ${actual} \n${notString}to throw "${exception}"\n but got "${error}"`)) debugger;
+      } else {
+        if(failWithConsole(`Expected ${actual} \nto throw "${exception}" but didn't get anything`)) debugger;
+      }
+    }
+  }
+
   window.expect = (actual) => {
     if(typeof actual === 'function') {
       return {
         toThrow: exception => {
-          try {
-            actual();
-          } catch (err) {
-            if(err == exception ||
-              (err.name !== undefined &&
-              err.message!== undefined &&
-              err.name === exception.name &&
-              isEqual(err.message, exception.message))) {
-              currentTestResult.passExpectation();
-              return;
-            }
-            currentTestResult.failExpectation(`Expected ${actual} \nto throw "${exception}"\n but got "${err}"`, getErrorStack());
-            if(debugMode){
-              consoleFailMessage(failMessage(currentTestResult));
-              debugger;
-            }
-            return;
-          }
-          currentTestResult.failExpectation(`Expected ${actual} \nto throw "${exception}" but didn't get anything`, getErrorStack());
-          if(debugMode){
-            consoleFailMessage(failMessage(currentTestResult));
-            debugger;
-          }
+          toThrow(actual, exception, false);
         },
       }
     } else {
       return {
+        not: {
+          toThrow: expected => {
+            toThrow(actual, expected, true);
+          },
+          toEqual: expected => {
+            toEqual(actual, expected, true);
+          },
+          toBe: expected => {
+            toBe(actual, expected, true);
+          },
+        },
         toEqual: expected => {
-          if(isEqual(actual,expected)){
-            currentTestResult.passExpectation();
-          } else {
-            let a = getOutputFormat(actual);
-            let b = getOutputFormat(expected);
-            currentTestResult.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorStack());
-            if(debugMode){
-              consoleFailMessage(failMessage(currentTestResult));
-              debugger;
-            }
-          }
+          toEqual(actual, expected, false);
         },
         toBe: expected => {
-          if(actual === expected){
-            currentTestResult.passExpectation();
-          } else {
-            let a = getOutputFormat(actual);
-            let b = getOutputFormat(expected);
-            currentTestResult.failExpectation(`Expected ${a} \n   to be ${b}`, getErrorStack());
-            if(debugMode){
-              consoleFailMessage(failMessage(currentTestResult));
-              debugger;
-            }
-          }
+          toBe(actual, expected, false);
         },
       }
     }

@@ -15,8 +15,8 @@ describe('nexus-host.js', function() {
       expect(() => this.get('ns')).toThrow(new Error('Missing hostName'));
     });
 
-    it('connects to the nexus server and tries to register', function() {
-
-    });
+    // it('connects to the nexus server and tries to register', function() {
+    //
+    // });
   });
 });

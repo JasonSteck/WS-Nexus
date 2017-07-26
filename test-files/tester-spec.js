@@ -137,4 +137,20 @@ describe('expect', function() {
       });
     });
   });
+  describe('.not', function() {
+    describe('.toEqual', function() {
+      it('to match similar arrays', function() {
+        let a = [1,2,3];
+        let b = [4];
+        expect(a).not.toEqual(b);
+      });
+    });
+    describe('.toBe', function() {
+      it('to match arrays by identity', function() {
+        let a = [1,2,3];
+        let b = [1,2,3];
+        expect(a).not.toBe(b);
+      });
+    });
+  });
 });
