@@ -104,6 +104,22 @@ describe('expect', function() {
         expect(a).toBe(b);
       });
     });
+    describe('.not', function() {
+      describe('.toEqual', function() {
+        it('to not match similar objects', function() {
+          let a = { val: 'foo' };
+          let b = { val: 'bar' };
+          expect(a).not.toEqual(b);
+        });
+      });
+      describe('.toBe', function() {
+        it('to not match objects by identity', function() {
+          let a = { val: 'hi' };
+          let b = { val: 'hi' };
+          expect(a).not.toBe(b);
+        });
+      });
+    });
   });
   describe('(array)', function() {
     describe('.toEqual', function() {
@@ -118,6 +134,22 @@ describe('expect', function() {
         let a = [1,2,3];
         let b = a;
         expect(a).toBe(b);
+      });
+    });
+    describe('.not', function() {
+      describe('.toEqual', function() {
+        it('to not match similar arrays', function() {
+          let a = [1,2,3];
+          let b = [4];
+          expect(a).not.toEqual(b);
+        });
+      });
+      describe('.toBe', function() {
+        it('to not match arrays by identity', function() {
+          let a = [1,2,3];
+          let b = [1,2,3];
+          expect(a).not.toBe(b);
+        });
       });
     });
   });
@@ -136,20 +168,18 @@ describe('expect', function() {
         expect(() => { throw 'hi' }).toThrow('hi');
       });
     });
-  });
-  describe('.not', function() {
-    describe('.toEqual', function() {
-      it('to match similar arrays', function() {
-        let a = [1,2,3];
-        let b = [4];
-        expect(a).not.toEqual(b);
+    describe('.not .toThrow', function() {
+      it('still passes if the error message differs', function() {
+        expect(() => { throw new Error('foo') }).not.toThrow(new Error('bar'));
       });
-    });
-    describe('.toBe', function() {
-      it('to match arrays by identity', function() {
-        let a = [1,2,3];
-        let b = [1,2,3];
-        expect(a).not.toBe(b);
+      it('still passes if the error names (types) differ', function() {
+        function MyError(message){this.name='MyError'; this.message=message}
+        MyError.prototype = Object.create(Error.prototype);
+
+        expect(() => { throw new MyError('foo') }).not.toThrow(new MyError('bar'));
+      });
+      it('still passes if the thrown string differs', function() {
+        expect(() => { throw 'foo' }).not.toThrow('bar');
       });
     });
   });
