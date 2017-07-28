@@ -219,22 +219,40 @@
     }
   };
 
-  function newSpy(str, obj, original) {
-    function spy(){
-
+  function ensureSpy(str, obj) {
+    if(!(obj && obj[str] && obj[str]._isSpy)) {
+      return obj[str] = newSpyGuy(str, obj);
     }
-    spy.methodName = str;
-    spy.object = obj;
-    spy.original = original;
-
-    spies.push(spy);
-    return spy;
+    return obj[str];
   }
 
-  window.spy = function(obj) {
+  function newSpyGuy(str, obj) {
+    function spyGuy(...args){
+      if(self.callFake) {
+        return self.callFake.apply(this, args);
+      }
+    }
+    let self = spyGuy;
+    spyGuy._isSpy = true;
+    spyGuy.methodName = str;
+    spyGuy.object = obj;
+    spyGuy.originalFunc = obj && obj[str];
+    spyGuy.callFake = null;
+
+    spies.push(spyGuy);
+    return spyGuy;
+  }
+
+  window.stub = function(obj) {
     return new Proxy({}, {
       get: function(_, str) {
-        return obj[str] = newSpy(str, obj, obj[str]);
+        return ensureSpy(str, obj);
+      },
+      set: function(_, str, val){
+        ensureSpy(str, obj);
+        if(typeof val === 'function') {
+          obj[str].callFake = val;
+        }
       },
     });
   };
@@ -289,7 +307,7 @@
       currentTestResult = null;
 
       spies.forEach(s => {
-        s.object[s.methodName] = s.original;
+        s.object[s.methodName] = s.originalFunc;
       });
       spies = [];
     });

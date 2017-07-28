@@ -127,10 +127,10 @@ describe('expect', function() {
         expect(() => { throw new Error('hi') }).toThrow(new Error('hi'));
       });
       it('to match a custom error', function() {
-        function myError(message){this.name='myError'; this.message=message}
-        myError.prototype = Object.create(Error.prototype);
+        function MyError(message){this.name='MyError'; this.message=message}
+        MyError.prototype = Object.create(Error.prototype);
 
-        expect(() => { throw new myError('hi') }).toThrow(new myError('hi'));
+        expect(() => { throw new MyError('hi') }).toThrow(new MyError('hi'));
       });
       it('to match strings', function() {
         expect(() => { throw 'hi' }).toThrow('hi');
@@ -155,22 +155,40 @@ describe('expect', function() {
   });
 });
 
-
 //===================== Spies =====================//
-describe('spy(obj)', function() {
+describe('stub(obj)', function() {
   describe('.method', function() {
+    it('does not call the original method', function() {
+      let called = false;
+      let obj = { method: function(){ called = true }};
+      stub(obj).method;
+      obj.method();
+      expect(called).toBe(false);
+    });
     describe('[setup and teardown]', function() {
-      let aMethod = function(){};
-      let anObj = { aMethod: aMethod };
-
+      let method = function(){};
+      let obj = { method: method };
       it('replaces the method on the object', function() {
-        let m = spy(anObj).aMethod;
-        expect(anObj.aMethod).not.toBe(aMethod);
-        expect(anObj.aMethod).toBe(m);
+        let m = stub(obj).method;
+        expect(obj.method).not.toBe(method);
+        expect(obj.method).toBe(m);
       });
-
       it('restores the method after the test', function() {
-        expect(anObj.aMethod).toBe(aMethod);
+        expect(obj.method).toBe(method);
+      });
+    });
+    describe('= ()=>{...}', function() {
+      it('calls through to the given function', function() {
+        let obj = { method: function(){} };
+        stub(obj).method = x=>x;
+        expect(obj.method(5)).toBe(5);
+      });
+    });
+    describe('= function(){...}', function() {
+      it('maintains `this` context', function() {
+        let obj = { method: x=>x, val: 4 };
+        stub(obj).method = function(a) { return a + this.val };
+        expect(obj.method(3)).toBe(7);
       });
     });
   });
