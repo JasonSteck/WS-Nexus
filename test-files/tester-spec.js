@@ -104,20 +104,18 @@ describe('expect', function() {
         expect(a).toBe(b);
       });
     });
-    describe('.not', function() {
-      describe('.toEqual', function() {
-        it('to not match similar objects', function() {
-          let a = { val: 'foo' };
-          let b = { val: 'bar' };
-          expect(a).not.toEqual(b);
-        });
+    describe('.not .toEqual', function() {
+      it('to not match similar objects', function() {
+        let a = { val: 'foo' };
+        let b = { val: 'bar' };
+        expect(a).not.toEqual(b);
       });
-      describe('.toBe', function() {
-        it('to not match objects by identity', function() {
-          let a = { val: 'hi' };
-          let b = { val: 'hi' };
-          expect(a).not.toBe(b);
-        });
+    });
+    describe('.not .toBe', function() {
+      it('to not match objects by identity', function() {
+        let a = { val: 'hi' };
+        let b = { val: 'hi' };
+        expect(a).not.toBe(b);
       });
     });
   });
@@ -136,20 +134,18 @@ describe('expect', function() {
         expect(a).toBe(b);
       });
     });
-    describe('.not', function() {
-      describe('.toEqual', function() {
-        it('to not match similar arrays', function() {
-          let a = [1,2,3];
-          let b = [4];
-          expect(a).not.toEqual(b);
-        });
+    describe('.not .toEqual', function() {
+      it('to not match similar arrays', function() {
+        let a = [1,2,3];
+        let b = [4];
+        expect(a).not.toEqual(b);
       });
-      describe('.toBe', function() {
-        it('to not match arrays by identity', function() {
-          let a = [1,2,3];
-          let b = [1,2,3];
-          expect(a).not.toBe(b);
-        });
+    });
+    describe('.not .toBe', function() {
+      it('to not match arrays by identity', function() {
+        let a = [1,2,3];
+        let b = [1,2,3];
+        expect(a).not.toBe(b);
       });
     });
   });
