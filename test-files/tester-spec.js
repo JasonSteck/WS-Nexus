@@ -193,11 +193,10 @@ describe('stub(obj)', function() {
     });
     describe('[setup and teardown]', function() {
       let method = function(){};
-      let obj = { method: method };
+      let obj = { method };
       it('replaces the method on the object', function() {
-        let m = stub(obj).method;
+        stub(obj).method;
         expect(obj.method).not.toBe(method);
-        expect(obj.method).toBe(m);
       });
       it('restores the method after the test', function() {
         expect(obj.method).toBe(method);
@@ -215,6 +214,13 @@ describe('stub(obj)', function() {
         let obj = { method: x=>x, val: 4 };
         stub(obj).method = function(a) { return a + this.val };
         expect(obj.method(3)).toBe(7);
+      });
+    });
+    describe('.toReturn', function() {
+      it('returns the value instead', function() {
+        let obj = { method: ()=>5 };
+        stub(obj).method.toReturn(6);
+        expect(obj.method()).toBe(6);
       });
     });
   });

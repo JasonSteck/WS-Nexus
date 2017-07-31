@@ -228,9 +228,14 @@
 
   function newSpyGuy(str, obj) {
     function spyGuy(...args){
+      let returnValue = undefined;
       if(self.callFake) {
-        return self.callFake.apply(this, args);
+        returnValue = self.callFake.apply(this, args);
       }
+      if(self.returnValue) {
+        returnValue = self.returnValue;
+      }
+      return returnValue;
     }
     let self = spyGuy;
     spyGuy._isSpy = true;
@@ -238,6 +243,7 @@
     spyGuy.object = obj;
     spyGuy.originalFunc = obj && obj[str];
     spyGuy.callFake = null;
+    spyGuy.returnValue = null;
 
     spies.push(spyGuy);
     return spyGuy;
@@ -246,7 +252,13 @@
   window.stub = function(obj) {
     return new Proxy({}, {
       get: function(_, str) {
-        return ensureSpy(str, obj);
+        let spyGuy = ensureSpy(str, obj);
+        function spyHandler(){}
+        spyHandler.toReturn = val => {
+          spyGuy.returnValue = val;
+          return spyHandler;
+        };
+        return spyHandler;
       },
       set: function(_, str, val){
         ensureSpy(str, obj);
