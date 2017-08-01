@@ -179,6 +179,43 @@ describe('expect', function() {
       });
     });
   });
+  describe('(spy)', function() {
+    describe('.toHaveBeenCalled', function() {
+      it('works if the spy was called', function() {
+        let obj = { method: x=>x, val: 4 };
+        stub(obj).method;
+        obj.method();
+        expect(obj.method).toHaveBeenCalled();
+      });
+    });
+    describe('.not .toHaveBeenCalled', function() {
+      it('works if the spy was not called', function() {
+        let obj = { method: x=>x, val: 4 };
+        stub(obj).method;
+        expect(obj.method).not.toHaveBeenCalled();
+      });
+    });
+    describe('.toHaveBeenCalledWith', function() {
+      it('works if the spy was called with the right parameters', function() {
+        let obj = { method: x=>x, val: 4 };
+        stub(obj).method;
+        obj.method(5);
+        obj.method(3,4);
+        obj.method(2);
+        expect(obj.method).toHaveBeenCalledWith(3,4);
+      });
+    });
+    describe('.not .toHaveBeenCalledWith', function() {
+      it('works if the spy was not called with the right parameters', function() {
+        let obj = { method: x=>x, val: 4 };
+        stub(obj).method;
+        obj.method(5);
+        obj.method(3,4);
+        obj.method(2);
+        expect(obj.method).not.toHaveBeenCalledWith(3);
+      });
+    });
+  });
 });
 
 //===================== Spies =====================//

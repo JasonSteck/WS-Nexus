@@ -208,28 +208,67 @@
     }
   }
 
+  function toHaveBeenCalled(actual, not) {
+    if(!(actual && typeof actual==='function' && actual._isSpy)) {
+      let msg = `Error: cannot expect "${actual.methodName}" toHaveBeenCalled. It is not a spy.`;
+      if(failWithConsole(msg)) {
+        debugger;
+      } else {
+        throw new Error(msg);
+      }
+    }
+
+    if((actual.calls.length > 0) ^ not) {
+      currentTestResult.passExpectation();
+    } else {
+      if(failWithConsole(`Expected "${actual.methodName}" \nto have been called, but it wasn't`)) debugger;
+    }
+  }
+
+  function toHaveBeenCalledWith(actual, expected, not) {
+    if(!(actual && typeof actual==='function' && actual._isSpy)) {
+      let msg = `Error: cannot expect "${actual.methodName}" toHaveBeenCalled. It is not a spy.`;
+      if(failWithConsole(msg)) {
+        debugger;
+      } else {
+        throw new Error(msg);
+      }
+    }
+
+    let found = false;
+    for(let i=0; i<actual.calls.length; i++) {
+      let call = actual.calls[i];
+      if(call.length === expected.length) {
+        found = found || isEqual(call, expected);
+      } 
+    }
+    
+    if(found ^ not) {
+      currentTestResult.passExpectation();
+    } else {
+      if(found) {
+        if(failWithConsole(`Expected "${actual.methodName}" \nto not have been called with ${expected} but actual calls were:\n${actual.calls.join('\n')}`)) debugger;
+      } else {
+        if(failWithConsole(`Expected "${actual.methodName}" \nto have been called with ${expected} but actual calls were:\n${actual.calls.join('\n')}`)) debugger;
+      }
+    }
+
+  }
+
   window.expect = (actual) => {
     return {
       not: {
-        toThrow: expected => {
-          toThrow(actual, expected, true);
-        },
-        toEqual: expected => {
-          toEqual(actual, expected, true);
-        },
-        toBe: expected => {
-          toBe(actual, expected, true);
-        },
+        toHaveBeenCalledWith: (...expected) => toHaveBeenCalledWith(actual, expected, true),
+        toHaveBeenCalled: () => toHaveBeenCalled(actual, true),
+        toThrow: expected => toThrow(actual, expected, true),
+        toEqual: expected => toEqual(actual, expected, true),
+        toBe: expected => toBe(actual, expected, true),
       },
-      toThrow: exception => {
-        toThrow(actual, exception, false);
-      },
-      toEqual: expected => {
-        toEqual(actual, expected, false);
-      },
-      toBe: expected => {
-        toBe(actual, expected, false);
-      },
+      toHaveBeenCalledWith: (...expected) => toHaveBeenCalledWith(actual, expected, false),
+      toHaveBeenCalled: () => toHaveBeenCalled(actual, false),
+      toThrow: exception => toThrow(actual, exception, false),
+      toEqual: expected => toEqual(actual, expected, false),
+      toBe: expected => toBe(actual, expected, false),
     }
   };
 
@@ -242,6 +281,7 @@
 
   function newSpyGuy(str, obj) {
     function spyGuy(...args){
+      self.calls.push(args);
       let returnValue = undefined;
       if(self.callFake) {
         returnValue = self.callFake.apply(this, args);
@@ -253,6 +293,7 @@
     }
     let self = spyGuy;
     spyGuy._isSpy = true;
+    spyGuy.calls = [];
     spyGuy.methodName = str;
     spyGuy.object = obj;
     spyGuy.originalFunc = obj && obj[str];
