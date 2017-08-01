@@ -73,9 +73,23 @@
   let results = null;
   let currentTestResult = null;
 
-  function getErrorStack() {
-    return (new Error()).stack.split('\n').slice(5,6).join('\n');
+  function getFileNameFromErrorLine(line) {
+    return line.match(/\((.*):\d+:\d+\)/)[1];
   }
+
+  function getErrorStack() {
+    let errorLines = (new Error()).stack.split('\n');
+    let currentFile = getFileNameFromErrorLine(errorLines[1]);
+    for(let i=2;i<errorLines.length;i++) {
+      let file = getFileNameFromErrorLine(errorLines[i]);
+      if(file !== currentFile) {
+        return errorLines[i];
+      }
+    }
+
+    return errorLines.slice(5,6).join('\n'); //fallback
+  }
+  window.err = getErrorStack;
 
   function failWithConsole(msg) {
     currentTestResult.failExpectation(msg, getErrorStack());
@@ -276,9 +290,13 @@
     })
   }
 
-  function failMessage(testResult) {
+  function failMessage(testResult, showAllLines) {
+    let failReasons = testResult.failReasons;
+    if(!showAllLines) {
+      failReasons = [failReasons[failReasons.length-1]];
+    }
     let descriptions = indentLines(testResult.testPath).join('\n');
-    return `${descriptions} \n${testResult.failReasons.join('\n')}`;
+    return `${descriptions} \n${failReasons.join('\n')}`;
   }
 
   function consoleFailMessage(msg) {
@@ -341,7 +359,7 @@
     if(results.failed.length > 0) {
       results.failed.forEach(result => {
         if(!debugMode) {
-          consoleFailMessage(failMessage(result));
+          consoleFailMessage(failMessage(result, true));
         }
       });
       let failCount = results.failed.length;
