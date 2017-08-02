@@ -82,10 +82,6 @@ describe('contexts', function() {
   });
 });
 
-afterEach(function() {
-  expect(this.be1).toBe(true);
-});
-
 
 //===================== Equalities =====================//
 describe('expect', function() {
