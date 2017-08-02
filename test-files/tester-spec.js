@@ -215,6 +215,19 @@ describe('expect', function() {
 });
 
 //===================== Spies =====================//
+describe('newSpy(name)', function() {
+  describe('the returned spy', function() {
+    let spy = newSpy('Detached spy');
+    it('can expect to be called', function() {
+      expect(spy).not.toHaveBeenCalled();
+      spy(1,2,3);
+      expect(spy).toHaveBeenCalledWith(1,2,3);
+    });
+    it('does not reset after tests', function() {
+      expect(spy).toHaveBeenCalledWith(1,2,3);
+    });
+  });
+});
 describe('stub(obj)', function() {
   describe('.method', function() {
     it('does not call the original method', function() {

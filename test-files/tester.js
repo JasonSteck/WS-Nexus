@@ -304,6 +304,8 @@
     return spyGuy;
   }
 
+  window.newSpy = name => newSpyGuy(name);
+
   window.stub = function(obj) {
     return new Proxy({}, {
       get: function(_, str) {
@@ -313,6 +315,7 @@
           spyGuy.returnValue = val;
           return spyHandler;
         };
+        spyHandler.spy = spyGuy;
         return spyHandler;
       },
       set: function(_, str, val){
@@ -378,7 +381,11 @@
       currentTestResult = null;
 
       spies.forEach(s => {
-        s.object[s.methodName] = s.originalFunc;
+        if(s.object) {
+          s.object[s.methodName] = s.originalFunc;
+        } else {
+          // This is a detached spy
+        }
       });
       spies = [];
     });
