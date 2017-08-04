@@ -4,5 +4,17 @@ function newNexusHost(nexusServer, hostName) {
 
   const pub = {};
 
+  pub.onerror = (event)=>{ event.data };
+
+  const ws = pub.ws = new WebSocket(nexusServer);
+  ws.onopen = () => {
+    ws.send({
+      type: 'HOST',
+      payload: hostName,
+    });
+  }
+
+  ws.onerror = (event) => (pub.onerror? pub.onerror(event): undefined);
+
   return pub;
 }
