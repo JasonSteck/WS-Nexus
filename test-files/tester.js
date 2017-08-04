@@ -158,13 +158,22 @@
     }
   }
 
+  function toExist(actual, not) {
+    if((actual != null) ^ not) {
+      currentTestResult.passExpectation();
+    } else {
+      let notStr = not? 'not ' : '';
+      if(failWithConsole(`Expected "${actual}" \nto ${notStr}exist`)) debugger;
+    }
+  }
+
   function toBe(actual, expected, not) {
     if((actual === expected) ^ not){
       currentTestResult.passExpectation();
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
-      currentTestResult.failExpectation(`Expected ${a} \n   to be ${b}`, getErrorStack());
+      currentTestResult.failExpectation(`Expected "${a}" \n   to be ${b}`, getErrorStack());
       if(debugMode){
         consoleFailMessage(failMessage(currentTestResult));
         debugger;
@@ -262,12 +271,14 @@
         toHaveBeenCalled: () => toHaveBeenCalled(actual, true),
         toThrow: expected => toThrow(actual, expected, true),
         toEqual: expected => toEqual(actual, expected, true),
+        toExist: () => toExist(actual, true),
         toBe: expected => toBe(actual, expected, true),
       },
       toHaveBeenCalledWith: (...expected) => toHaveBeenCalledWith(actual, expected, false),
       toHaveBeenCalled: () => toHaveBeenCalled(actual, false),
       toThrow: exception => toThrow(actual, exception, false),
       toEqual: expected => toEqual(actual, expected, false),
+      toExist: () => toExist(actual, false),
       toBe: expected => toBe(actual, expected, false),
     }
   };

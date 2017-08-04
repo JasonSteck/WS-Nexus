@@ -85,6 +85,21 @@ describe('contexts', function() {
 
 //===================== Equalities =====================//
 describe('expect', function() {
+  describe('(anything)', function() {
+    describe('.toExist', function() {
+      it('passes if the thing is not null or undefined', function() {
+        expect(0).toExist();
+        expect('').toExist();
+        expect({}).toExist();
+      });
+    });
+    describe('.not .toExist', function() {
+      it('passes if the thing is null or undefined', function() {
+        expect(undefined).not.toExist();
+        expect(null).not.toExist();
+      });
+    });
+  });
   describe('(object)', function() {
     describe('.toEqual', function() {
       it('to match similar objects', function() {
