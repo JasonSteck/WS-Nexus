@@ -161,8 +161,18 @@ describe('expect', function() {
     });
   });
   describe('(function)', function() {
-    describe('.toThrow', function() {
-      it('to match a generic error', function() {
+    describe('.toThrow()', function() {
+      it('to match any error', function() {
+        expect(() => { throw new Error('hi') }).toThrow();
+      });
+    });
+    describe('.not .toThrow()', function() {
+      it('passes if no error was thrown', function() {
+        expect(() => {}).not.toThrow();
+      });
+    });
+    describe('.toThrow(Error)', function() {
+      it('to match a specific error', function() {
         expect(() => { throw new Error('hi') }).toThrow(new Error('hi'));
       });
       it('to match a custom error', function() {
@@ -175,7 +185,7 @@ describe('expect', function() {
         expect(() => { throw 'hi' }).toThrow('hi');
       });
     });
-    describe('.not .toThrow', function() {
+    describe('.not .toThrow(Error)', function() {
       it('still passes if the error message differs', function() {
         expect(() => { throw new Error('foo') }).not.toThrow(new Error('bar'));
       });
