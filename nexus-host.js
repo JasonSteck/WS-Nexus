@@ -4,7 +4,7 @@ function newNexusHost(nexusServer, hostName) {
 
   const pub = {};
 
-  pub.onerror = (event)=>{ event.data };
+  pub.onerror = (event)=>{ /* example callback */ event.data };
 
   const ws = pub.ws = new WebSocket(nexusServer);
   ws.onopen = () => {
@@ -14,7 +14,7 @@ function newNexusHost(nexusServer, hostName) {
     });
   }
 
-  ws.onerror = (event) => (pub.onerror? pub.onerror(event): undefined);
+  ws.onerror = (event) => (pub.onerror? pub.onerror(event) : undefined);
 
   return pub;
 }
