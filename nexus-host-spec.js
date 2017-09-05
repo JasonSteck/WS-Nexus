@@ -19,13 +19,22 @@ describe('nexus-host.js', function() {
       )
     );
 
-    this.triggerNewUser = ({clientID, request}={}) => {
+    this.triggerNewClient = ({clientID, request}={}) => {
       const data = JSON.stringify({
         type: 'NEW_CLIENT',
         clientID: clientID || 7,
         request: request || JSON.stringify({
           // to figure out
         })
+      });
+      this.ws.onmessage({ data });
+    };
+
+    this.triggerClientMessage = ({clientID, message}={}) => {
+      const data = JSON.stringify({
+        type: 'FROM_CLIENT',
+        clientID: clientID || 7,
+        payload: message || "HAHA",
       });
       this.ws.onmessage({ data });
     };
@@ -87,7 +96,7 @@ describe('nexus-host.js', function() {
 
       const clientID = 5;
       const request = {};
-      this.triggerNewUser({clientID, request}); // simulate event
+      this.triggerNewClient({clientID, request}); // simulate event
 
       expect(callback).toHaveBeenCalledWith(clientID, request);
     });
@@ -96,7 +105,28 @@ describe('nexus-host.js', function() {
       this.stubWebSocket();
       this.newHost();
 
-      expect(()=>this.triggerNewUser()).not.toThrow();
+      expect(()=>this.triggerNewClient()).not.toThrow();
+    });
+  });
+
+  describe('when we get something from the user', function() {
+    it('calls the .onClientMessage if provided', function() {
+      this.stubWebSocket();
+      const callback = newSpy('onClientMessage');
+      this.newHost().onClientMessage = callback;
+
+      const clientID = 5;
+      const message = 'Yo';
+      this.triggerClientMessage({clientID, message}); // simulate event
+
+      expect(callback).toHaveBeenCalledWith(clientID, message);
+    });
+
+    it('does not crash if there is no callback specified', function() {
+      this.stubWebSocket();
+      this.newHost();
+
+      expect(()=>this.triggerClientMessage()).not.toThrow();
     });
   });
 });

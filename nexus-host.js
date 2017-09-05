@@ -12,6 +12,10 @@ function newNexusHost(nexusServer, hostName) {
     /* example callback*/
     console.log("User #%s joined. Their connection request was:", clientID, request);
   };
+  pub.onClientMessage = (clientID, message)=>{
+    /* example callback*/
+    console.log("User #%s sent you:", clientID, message);
+  };
 
   const ws = pub.ws = new WebSocket(nexusServer);
   ws.onopen = () => {
@@ -30,7 +34,7 @@ function newNexusHost(nexusServer, hostName) {
         pub.onNewClient && pub.onNewClient(req.clientID, req.request);
         break;
       case 'FROM_CLIENT':
-        const clientRequest = JSON.parse(req.payload);
+        pub.onClientMessage && pub.onClientMessage(req.clientID, req.payload);
         break;
       case 'LOST_CLIENT':
         let lostPlayer = playersHash[req.payload];
