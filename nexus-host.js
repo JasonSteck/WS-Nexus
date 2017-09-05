@@ -4,7 +4,14 @@ function newNexusHost(nexusServer, hostName) {
 
   const pub = {};
 
-  pub.onerror = (event)=>{ /* example callback */ event.data };
+  pub.onerror = (event)=>{
+    /* example callback */
+    console.error('Nexus Error:', event.data);
+  };
+  pub.onNewClient = (clientID, clientRequest)=>{
+    /* example callback*/
+    console.log("User #%s joined. Their connection request was:", clientID, request);
+  };
 
   const ws = pub.ws = new WebSocket(nexusServer);
   ws.onopen = () => {

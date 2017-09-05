@@ -54,7 +54,8 @@ describe('nexus-host.js', function() {
       this.stubWebSocket();
       this.newHost().onerror = (event) => { this.event = event };
       let err = {data:'err'};
-      this.ws.onerror(err);
+
+      this.ws.onerror(err); // simulate error
 
       expect(this.event).toBe(err);
     });
