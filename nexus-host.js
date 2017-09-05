@@ -8,7 +8,7 @@ function newNexusHost(nexusServer, hostName) {
     /* example callback */
     console.error('Nexus Error:', event.data);
   };
-  pub.onNewClient = (clientID, clientRequest)=>{
+  pub.onNewClient = (clientID, request)=>{
     /* example callback*/
     console.log("User #%s joined. Their connection request was:", clientID, request);
   };
@@ -19,9 +19,24 @@ function newNexusHost(nexusServer, hostName) {
       type: 'HOST',
       payload: hostName,
     });
-  }
+  };
 
   ws.onerror = (event) => (pub.onerror? pub.onerror(event) : undefined);
+  ws.onmessage = function(event){
+//     console.log('Received:', event.data);
+    const req = JSON.parse(event.data);
+    switch(req.type) {
+      case 'NEW_CLIENT':
+        pub.onNewClient && pub.onNewClient(req.clientID, req.request);
+        break;
+      case 'FROM_CLIENT':
+        const clientRequest = JSON.parse(req.payload);
+        break;
+      case 'LOST_CLIENT':
+        let lostPlayer = playersHash[req.payload];
+        break;
+    }
+  };
 
   return pub;
 }

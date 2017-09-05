@@ -18,6 +18,17 @@ describe('nexus-host.js', function() {
         hostName || defaultHostName,
       )
     );
+
+    this.triggerNewUser = ({clientID, request}={}) => {
+      const data = JSON.stringify({
+        type: 'NEW_CLIENT',
+        clientID: clientID || 7,
+        request: request || JSON.stringify({
+          // to figure out
+        })
+      });
+      this.ws.onmessage({ data });
+    };
   });
 
   describe('#newNexusHost(nexusServer, hostName, [options])', function() {
@@ -65,6 +76,27 @@ describe('nexus-host.js', function() {
       this.newHost();
 
       expect(()=>this.ws.onerror(err)).not.toThrow();
+    });
+  });
+
+  describe('when a new user connects', function() {
+    it('calls the .onNewClient if provided', function() {
+      this.stubWebSocket();
+      const callback = newSpy('onNewClient');
+      this.newHost().onNewClient = callback;
+
+      const clientID = 5;
+      const request = {};
+      this.triggerNewUser({clientID, request}); // simulate event
+
+      expect(callback).toHaveBeenCalledWith(clientID, request);
+    });
+
+    it('does not crash if there is no callback specified', function() {
+      this.stubWebSocket();
+      this.newHost();
+
+      expect(()=>this.triggerNewUser()).not.toThrow();
     });
   });
 });
