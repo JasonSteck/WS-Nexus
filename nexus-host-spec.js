@@ -13,7 +13,7 @@ describe('nexus-host.js', function() {
     };
 
     this.newHost = ({nexusServer, hostName, disableDefaultCallbacks}={}) => (
-      this.host = newNexusHost(
+      this.host = new nexusHost(
         nexusServer || defaultNexusServer,
         hostName || defaultHostName,
         disableDefaultCallbacks

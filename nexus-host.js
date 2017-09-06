@@ -1,67 +1,65 @@
-function newNexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
+function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
   if(!nexusServer) throw new Error('Missing nexusServer address');
   if(!hostName) throw new Error('Missing hostName');
+  if(!disableDefaultCallbacks) this.setDefaultCallbacks();
+  this.ws = new WebSocket(nexusServer);
 
-  const pub = {};
-  
-  if(!disableDefaultCallbacks) {
-    pub.onRegistered = (hostID) => {
-      /* example callback */
-      console.log("+ Registered as host with id:", hostID);
-    };
-    pub.onError = (event)=>{
-      /* example callback */
-      console.error('Nexus Error:', event.data);
-    };
-    pub.onNewClient = (clientID, request)=>{
-      /* example callback*/
-      console.log("+ User #%s joined. Their connection request was:", clientID, request);
-    };
-    pub.onClientMessage = (clientID, message)=>{
-      /* example callback*/
-      console.log("+ User #%s sent you:", clientID, message);
-    };
-    pub.onClientLost = (clientID)=>{
-      /* example callback*/
-      console.log("+ User #%s disconnected", clientID);
-    };
-  }
-
-  pub.send = (payload, clientID=undefined)=>{
-    pub.ws.send(JSON.stringify({
-      type: 'SEND',
-      clientID,
-      payload,
-    }));
-  };
-
-  const ws = pub.ws = new WebSocket(nexusServer);
-  ws.onopen = () => {
-    ws.send(JSON.stringify({
+  this.ws.onopen = () => {
+    this.ws.send(JSON.stringify({
       type: 'HOST',
       payload: hostName,
     }));
   };
 
-  ws.onerror = (event) => (pub.onError? pub.onError(event) : undefined);
-  ws.onmessage = function(event){
-//     console.log('Received:', event.data);
+  this.ws.onerror = (event) => (this.onError? this.onError(event) : undefined);
+  this.ws.onmessage = (event) => {
+  //     console.log('Received:', event.data);
     const req = JSON.parse(event.data);
     switch(req.type) {
       case 'NEW_CLIENT':
-        pub.onNewClient && pub.onNewClient(req.clientID, req.request);
+        this.onNewClient && this.onNewClient(req.clientID, req.request);
         break;
       case 'FROM_CLIENT':
-        pub.onClientMessage && pub.onClientMessage(req.clientID, req.payload);
+        this.onClientMessage && this.onClientMessage(req.clientID, req.payload);
         break;
       case 'LOST_CLIENT':
-        pub.onClientLost && pub.onClientLost(req.payload); // TODO change to req.clientID
+        this.onClientLost && this.onClientLost(req.payload); // TODO change to req.clientID
         break;
       case 'REGISTERED':
-        pub.onRegistered && pub.onRegistered(req.hostID);
+        this.onRegistered && this.onRegistered(req.hostID);
         break;
     }
   };
 
-  return pub;
 }
+
+nexusHost.prototype.setDefaultCallbacks = function() {
+  this.onRegistered = (hostID) => {
+    /* example callback */
+    console.log("+ Registered as host with id:", hostID);
+  };
+  this.onError = (event)=>{
+    /* example callback */
+    console.error('Nexus Error:', event.data);
+  };
+  this.onNewClient = (clientID, request)=>{
+    /* example callback*/
+    console.log("+ User #%s joined. Their connection request was:", clientID, request);
+  };
+  this.onClientMessage = (clientID, message)=>{
+    /* example callback*/
+    console.log("+ User #%s sent you:", clientID, message);
+  };
+  this.onClientLost = (clientID)=>{
+    /* example callback*/
+    console.log("+ User #%s disconnected", clientID);
+  };
+};
+
+nexusHost.prototype.send = function(payload, clientID=undefined) {
+  this.ws.send(JSON.stringify({
+    type: 'SEND',
+    clientID,
+    payload,
+  }));
+};
