@@ -35,6 +35,8 @@ function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
 }
 
 nexusHost.prototype.setDefaultCallbacks = function() {
+  /* You can set any of these to null to have no callback */
+
   this.onRegistered = (hostID) => {
     /* example callback */
     console.log("+ Registered as host with id:", hostID);
@@ -45,7 +47,7 @@ nexusHost.prototype.setDefaultCallbacks = function() {
   };
   this.onClose = (event)=>{
     /* example callback */
-    console.error('+ Connection Closed:', event);
+    console.warn('+ Connection Closed:', event);
   };
   this.onNewClient = (clientID, request)=>{
     /* example callback*/
