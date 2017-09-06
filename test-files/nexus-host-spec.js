@@ -251,7 +251,7 @@ describe('nexus-host.js', function() {
 
     it('does not crash if there is no callback specified', function() {
       this.stubWebSocket();
-      this.newHost().onRegistered = null;
+      this.newHost().onClose = null;
 
       expect(()=>this.triggerConnectionClosed()).not.toThrow();
     });
