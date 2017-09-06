@@ -46,6 +46,14 @@ describe('nexus-host.js', function() {
       });
       this.ws.onmessage({ data });
     };
+
+    this.triggerHostRegistered = (hostID=9) => {
+      const data = JSON.stringify({
+        type: 'REGISTERED',
+        hostID: hostID,
+      });
+      this.ws.onmessage({ data });
+    }
   });
 
   describe('#newNexusHost(nexusServer, hostName, [options])', function() {
@@ -181,6 +189,26 @@ describe('nexus-host.js', function() {
         type: 'SEND',
         payload,
       }));
+    });
+  });
+
+  describe('when the host gets registered', function() {
+    it('calls the .onRegistered callback', function() {
+      this.stubWebSocket();
+      const callback = newSpy('onRegistered');
+      this.newHost().onRegistered = callback;
+
+      const hostID = 5;
+      this.triggerHostRegistered(hostID); // simulate event
+
+      expect(callback).toHaveBeenCalledWith(hostID);
+    });
+
+    it('does not crash if there is no callback specified', function() {
+      this.stubWebSocket();
+      this.newHost().onRegistered = null;
+
+      expect(()=>this.triggerHostRegistered()).not.toThrow();
     });
   });
 });

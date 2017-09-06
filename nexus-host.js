@@ -4,6 +4,10 @@ function newNexusHost(nexusServer, hostName) {
 
   const pub = {};
 
+  pub.onRegistered = (hostID) => {
+    /* example callback */
+    console.log("+ Registered as host with id:", hostID);
+  };
   pub.onError = (event)=>{
     /* example callback */
     console.error('Nexus Error:', event.data);
@@ -50,6 +54,9 @@ function newNexusHost(nexusServer, hostName) {
         break;
       case 'LOST_CLIENT':
         pub.onClientLost && pub.onClientLost(req.payload); // TODO change to req.clientID
+        break;
+      case 'REGISTERED':
+        pub.onRegistered && pub.onRegistered(req.hostID);
         break;
     }
   };
