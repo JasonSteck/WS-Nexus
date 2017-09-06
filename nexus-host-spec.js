@@ -90,7 +90,7 @@ describe('nexus-host.js', function() {
 
     it('does not crash if there is no .onerror callback specified', function() {
       this.stubWebSocket();
-      this.newHost();
+      this.newHost().onError = null;
 
       expect(()=>this.ws.onerror(err)).not.toThrow();
     });
@@ -111,7 +111,7 @@ describe('nexus-host.js', function() {
 
     it('does not crash if there is no callback specified', function() {
       this.stubWebSocket();
-      this.newHost();
+      this.newHost().onNewClient = null;
 
       expect(()=>this.triggerNewClient()).not.toThrow();
     });
@@ -132,7 +132,7 @@ describe('nexus-host.js', function() {
 
     it('does not crash if there is no callback specified', function() {
       this.stubWebSocket();
-      this.newHost();
+      this.newHost().onClientMessage = null;
 
       expect(()=>this.triggerClientMessage()).not.toThrow();
     });
