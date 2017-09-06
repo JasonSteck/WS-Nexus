@@ -21,6 +21,14 @@ function newNexusHost(nexusServer, hostName) {
     console.log("+ User #%s disconnected", clientID);
   };
 
+  pub.send = (payload, clientID=undefined)=>{
+    pub.ws.send(JSON.stringify({
+      type: 'SEND',
+      clientID,
+      payload,
+    }));
+  };
+
   const ws = pub.ws = new WebSocket(nexusServer);
   ws.onopen = () => {
     ws.send({

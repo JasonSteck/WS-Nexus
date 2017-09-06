@@ -157,4 +157,30 @@ describe('nexus-host.js', function() {
       expect(()=>this.triggerClientLost()).not.toThrow();
     });
   });
+
+  describe('#send(msg, clientID)', function() {
+    it('tries to send the message to the client with the ID', function() {
+      this.stubWebSocket();
+      const clientID = 8;
+      const payload = 'hello there';
+      this.newHost().send(payload, clientID);
+      expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
+        type: 'SEND',
+        clientID,
+        payload,
+      }));
+    });
+  });
+
+  describe('#send(msg)', function() {
+    it('tries to send the message everyone', function() {
+      this.stubWebSocket();
+      const payload = 'hello there';
+      this.newHost().send(payload);
+      expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
+        type: 'SEND',
+        payload,
+      }));
+    });
+  });
 });
