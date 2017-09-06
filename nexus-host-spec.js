@@ -77,10 +77,10 @@ describe('nexus-host.js', function() {
         this.newHost();
         expect(()=>this.ws.onopen()).not.toThrow();
 
-        expect(this.ws.send).toHaveBeenCalledWith({
+        expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
           type: 'HOST',
           payload: defaultHostName,
-        });
+        }));
       });
     });
   });

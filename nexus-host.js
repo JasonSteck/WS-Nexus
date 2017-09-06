@@ -35,10 +35,10 @@ function newNexusHost(nexusServer, hostName) {
 
   const ws = pub.ws = new WebSocket(nexusServer);
   ws.onopen = () => {
-    ws.send({
+    ws.send(JSON.stringify({
       type: 'HOST',
       payload: hostName,
-    });
+    }));
   };
 
   ws.onerror = (event) => (pub.onError? pub.onError(event) : undefined);
