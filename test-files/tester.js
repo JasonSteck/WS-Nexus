@@ -163,7 +163,8 @@
       currentTestResult.passExpectation();
     } else {
       let notStr = not? 'not ' : '';
-      if(failWithConsole(`Expected "${actual}" \nto ${notStr}exist`)) debugger;
+      if(failWithConsole(`Expected "${actual}" \nto ${notStr}exist`))
+        debugger;
     }
   }
 
@@ -204,7 +205,8 @@
     exceptionStr = anyException? 'an error': `"${exception}"`;
     if(not) {
       if(correctlyThrew) {
-        if(failWithConsole(`Expected ${actual} \nnot to throw ${exceptionStr}\n but it did`)) debugger;
+        if(failWithConsole(`Expected ${actual} \nnot to throw ${exceptionStr}\n but it did`))
+          debugger;
       } else {
         currentTestResult.passExpectation();
       }
@@ -213,9 +215,11 @@
         currentTestResult.passExpectation();
       } else if(threw) {
         let notString = not?'not':'';
-        if(failWithConsole(`Expected ${actual} \n${notString}to throw ${exceptionStr}\n but got "${error}"`)) debugger;
+        if(failWithConsole(`Expected ${actual} \n${notString}to throw ${exceptionStr}\n but got "${error}"`))
+          debugger;
       } else {
-        if(failWithConsole(`Expected ${actual} \nto throw ${exceptionStr} but didn't get anything`)) debugger;
+        if(failWithConsole(`Expected ${actual} \nto throw ${exceptionStr} but didn't get anything`))
+          debugger;
       }
     }
   }
@@ -233,7 +237,8 @@
     if((actual.calls.length > 0) ^ not) {
       currentTestResult.passExpectation();
     } else {
-      if(failWithConsole(`Expected "${actual.methodName}" \nto have been called, but it wasn't`)) debugger;
+      if(failWithConsole(`Expected "${actual.methodName}" \nto have been called, but it wasn't`))
+        debugger;
     }
   }
 
@@ -259,9 +264,11 @@
       currentTestResult.passExpectation();
     } else {
       if(found) {
-        if(failWithConsole(`Expected "${actual.methodName}" \nto not have been called with "${expected}" but actual calls were:\n${actual.calls.join('\n')}`)) debugger;
+        if(failWithConsole(`Expected "${actual.methodName}" \nto not have been called with "${expected}" but actual calls were:\n${actual.calls.join('\n')}`))
+          debugger;
       } else {
-        if(failWithConsole(`Expected "${actual.methodName}" \nto have been called with "${expected}" but actual calls were:\n${actual.calls.join('\n')}`)) debugger;
+        if(failWithConsole(`Expected "${actual.methodName}" \nto have been called with "${expected}" but actual calls were:\n${actual.calls.join('\n')}`))
+          debugger;
       }
     }
 
