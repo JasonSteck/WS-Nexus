@@ -8,6 +8,7 @@ describe('nexus-host.js', function() {
     this.stubWebSocket = () => {
       this.ws = {
         send: newSpy('send'),
+        close: newSpy('close'),
       },
       stub(window).WebSocket.toReturn(this.ws);
     };
@@ -283,6 +284,14 @@ describe('nexus-host.js', function() {
       for(let i=0;i<callbackList.length;i++) {
         expect(host[callbackList[i]]).not.toBe(undefined);
       }
+    });
+  });
+
+  describe('#close(code, reason)', function() {
+    it('closes the websocket connection', function(){
+      this.stubWebSocket();
+      this.newHost().close();
+      expect(this.ws.close).toHaveBeenCalledWith(1000, "Host closed their connection");
     });
   });
 });

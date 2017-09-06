@@ -70,3 +70,7 @@ nexusHost.prototype.send = function(payload, clientID=undefined) {
     payload,
   }));
 };
+
+nexusHost.prototype.close = function(code=1000, reason="Host closed their connection") {
+  this.ws.close(code, reason);
+}
