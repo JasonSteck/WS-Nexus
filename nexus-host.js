@@ -1,29 +1,31 @@
-function newNexusHost(nexusServer, hostName) {
+function newNexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
   if(!nexusServer) throw new Error('Missing nexusServer address');
   if(!hostName) throw new Error('Missing hostName');
 
   const pub = {};
-
-  pub.onRegistered = (hostID) => {
-    /* example callback */
-    console.log("+ Registered as host with id:", hostID);
-  };
-  pub.onError = (event)=>{
-    /* example callback */
-    console.error('Nexus Error:', event.data);
-  };
-  pub.onNewClient = (clientID, request)=>{
-    /* example callback*/
-    console.log("+ User #%s joined. Their connection request was:", clientID, request);
-  };
-  pub.onClientMessage = (clientID, message)=>{
-    /* example callback*/
-    console.log("+ User #%s sent you:", clientID, message);
-  };
-  pub.onClientLost = (clientID)=>{
-    /* example callback*/
-    console.log("+ User #%s disconnected", clientID);
-  };
+  
+  if(!disableDefaultCallbacks) {
+    pub.onRegistered = (hostID) => {
+      /* example callback */
+      console.log("+ Registered as host with id:", hostID);
+    };
+    pub.onError = (event)=>{
+      /* example callback */
+      console.error('Nexus Error:', event.data);
+    };
+    pub.onNewClient = (clientID, request)=>{
+      /* example callback*/
+      console.log("+ User #%s joined. Their connection request was:", clientID, request);
+    };
+    pub.onClientMessage = (clientID, message)=>{
+      /* example callback*/
+      console.log("+ User #%s sent you:", clientID, message);
+    };
+    pub.onClientLost = (clientID)=>{
+      /* example callback*/
+      console.log("+ User #%s disconnected", clientID);
+    };
+  }
 
   pub.send = (payload, clientID=undefined)=>{
     pub.ws.send(JSON.stringify({

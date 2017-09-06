@@ -12,10 +12,11 @@ describe('nexus-host.js', function() {
       stub(window).WebSocket.toReturn(this.ws);
     };
 
-    this.newHost = ({nexusServer, hostName}={}) => (
+    this.newHost = ({nexusServer, hostName, disableDefaultCallbacks}={}) => (
       this.host = newNexusHost(
         nexusServer || defaultNexusServer,
         hostName || defaultHostName,
+        disableDefaultCallbacks
       )
     );
 
@@ -209,6 +210,35 @@ describe('nexus-host.js', function() {
       this.newHost().onRegistered = null;
 
       expect(()=>this.triggerHostRegistered()).not.toThrow();
+    });
+  });
+
+  // prevent variable and arrary from changing
+  const callbackList = Object.freeze([
+    "onRegistered",
+    "onError",
+    "onNewClient",
+    "onClientMessage",
+    "onClientLost",
+  ]);
+
+  describe('when disableDefaultCallbacks is true', function() {
+    it('does not set default callbacks', function() {
+      this.stubWebSocket();
+      const host = this.newHost({disableDefaultCallbacks: true});
+      for(let i=0;i<callbackList.length;i++) {
+        expect(host[callbackList[i]]).toBe(undefined);
+      }
+    });
+  });
+
+  describe('when disableDefaultCallbacks is not defined', function() {
+    it('sets default callbacks', function() {
+      this.stubWebSocket();
+      const host = this.newHost();
+      for(let i=0;i<callbackList.length;i++) {
+        expect(host[callbackList[i]]).not.toBe(undefined);
+      }
     });
   });
 });
