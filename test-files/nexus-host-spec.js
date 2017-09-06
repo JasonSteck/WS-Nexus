@@ -54,7 +54,11 @@ describe('nexus-host.js', function() {
         hostID: hostID,
       });
       this.ws.onmessage({ data });
-    }
+    };
+
+    this.triggerConnectionClosed = (event) => {
+      this.ws.onclose && this.ws.onclose(event);
+    };
   });
 
   describe('#new NexusHost(nexusServer, hostName, [options])', function() {
@@ -210,6 +214,46 @@ describe('nexus-host.js', function() {
       this.newHost().onRegistered = null;
 
       expect(()=>this.triggerHostRegistered()).not.toThrow();
+    });
+  });
+
+  describe('when the host gets registered', function() {
+    it('calls the .onRegistered callback', function() {
+      this.stubWebSocket();
+      const callback = newSpy('onRegistered');
+      this.newHost().onRegistered = callback;
+
+      const hostID = 5;
+      this.triggerHostRegistered(hostID); // simulate event
+
+      expect(callback).toHaveBeenCalledWith(hostID);
+    });
+
+    it('does not crash if there is no callback specified', function() {
+      this.stubWebSocket();
+      this.newHost().onRegistered = null;
+
+      expect(()=>this.triggerHostRegistered()).not.toThrow();
+    });
+  });
+
+  describe('when the connection gets closed', function() {
+    it('calls the .onClosed callback', function() {
+      this.stubWebSocket();
+      const callback = newSpy('onClosed');
+      this.newHost().onClose = callback;
+
+      const event = {};
+      this.triggerConnectionClosed(event); // simulate event
+
+      expect(callback).toHaveBeenCalledWith(event);
+    });
+
+    it('does not crash if there is no callback specified', function() {
+      this.stubWebSocket();
+      this.newHost().onRegistered = null;
+
+      expect(()=>this.triggerConnectionClosed()).not.toThrow();
     });
   });
 

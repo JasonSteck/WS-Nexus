@@ -12,6 +12,7 @@ function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
   };
 
   this.ws.onerror = (event) => (this.onError? this.onError(event) : undefined);
+  this.ws.onclose = (event) => (this.onClose? this.onClose(event) : undefined);
   this.ws.onmessage = (event) => {
   //     console.log('Received:', event.data);
     const req = JSON.parse(event.data);
@@ -41,6 +42,10 @@ nexusHost.prototype.setDefaultCallbacks = function() {
   this.onError = (event)=>{
     /* example callback */
     console.error('Nexus Error:', event);
+  };
+  this.onClose = (event)=>{
+    /* example callback */
+    console.error('+ Connection Closed:', event);
   };
   this.onNewClient = (clientID, request)=>{
     /* example callback*/
