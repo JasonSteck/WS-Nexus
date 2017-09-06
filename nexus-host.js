@@ -4,7 +4,7 @@ function newNexusHost(nexusServer, hostName) {
 
   const pub = {};
 
-  pub.onerror = (event)=>{
+  pub.onError = (event)=>{
     /* example callback */
     console.error('Nexus Error:', event.data);
   };
@@ -29,7 +29,7 @@ function newNexusHost(nexusServer, hostName) {
     });
   };
 
-  ws.onerror = (event) => (pub.onerror? pub.onerror(event) : undefined);
+  ws.onerror = (event) => (pub.onError? pub.onError(event) : undefined);
   ws.onmessage = function(event){
 //     console.log('Received:', event.data);
     const req = JSON.parse(event.data);

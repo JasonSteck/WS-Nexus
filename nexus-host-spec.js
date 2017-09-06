@@ -80,7 +80,7 @@ describe('nexus-host.js', function() {
   describe('if connection fails', function() {
     it('calls the .onerror if provided', function() {
       this.stubWebSocket();
-      this.newHost().onerror = (event) => { this.event = event };
+      this.newHost().onError = (event) => { this.event = event };
       let err = {data:'err'};
 
       this.ws.onerror(err); // simulate error
