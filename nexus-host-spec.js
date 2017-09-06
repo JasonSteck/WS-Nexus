@@ -38,6 +38,14 @@ describe('nexus-host.js', function() {
       });
       this.ws.onmessage({ data });
     };
+
+    this.triggerClientLost = (clientID) => {
+      const data = JSON.stringify({
+        type: 'LOST_CLIENT',
+        payload: clientID || 7,
+      });
+      this.ws.onmessage({ data });
+    };
   });
 
   describe('#newNexusHost(nexusServer, hostName, [options])', function() {
@@ -127,6 +135,26 @@ describe('nexus-host.js', function() {
       this.newHost();
 
       expect(()=>this.triggerClientMessage()).not.toThrow();
+    });
+  });
+
+  describe('when the user gets disconnected', function() {
+    it('calls the .onClientLost if provided', function() {
+      this.stubWebSocket();
+      const callback = newSpy('onClientLost');
+      this.newHost().onClientLost = callback;
+
+      const clientID = 5;
+      this.triggerClientLost(clientID); // simulate event
+
+      expect(callback).toHaveBeenCalledWith(clientID);
+    });
+
+    it('does not crash if there is no callback specified', function() {
+      this.stubWebSocket();
+      this.newHost().onClientLost = null;
+
+      expect(()=>this.triggerClientLost()).not.toThrow();
     });
   });
 });
