@@ -2,18 +2,18 @@ function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
   if(!nexusServer) throw new Error('Missing nexusServer address');
   if(!hostName) throw new Error('Missing hostName');
   if(!disableDefaultCallbacks) this.setDefaultCallbacks();
-  this.ws = new WebSocket(nexusServer);
+  this._ws = new WebSocket(nexusServer);
 
-  this.ws.onopen = () => {
-    this.ws.send(JSON.stringify({
+  this._ws.onopen = () => {
+    this._ws.send(JSON.stringify({
       type: 'HOST',
       payload: hostName,
     }));
   };
 
-  this.ws.onerror = (event) => (this.onError? this.onError(event) : undefined);
-  this.ws.onclose = (event) => (this.onClose? this.onClose(event) : undefined);
-  this.ws.onmessage = (event) => {
+  this._ws.onerror = (event) => (this.onError? this.onError(event) : undefined);
+  this._ws.onclose = (event) => (this.onClose? this.onClose(event) : undefined);
+  this._ws.onmessage = (event) => {
   //     console.log('Received:', event.data);
     const req = JSON.parse(event.data);
     switch(req.type) {
@@ -64,7 +64,7 @@ nexusHost.prototype.setDefaultCallbacks = function() {
 };
 
 nexusHost.prototype.send = function(payload, clientID=undefined) {
-  this.ws.send(JSON.stringify({
+  this._ws.send(JSON.stringify({
     type: 'SEND',
     clientID,
     payload,
@@ -72,5 +72,5 @@ nexusHost.prototype.send = function(payload, clientID=undefined) {
 };
 
 nexusHost.prototype.close = function(code=1000, reason="Host closed their connection") {
-  this.ws.close(code, reason);
+  this._ws.close(code, reason);
 }
