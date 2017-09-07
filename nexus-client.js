@@ -3,10 +3,11 @@ function nexusClient(nexusServer, autoConnectOptions) {
 
   this._ws = new WebSocket(nexusServer);
   this._ws.onopen = () => {
+    this.onServerConnect && this.onServerConnect();
     if(autoConnectOptions) {
       this._ws.send(JSON.stringify(Object.assign({
         type: 'CONNECT',
-      }, autoConnectOptions)))
+      }, autoConnectOptions)));
     }
   };
 }

@@ -49,13 +49,24 @@ describe('nexusClient.js', function() {
       });
     });
 
-    describe('when not provedied an autoConnectOptions', function() {
+    describe('when not provided an autoConnectOptions', function() {
       it('does not send anything after connecting to server', function() {
         this.newClient(this.defaultServer);
 
         this.triggerServerConnected(); // simulate server connection
 
         expect(this.ws.send).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when it connects to the server', function() {
+      it('calls the .onServerConnect callback', function() {
+        const callback = newSpy('onServerConnect');
+        this.newClient().onServerConnect = callback;
+
+        this.triggerServerConnected();
+
+        expect(callback).toHaveBeenCalled();
       });
     });
   });
