@@ -43,7 +43,7 @@ nexusHost.prototype.setDefaultCallbacks = function() {
   };
   this.onError = (event)=>{
     /* example callback */
-    console.error('Nexus Error:', event);
+    console.error('+ Nexus Error:', event);
   };
   this.onClose = (event)=>{
     /* example callback */
