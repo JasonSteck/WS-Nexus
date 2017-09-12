@@ -70,4 +70,21 @@ describe('nexusClient.js', function() {
       });
     });
   });
+
+  describe('#getHostList(callback)', function() {
+    it('sends a request', function() {
+      this.newClient().getHostList(()=>{});
+      expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
+        type: 'LIST',
+      }));
+    });
+
+    it('calls the callback when we get the list', function() {
+      const callback = newSpy('onHostList');
+      this.newClient().getHostList(callback);
+      expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
+        type: 'LIST',
+      }));
+    });
+  });
 });
