@@ -11,6 +11,19 @@ function nexusClient(nexusServer, autoConnectOptions) {
       }, autoConnectOptions)));
     }
   };
+
+  this._ws.onmessage = (event) => {
+  //     console.log('Received:', event.data);
+    const req = JSON.parse(event.data);
+    switch(req.type) {
+      case 'LIST':
+        this.onHostList && this.onHostList(req.payload);
+        break;
+      case 'CONNECTED':
+        this.onHostConnect && this.onHostConnect();
+        break;
+    }
+  };
 }
 
 nexusClient.prototype.setDefaultCallbacks = function() {
@@ -33,3 +46,13 @@ nexusClient.prototype.getHostList = function(callback) {
     type: 'LIST',
   }))
 };
+
+nexusClient.prototype.connect = function(connectOptions, callback) {
+  if(callback) {
+    this.onHostConnect = callback;
+  }
+
+  this._ws.send(JSON.stringify(Object.assign({},{
+    type: 'CONNECT',
+  }, connectOptions)));
+}

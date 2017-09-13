@@ -9,6 +9,16 @@ describe('nexusClient.js', function() {
 
     // Defaults
     this.defaultServer = 'ws://localhost:3000';
+    this.defaultHostList = [
+      {
+        hostName: 'one',
+        hostID: 1,
+      },
+      {
+        hostName: 'two',
+        hostID: 2,
+      }
+    ];
 
     // Helper functions
     this.newClient = (nexusServer=this.defaultServer, autoConnectOptions) => {
@@ -17,6 +27,21 @@ describe('nexusClient.js', function() {
 
     this.triggerServerConnected = () => {
       this.ws.onopen && this.ws.onopen();
+    };
+
+    this.triggerHostList = () => {
+      const data = JSON.stringify({
+        type: 'LIST',
+        payload: this.defaultHostList,
+      });
+      this.ws.onmessage && this.ws.onmessage({ data });
+    };
+
+    this.triggerHostConnected = () => {
+      const data = JSON.stringify({
+        type: 'CONNECTED',
+      });
+      this.ws.onmessage && this.ws.onmessage({ data });
     };
   });
 
@@ -34,18 +59,22 @@ describe('nexusClient.js', function() {
       it('tries to connect with the given options', function() {
         const hostID = 8;
         const hostName = 'fight club';
+        const connectRequest = JSON.stringify({
+          type: 'CONNECT',
+          hostID,
+          hostName,
+        })
+
         this.newClient(this.defaultServer, {
           hostID,
           hostName,
         });
 
+        expect(this.ws.send).not.toHaveBeenCalledWith(connectRequest);
+
         this.triggerServerConnected(); // simulate server connection
 
-        expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
-          type: 'CONNECT',
-          hostID,
-          hostName,
-        }));
+        expect(this.ws.send).toHaveBeenCalledWith(connectRequest);
       });
     });
 
@@ -82,9 +111,34 @@ describe('nexusClient.js', function() {
     it('calls the callback when we get the list', function() {
       const callback = newSpy('onHostList');
       this.newClient().getHostList(callback);
+
+      this.triggerHostList();
+
+      expect(callback).toHaveBeenCalledWith(this.defaultHostList);
+    });
+  });
+
+  describe('#connect({hostName, hostID}, callback)', function() {
+    it('sends a connection request', function() {
+      const hostName = 'blah';
+      const hostID = 6;
+      this.newClient().connect({hostName, hostID});
       expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
-        type: 'LIST',
+        type: 'CONNECT',
+        hostName,
+        hostID,
       }));
+    });
+
+    it('calls the callback when we connect', function() {
+      const callback = newSpy('onConnect');
+      const hostName = 'blah';
+      const hostID = 6;
+      this.newClient().connect({hostName, hostID}, callback);
+
+      this.triggerHostConnected();
+
+      expect(callback).toHaveBeenCalled();
     });
   });
 });
