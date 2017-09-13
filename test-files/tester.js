@@ -226,7 +226,7 @@
 
   function toHaveBeenCalled(actual, not) {
     if(!(actual && typeof actual==='function' && actual._isSpy)) {
-      let msg = `Error: cannot expect "${actual.methodName}" toHaveBeenCalled. It is not a spy.`;
+      let msg = `Error: cannot expect "${actual && actual.methodName}" toHaveBeenCalled. It is not a spy.`;
       if(failWithConsole(msg)) {
         debugger;
       } else {
@@ -244,7 +244,7 @@
 
   function toHaveBeenCalledWith(actual, expected, not) {
     if(!(actual && typeof actual==='function' && actual._isSpy)) {
-      let msg = `Error: cannot expect "${actual.methodName}" toHaveBeenCalled. It is not a spy.`;
+      let msg = `Error: cannot expect "${actual && actual.methodName}" toHaveBeenCalled. It is not a spy.`;
       if(failWithConsole(msg)) {
         debugger;
       } else {
