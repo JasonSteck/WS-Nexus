@@ -100,45 +100,57 @@ describe('nexusClient.js', function() {
     });
   });
 
-  describe('#getHostList(callback)', function() {
-    it('sends a request', function() {
-      this.newClient().getHostList(()=>{});
-      expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
-        type: 'LIST',
-      }));
+  describe('when not connected to a host', function() {
+    describe('#getHostList(callback)', function() {
+      it('sends a request', function() {
+        this.newClient().getHostList(()=>{});
+        expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
+          type: 'LIST',
+        }));
+      });
+
+      it('calls the callback when we get the list', function() {
+        const callback = newSpy('onHostList');
+        this.newClient().getHostList(callback);
+
+        this.triggerHostList();
+
+        expect(callback).toHaveBeenCalledWith(this.defaultHostList);
+      });
     });
 
-    it('calls the callback when we get the list', function() {
-      const callback = newSpy('onHostList');
-      this.newClient().getHostList(callback);
+    describe('#connect({hostName, hostID}, callback)', function() {
+      it('sends a connection request', function() {
+        const hostName = 'blah';
+        const hostID = 6;
+        this.newClient().connect({hostName, hostID});
+        expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
+          type: 'CONNECT',
+          hostName,
+          hostID,
+        }));
+      });
 
-      this.triggerHostList();
+      it('calls the callback when we connect', function() {
+        const callback = newSpy('onConnect');
+        const hostName = 'blah';
+        const hostID = 6;
+        this.newClient().connect({hostName, hostID}, callback);
 
-      expect(callback).toHaveBeenCalledWith(this.defaultHostList);
+        this.triggerHostConnected();
+
+        expect(callback).toHaveBeenCalled();
+      });
+    });
+
+    describe('#send(msg)', function() {
+      it('throws an error', function() {
+        expect(()=>{
+          this.newClient().send('do thing');
+        }).toThrow(Error('Must be connected to a host before you send anything'));
+      });
     });
   });
 
-  describe('#connect({hostName, hostID}, callback)', function() {
-    it('sends a connection request', function() {
-      const hostName = 'blah';
-      const hostID = 6;
-      this.newClient().connect({hostName, hostID});
-      expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
-        type: 'CONNECT',
-        hostName,
-        hostID,
-      }));
-    });
-
-    it('calls the callback when we connect', function() {
-      const callback = newSpy('onConnect');
-      const hostName = 'blah';
-      const hostID = 6;
-      this.newClient().connect({hostName, hostID}, callback);
-
-      this.triggerHostConnected();
-
-      expect(callback).toHaveBeenCalled();
-    });
-  });
+  describe('when connecte to a host', function() {});
 });

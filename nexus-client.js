@@ -56,3 +56,7 @@ nexusClient.prototype.connect = function(connectOptions, callback) {
     type: 'CONNECT',
   }, connectOptions)));
 }
+
+nexusClient.prototype.send = function(msg) {
+  throw new Error('Must be connected to a host before you send anything');
+}
