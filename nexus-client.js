@@ -77,3 +77,7 @@ nexusClient.prototype.send = function(msg) {
   }
   this._ws.send(msg);
 }
+
+nexusClient.prototype.close = function() {
+  this._ws.close();
+}

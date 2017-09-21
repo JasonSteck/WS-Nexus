@@ -155,6 +155,13 @@ describe('nexusClient.js', function() {
         }).toThrow(Error('Must be connected to a host before you send anything'));
       });
     });
+
+    describe('#close()', function() {
+      it('calls close on the socket', function() {
+        this.newClient().close();
+        expect(this.ws.close).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('when connected to a host', function() {
@@ -186,6 +193,15 @@ describe('nexusClient.js', function() {
         this.triggerHostConnected();
         this.client.send('Hello there');
         expect(this.ws.send).toHaveBeenCalledWith('Hello there');
+      });
+    });
+
+    describe('#close()', function() {
+      it('calls close on the socket', function() {
+        this.newConnectedClient();
+        this.triggerHostConnected();
+        this.client.close();
+        expect(this.ws.close).toHaveBeenCalled();
       });
     });
   });
