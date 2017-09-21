@@ -19,10 +19,15 @@ describe('nexusClient.js', function() {
         hostID: 2,
       }
     ];
+    this.defaultHost = this.defaultHostList[0];
 
     // Helper functions
     this.newClient = (nexusServer=this.defaultServer, autoConnectOptions) => {
       return this.client = new nexusClient(nexusServer, autoConnectOptions);
+    };
+
+    this.newConnectedClient = () => {
+      this.newClient().connect(this.defaultHost, ()=>{});
     };
 
     this.triggerServerConnected = () => {
@@ -143,7 +148,7 @@ describe('nexusClient.js', function() {
       });
     });
 
-    describe('#send(msg)', function() {
+    describe('#send()', function() {
       it('throws an error', function() {
         expect(()=>{
           this.newClient().send('do thing');
@@ -152,5 +157,36 @@ describe('nexusClient.js', function() {
     });
   });
 
-  describe('when connecte to a host', function() {});
+  describe('when connected to a host', function() {
+    describe('#getHostList()', function() {
+      it('throws an error', function() {
+        this.newConnectedClient();
+        this.triggerHostConnected();
+        expect(()=>{
+          this.client.getHostList(()=>{});
+        }).toThrow(Error('Cannot get host list when connected to a host'));
+      });
+    });
+
+    describe('#connect()', function() {
+      it('throws an error', function() {
+        const hostName = 'blah';
+        const hostID = 6;
+        this.newConnectedClient();
+        this.triggerHostConnected();
+        expect(()=>{
+          this.client.connect({hostName, hostID});
+        }).toThrow(Error('Cannot connect to a host: already connected to one'));
+      });
+    });
+
+    describe('#send(msg)', function() {
+      it('sends the raw message', function() {
+        this.newConnectedClient();
+        this.triggerHostConnected();
+        this.client.send('Hello there');
+        expect(this.ws.send).toHaveBeenCalledWith('Hello there');
+      });
+    });
+  });
 });
