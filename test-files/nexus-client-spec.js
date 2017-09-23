@@ -133,6 +133,18 @@ describe('nexusClient.js', function() {
 
         expect(callback).toHaveBeenCalledWith(this.defaultHostList);
       });
+
+      it('calls .onHostList if no callback is provided', function() {
+        const callback = newSpy('onHostList');
+        this.newClient();
+        this.triggerServerConnected();
+        this.client.onHostList = callback;
+        this.client.getHostList();
+
+        this.triggerHostList();
+
+        expect(callback).toHaveBeenCalledWith(this.defaultHostList);
+      });
     });
 
     describe('#connect({hostName, hostID}, callback)', function() {
