@@ -26,8 +26,9 @@ describe('nexusClient.js', function() {
       return this.client = new nexusClient(nexusServer, autoConnectOptions);
     };
 
-    this.newConnectedClient = () => {
+    this.newConnectingClient = () => {
       this.newClient().connect(this.defaultHost, ()=>{});
+      return this.client;
     };
 
     this.triggerServerConnected = () => {
@@ -48,6 +49,10 @@ describe('nexusClient.js', function() {
       });
       this.ws.onmessage && this.ws.onmessage({ data });
     };
+
+    this.triggerMessage = (data) => {
+      this.ws.onmessage && this.ws.onmessage({ data });
+    }
   });
 
   describe('new nexusClient(nexusServer, autoConnectOptions)', function() {
@@ -162,12 +167,30 @@ describe('nexusClient.js', function() {
         expect(this.ws.close).toHaveBeenCalled();
       });
     });
+
+    describe('.onMessage', function() {
+      it('does not get called when receiving a hostList', function(){
+        const onMessageSpy = newSpy('onMessage');
+        this.newClient().onMessage = onMessageSpy;
+        this.client.getHostList();
+        this.triggerHostList();
+        expect(onMessageSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not get called when receiving a host connected confirmation', function(){
+        const onMessageSpy = newSpy('onMessage');
+        this.newClient().onMessage = onMessageSpy;
+        this.client.connect(this.defaultHost);
+        this.triggerHostConnected();
+        expect(onMessageSpy).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('when connected to a host', function() {
     describe('#getHostList()', function() {
       it('throws an error', function() {
-        this.newConnectedClient();
+        this.newConnectingClient();
         this.triggerHostConnected();
         expect(()=>{
           this.client.getHostList(()=>{});
@@ -179,7 +202,7 @@ describe('nexusClient.js', function() {
       it('throws an error', function() {
         const hostName = 'blah';
         const hostID = 6;
-        this.newConnectedClient();
+        this.newConnectingClient();
         this.triggerHostConnected();
         expect(()=>{
           this.client.connect({hostName, hostID});
@@ -189,7 +212,7 @@ describe('nexusClient.js', function() {
 
     describe('#send(msg)', function() {
       it('sends the raw message', function() {
-        this.newConnectedClient();
+        this.newConnectingClient();
         this.triggerHostConnected();
         this.client.send('Hello there');
         expect(this.ws.send).toHaveBeenCalledWith('Hello there');
@@ -198,10 +221,21 @@ describe('nexusClient.js', function() {
 
     describe('#close()', function() {
       it('calls close on the socket', function() {
-        this.newConnectedClient();
+        this.newConnectingClient();
         this.triggerHostConnected();
         this.client.close();
         expect(this.ws.close).toHaveBeenCalled();
+      });
+    });
+
+    describe('.onMessage', function() {
+      it('gets called with the recieved message', function(){
+        const onMessageSpy = newSpy('onMessage');
+        this.newConnectingClient().onMessage = onMessageSpy;
+        this.triggerHostConnected();
+        const msg = '{"name":"value"}';
+        this.triggerMessage(msg);
+        expect(onMessageSpy).toHaveBeenCalledWith(msg);
       });
     });
   });

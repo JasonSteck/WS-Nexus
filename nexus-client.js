@@ -14,20 +14,24 @@ function nexusClient(nexusServer, autoConnectOptions) {
   };
 
   this._ws.onmessage = (event) => {
-  //     console.log('Received:', event.data);
-    const req = JSON.parse(event.data);
-    switch(req.type) {
-      case 'LIST':
-        if(!this._isConnectedToHost) {
-          this.onHostList && this.onHostList(req.payload);
-        }
-        break;
-      case 'CONNECTED':
-        if(!this._isConnectedToHost) {
-          this._isConnectedToHost = true;
-          this.onHostConnect && this.onHostConnect();
-        }
-        break;
+    //     console.log('Received:', event.data);
+    if(this._isConnectedToHost) {
+      this.onMessage && this.onMessage(event.data);
+    } else {
+      const req = JSON.parse(event.data);
+      switch(req.type) {
+        case 'LIST':
+          if(!this._isConnectedToHost) {
+            this.onHostList && this.onHostList(req.payload);
+          }
+          break;
+        case 'CONNECTED':
+          if(!this._isConnectedToHost) {
+            this._isConnectedToHost = true;
+            this.onHostConnect && this.onHostConnect();
+          }
+          break;
+      }
     }
   };
 }
