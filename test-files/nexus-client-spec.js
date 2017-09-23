@@ -215,6 +215,16 @@ describe('nexusClient.js', function() {
         expect(onMessageSpy).not.toHaveBeenCalled();
       });
     });
+
+    describe('.onHostConnect', function() {
+      it('gets called when we connect to the host', function() {
+        const spy = newSpy('onHostConnect')
+        this.newConnectingClient();
+        this.client.onHostConnect = spy;
+        this.triggerHostConnected();
+        expect(spy).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('when connected to a host', function() {
@@ -276,6 +286,17 @@ describe('nexusClient.js', function() {
         this.triggerHostConnected();
         this.client.onServerConnect = spy;
         this.triggerServerConnected(); // host sends similar message
+        expect(spy).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('.onHostConnect', function() {
+      it('does not get called', function() {
+        const spy = newSpy('onHostConnect')
+        this.newConnectingClient();
+        this.triggerHostConnected();
+        this.client.onHostConnect = spy;
+        this.triggerHostConnected(); // host sends similar message
         expect(spy).not.toHaveBeenCalled();
       });
     });
