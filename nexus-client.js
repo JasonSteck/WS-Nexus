@@ -5,6 +5,7 @@ function nexusClient(nexusServer, autoConnectOptions) {
 
   this._ws = new WebSocket(nexusServer);
   this._ws.onopen = () => {
+    if(this._isConnectedToHost) return;
     this.onServerConnect && this.onServerConnect();
     if(autoConnectOptions) {
       this._ws.send(JSON.stringify(Object.assign({

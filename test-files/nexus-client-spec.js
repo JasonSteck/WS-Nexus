@@ -27,7 +27,9 @@ describe('nexusClient.js', function() {
     };
 
     this.newConnectingClient = () => {
-      this.newClient().connect(this.defaultHost, ()=>{});
+      this.newClient();
+      this.triggerServerConnected();
+      this.client.connect(this.defaultHost, ()=>{});
       return this.client;
     };
 
@@ -113,7 +115,9 @@ describe('nexusClient.js', function() {
   describe('when not connected to a host', function() {
     describe('#getHostList(callback)', function() {
       it('sends a request', function() {
-        this.newClient().getHostList(()=>{});
+        this.newClient();
+        this.triggerServerConnected();
+        this.client.getHostList(()=>{});
         expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
           type: 'LIST',
         }));
@@ -121,7 +125,9 @@ describe('nexusClient.js', function() {
 
       it('calls the callback when we get the list', function() {
         const callback = newSpy('onHostList');
-        this.newClient().getHostList(callback);
+        this.newClient();
+        this.triggerServerConnected();
+        this.client.getHostList(callback);
 
         this.triggerHostList();
 
@@ -133,7 +139,9 @@ describe('nexusClient.js', function() {
       it('sends a connection request', function() {
         const hostName = 'blah';
         const hostID = 6;
-        this.newClient().connect({hostName, hostID});
+        this.newClient();
+        this.triggerServerConnected();
+        this.client.connect({hostName, hostID});
         expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
           type: 'CONNECT',
           hostName,
@@ -145,7 +153,9 @@ describe('nexusClient.js', function() {
         const callback = newSpy('onConnect');
         const hostName = 'blah';
         const hostID = 6;
-        this.newClient().connect({hostName, hostID}, callback);
+        this.newClient();
+        this.triggerServerConnected();
+        this.client.connect({hostName, hostID}, callback);
 
         this.triggerHostConnected();
 
@@ -156,14 +166,18 @@ describe('nexusClient.js', function() {
     describe('#send()', function() {
       it('throws an error', function() {
         expect(()=>{
-          this.newClient().send('do thing');
+          this.newClient();
+          this.triggerServerConnected();
+          this.client.send('do thing');
         }).toThrow(Error('Must be connected to a host before you send anything'));
       });
     });
 
     describe('#close()', function() {
       it('calls close on the socket', function() {
-        this.newClient().close();
+        this.newClient();
+        this.triggerServerConnected();
+        this.client.close();
         expect(this.ws.close).toHaveBeenCalled();
       });
     });
@@ -171,7 +185,9 @@ describe('nexusClient.js', function() {
     describe('.onMessage', function() {
       it('does not get called when receiving a hostList', function(){
         const onMessageSpy = newSpy('onMessage');
-        this.newClient().onMessage = onMessageSpy;
+        this.newClient();
+        this.client.onMessage = onMessageSpy;
+        this.triggerServerConnected();
         this.client.getHostList();
         this.triggerHostList();
         expect(onMessageSpy).not.toHaveBeenCalled();
@@ -179,7 +195,9 @@ describe('nexusClient.js', function() {
 
       it('does not get called when receiving a host connected confirmation', function(){
         const onMessageSpy = newSpy('onMessage');
-        this.newClient().onMessage = onMessageSpy;
+        this.newClient();
+        this.client.onMessage = onMessageSpy;
+        this.triggerServerConnected();
         this.client.connect(this.defaultHost);
         this.triggerHostConnected();
         expect(onMessageSpy).not.toHaveBeenCalled();
@@ -236,6 +254,17 @@ describe('nexusClient.js', function() {
         const msg = '{"name":"value"}';
         this.triggerMessage(msg);
         expect(onMessageSpy).toHaveBeenCalledWith(msg);
+      });
+    });
+
+    describe('.onServerConnect', function() {
+      it('does not get called', function() {
+        const spy = newSpy('onServerConnect')
+        this.newConnectingClient();
+        this.triggerHostConnected();
+        this.client.onServerConnect = spy;
+        this.triggerServerConnected(); // host sends similar message
+        expect(spy).not.toHaveBeenCalled();
       });
     });
   });
