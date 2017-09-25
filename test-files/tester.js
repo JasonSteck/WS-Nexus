@@ -10,6 +10,7 @@
     afterEachChain: [],
     focused: { ref: true },
     its: [],
+    fits: [],
     describes: [],
     contexts: [],
   };
@@ -32,6 +33,12 @@
   window.it = (str, func) => {
     if(typeof func !== 'function') throw new Error(`Missing function in 'it' block of "${str}"`);
     currentContext.its.push([str, func]);
+  };
+
+  window.fit = (str, func) => {
+    if(typeof func !== 'function') throw new Error(`Missing function in 'it' block of "${str}"`);
+    currentContext.focused.ref = false;
+    currentContext.fits.push([str, func]);
   };
 
   window.afterEach = (func) => {
@@ -384,6 +391,7 @@
         afterEachChain: context.afterEachChain.slice(0),
         focused: desc[2]? { ref: true } : prevContext.focused,
         its: [],
+        fits: [],
         describes: [],
         contexts: [],
       };
@@ -399,26 +407,30 @@
   function runContext(context) {
     currentContext = context; // this is, in fact, used elsewhere
     if(context.focused.ref) { // if our context is focused
-      context.its.forEach(test => {
-        let obj = {};
-        currentTestResult = new TestResultClass(test);
-        context.beforeEachChain.forEach(be => be.call(obj));
-        test[1].call(obj);
-        context.afterEachChain.forEach(ae => ae.call(obj));
-        results.addResult(currentTestResult);
-        currentTestResult = null;
-
-        spies.forEach(s => {
-          if(s.object) {
-            s.object[s.methodName] = s.originalFunc;
-          } else {
-            // This is a detached spy
-          }
-        });
-        spies = [];
-      });
+      context.its.forEach(runTest);
     }
+    context.fits.forEach(runTest);
+
     context.contexts.forEach(runContext)
+  }
+
+  function runTest(test) {
+    let obj = {};
+    currentTestResult = new TestResultClass(test);
+    currentContext.beforeEachChain.forEach(be => be.call(obj));
+    test[1].call(obj);
+    currentContext.afterEachChain.forEach(ae => ae.call(obj));
+    results.addResult(currentTestResult);
+    currentTestResult = null;
+
+    spies.forEach(s => {
+      if(s.object) {
+        s.object[s.methodName] = s.originalFunc;
+      } else {
+        // This is a detached spy
+      }
+    });
+    spies = [];
   }
 
   window.runSpecs = (debug) => {
@@ -456,4 +468,3 @@
     return results;
   };
 })();
-
