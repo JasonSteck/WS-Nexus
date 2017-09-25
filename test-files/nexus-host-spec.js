@@ -106,6 +106,8 @@ describe('nexus-host.js', function() {
       this.stubWebSocket();
       this.newHost().onError = null;
 
+      let err = {data:'err'}; // simulate error
+
       expect(()=>this.ws.onerror(err)).not.toThrow();
     });
   });
