@@ -17,6 +17,8 @@
   /* should only be used during parse stage  */
   let currentContext = topContext;
 
+  window.xdescribe = () => {};
+
   window.describe = (str, func) => {
     currentContext.describes.push([str, func, false]);
   };
@@ -29,6 +31,8 @@
   window.beforeEach = (func) => {
     currentContext.beforeEachChain.push(func);
   };
+
+  window.xit = () => {};
 
   window.it = (str, func) => {
     if(typeof func !== 'function') throw new Error(`Missing function in 'it' block of "${str}"`);
