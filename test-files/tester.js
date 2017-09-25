@@ -8,16 +8,22 @@
     descriptionChain: [],
     beforeEachChain: [],
     afterEachChain: [],
+    focused: { ref: true },
     its: [],
     describes: [],
     contexts: [],
   };
-  /*  during setup  */
+  /* should only be used during parse stage  */
   let currentContext = topContext;
 
   window.describe = (str, func) => {
-    currentContext.describes.push([str, func]);
+    currentContext.describes.push([str, func, false]);
   };
+
+  window.fdescribe = (str, func) => {
+    currentContext.focused.ref = false;
+    currentContext.describes.push([str, func, true]);
+  }
 
   window.beforeEach = (func) => {
     currentContext.beforeEachChain.push(func);
@@ -89,7 +95,6 @@
 
     return errorLines.slice(5,6).join('\n'); //fallback
   }
-  window.err = getErrorStack;
 
   function failWithConsole(msg) {
     currentTestResult.failExpectation(msg, getErrorStack());
@@ -365,7 +370,7 @@
   }
 
   function consoleFailMessage(msg) {
-    console.log('%c Failure:', 'color: red; font-weight: bold;');
+    console.log('%cFailure:', 'color: red; font-weight: bold;');
     console.log(msg);
   }
 
@@ -377,6 +382,7 @@
         descriptionChain: context.descriptionChain.slice(0),
         beforeEachChain: context.beforeEachChain.slice(0),
         afterEachChain: context.afterEachChain.slice(0),
+        focused: desc[2]? { ref: true } : prevContext.focused,
         its: [],
         describes: [],
         contexts: [],
@@ -391,25 +397,27 @@
   }
 
   function runContext(context) {
-    currentContext = context;
-    context.its.forEach(test => {
-      let obj = {};
-      currentTestResult = new TestResultClass(test);
-      context.beforeEachChain.forEach(be => be.call(obj));
-      test[1].call(obj);
-      context.afterEachChain.forEach(ae => ae.call(obj));
-      results.addResult(currentTestResult);
-      currentTestResult = null;
+    currentContext = context; // this is, in fact, used elsewhere
+    if(context.focused.ref) { // if our context is focused
+      context.its.forEach(test => {
+        let obj = {};
+        currentTestResult = new TestResultClass(test);
+        context.beforeEachChain.forEach(be => be.call(obj));
+        test[1].call(obj);
+        context.afterEachChain.forEach(ae => ae.call(obj));
+        results.addResult(currentTestResult);
+        currentTestResult = null;
 
-      spies.forEach(s => {
-        if(s.object) {
-          s.object[s.methodName] = s.originalFunc;
-        } else {
-          // This is a detached spy
-        }
+        spies.forEach(s => {
+          if(s.object) {
+            s.object[s.methodName] = s.originalFunc;
+          } else {
+            // This is a detached spy
+          }
+        });
+        spies = [];
       });
-      spies = [];
-    });
+    }
     context.contexts.forEach(runContext)
   }
 
