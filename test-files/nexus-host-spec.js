@@ -1,6 +1,3 @@
-_WebSocket = window.WebSocket;
-window.WebSocket = ()=>{ throw Error('WebSocket was called without being stubbed') };
-
 describe('nexus-host.js', function() {
   const defaultNexusServer = 'ws://localhost:3000';
   const defaultHostName = 'myHostName';
