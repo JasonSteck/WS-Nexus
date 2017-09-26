@@ -1,0 +1,19 @@
+{
+  "name": "js-nexus",
+  "version": "1.0.0",
+  "description": "Facilitates a client/server model between browsers accross the internet",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JasonSteck/JS-Nexus.git"
+  },
+  "author": "Jason Steck",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JasonSteck/JS-Nexus/issues"
+  },
+  "homepage": "https://github.com/JasonSteck/JS-Nexus#readme"
+}
