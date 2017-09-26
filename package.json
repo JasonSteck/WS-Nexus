@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/JasonSteck/JS-Nexus/issues"
   },
-  "homepage": "https://github.com/JasonSteck/JS-Nexus#readme"
+  "homepage": "https://github.com/JasonSteck/JS-Nexus#readme",
+  "dependencies": {
+    "ws": "^3.2.0"
+  }
 }
