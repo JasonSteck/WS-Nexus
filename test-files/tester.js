@@ -437,8 +437,8 @@
     spies = [];
   }
 
-  window.runSpecs = (debug) => {
-    debugMode = debug;
+  window.runSpecs = (options) => {
+    debugMode = options.debug;
     results = new ResultsClass();
     // parse specs
     parseContext(topContext);
