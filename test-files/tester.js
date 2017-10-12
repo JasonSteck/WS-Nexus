@@ -14,8 +14,10 @@
     describes: [],
     contexts: [],
   };
-  /* should only be used during parse stage  */
+
   let currentContext = topContext;
+
+  /* should only be used during parse stage  */
 
   window.xdescribe = () => {};
 
@@ -36,13 +38,33 @@
 
   window.it = (str, func) => {
     if(typeof func !== 'function') throw new Error(`Missing function in 'it' block of "${str}"`);
-    currentContext.its.push([str, func]);
+    currentContext.its.push([str, func, {}]);
   };
 
   window.fit = (str, func) => {
-    if(typeof func !== 'function') throw new Error(`Missing function in 'it' block of "${str}"`);
     currentContext.focused.ref = false;
-    currentContext.fits.push([str, func]);
+    return window.it(str, func);
+  };
+
+  window.xwait = () => {};
+
+  window.wait = (str, func) => {
+    if(typeof func !== 'function') throw new Error(`Missing function in 'wait' block of "${str}"`);
+    const doneChain = [];
+    currentContext.its.push([str, func, {
+      async: true,
+      doneChain,
+    }]);
+    return {
+      then: onDone => {
+        doneChain.push(onDone);
+      }
+    }
+  };
+
+  window.fwait = (str, func) => {
+    currentContext.focused.ref = false;
+    return window.wait(str, func);
   };
 
   window.afterEach = (func) => {
@@ -91,7 +113,7 @@
   let currentTestResult = null;
 
   function getFileNameFromErrorLine(line) {
-    return line.match(/\((.*):\d+:\d+\)/)[1];
+    return line.match(/(file:.*):\d+:\d+/)[1];
   }
 
   function getErrorStack() {
@@ -419,22 +441,41 @@
   }
 
   function runTest(test) {
-    let obj = {};
-    currentTestResult = new TestResultClass(test);
+    const obj = {}; // new object context for each test
+    const testContext = currentContext;
+    const testResult = currentTestResult = new TestResultClass(test);
+    const testSpies = spies;
     currentContext.beforeEachChain.forEach(be => be.call(obj));
-    test[1].call(obj);
-    currentContext.afterEachChain.forEach(ae => ae.call(obj));
-    results.addResult(currentTestResult);
-    currentTestResult = null;
 
-    spies.forEach(s => {
-      if(s.object) {
-        s.object[s.methodName] = s.originalFunc;
-      } else {
-        // This is a detached spy
-      }
-    });
-    spies = [];
+    if(test[2].async) {
+      test[1].call(obj, ()=>{
+        // Restore framework context
+        currentContext = testContext;
+        currentTestResult = testResult;
+        spies = testSpies;
+
+        test[2].doneChain.forEach(then=>then());
+        postTest();
+      });
+    } else {
+      test[1].call(obj);
+      postTest();
+    }
+
+    function postTest() {
+      currentContext.afterEachChain.forEach(ae => ae.call(obj));
+      results.addResult(currentTestResult);
+      currentTestResult = null;
+
+      spies.forEach(s => {
+        if(s.object) {
+          s.object[s.methodName] = s.originalFunc;
+        } else {
+          // This is a detached spy
+        }
+      });
+      spies = [];
+    }
   }
 
   window.runSpecs = (options) => {

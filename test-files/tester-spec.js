@@ -296,3 +296,13 @@ describe('stub(obj)', function() {
     });
   });
 });
+
+//===================== Async Tests =====================//
+
+describe('An async test', function() {
+  wait('can pass after the fact', function(done) {
+    setTimeout(done, 10);
+  }).then(function() {
+    expect(true).toBe(true);
+  });
+});
