@@ -36,25 +36,27 @@
 
   window.xit = () => {};
 
-  window.it = (str, func) => {
-    if(typeof func !== 'function') throw new Error(`Missing function in 'it' block of "${str}"`);
-    currentContext.its.push([str, func, {}]);
+  window.it = (name, func) => {
+    if(typeof func !== 'function') throw new Error(`Missing function in 'it' block of "${name}"`);
+    currentContext.its.push({ name, func });
   };
 
-  window.fit = (str, func) => {
+  window.fit = (name, func) => {
     currentContext.focused.ref = false;
-    return window.it(str, func);
+    return window.it(name, func);
   };
 
   window.xwait = () => {};
 
-  window.wait = (str, func) => {
-    if(typeof func !== 'function') throw new Error(`Missing function in 'wait' block of "${str}"`);
+  window.wait = (name, func) => {
+    if(typeof func !== 'function') throw new Error(`Missing function in 'wait' block of "${name}"`);
     const doneChain = [];
-    currentContext.its.push([str, func, {
+    currentContext.its.push({
+      name,
+      func,
       async: true,
       doneChain,
-    }]);
+    });
     return {
       then: onDone => {
         doneChain.push(onDone);
@@ -97,7 +99,7 @@
     this.failReasons = [];
 
     this.testPath = currentContext.descriptionChain.slice(0);
-    this.testPath.push(test[0]);
+    this.testPath.push(test.name);
   }
   TestResultClass.prototype.failExpectation = function(reason, stack){
     this.result = FAIL;
@@ -447,18 +449,18 @@
     const testSpies = spies;
     currentContext.beforeEachChain.forEach(be => be.call(obj));
 
-    if(test[2].async) {
-      test[1].call(obj, ()=>{
+    if(test.async) {
+      test.func.call(obj, ()=>{
         // Restore framework context
         currentContext = testContext;
         currentTestResult = testResult;
         spies = testSpies;
 
-        test[2].doneChain.forEach(then=>then());
+        test.doneChain.forEach(then=>then());
         postTest();
       });
     } else {
-      test[1].call(obj);
+      test.func.call(obj);
       postTest();
     }
 
@@ -506,7 +508,7 @@
     }
     if(results.noExpectations.length > 0) {
       results.noExpectations.forEach(result => {
-        console.warn('No Expectations in: \n%s', indentLines(result.testPath).join('\n'), result.test[1]);
+        console.warn('No Expectations in: \n%s', indentLines(result.testPath).join('\n'), result.test.func);
       });
     }
 
