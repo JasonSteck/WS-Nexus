@@ -134,6 +134,9 @@
       this.result = PASS;
     }
   };
+  TestResultClass.prototype.didPass = function() {
+    return this.result === PASS
+  };
 
   let results = null;
   let currentTestResult = null;
@@ -493,6 +496,9 @@
   function _postTest(objContext) {
     // framework context should already be restored, if needed
     currentContext.afterEachChain.forEach(ae => ae.call(objContext));
+    if(currentTestResult.didPass()) {
+      console.log('Passed: %s', currentTestResult.testPath.join(' '));
+    }
     currentTestResult.done();
     currentTestResult = null;
 
@@ -519,9 +525,6 @@
       let failCount = results.failed.length;
       console.log('\nTests Finished: %d Failure%s / %d Test%s', failCount, failCount===1?'':'s', total, totalPlural);
     } else {
-      results.all.forEach( result => {
-        console.log('Passed: %s', result.testPath.join(' '));
-      });
       console.log('\nTests Finished: %d Successes%s / %d Test%s', total, totalPlural, total, totalPlural);
     }
     if(results.noExpectations.length > 0) {
