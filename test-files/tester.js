@@ -2,7 +2,7 @@
 (function(){
   const PASS = 1;
   const FAIL = 0;
-  const NO_EXPECTATIONS = -1;
+  const NO_EXPECTATIONS = null;
 
   let topContext = {
     descriptionChain: [],
@@ -78,18 +78,31 @@
   let debugMode = false;
   let spies = [];
 
-  function ResultsClass() {
+  function ResultsClass(onAllDone) {
     this.all = [];
     this.failed = [];
     this.noExpectations = [];
+    this.doneCount = 0;
+    this.doneStarting = false;
+    this.onAllDone = onAllDone;
   }
-  ResultsClass.prototype.addResult = function (testResult){
+  ResultsClass.prototype.trackResult = function (testResult){
     this.all.push(testResult);
+    testResult.doneCallback(()=>this.recordResult(testResult))
+  };
+  ResultsClass.prototype.recordResult = function (testResult){
     if(testResult.result === FAIL) {
       this.failed.push(testResult);
     } else if(testResult.result === NO_EXPECTATIONS) {
       this.noExpectations.push(testResult);
     }
+    this.doneCount++;
+    if(this.doneStarting && this.doneCount >= this.all.length) {
+      this.onAllDone && this.onAllDone();
+    }
+  };
+  ResultsClass.prototype.doneStartingTests = function() {
+    this.doneStarting = true;
   };
 
   function TestResultClass(test) {
@@ -97,9 +110,20 @@
     this.test = test;
     this.result = NO_EXPECTATIONS;
     this.failReasons = [];
+    this.callbacks = [];
 
     this.testPath = currentContext.descriptionChain.slice(0);
     this.testPath.push(test.name);
+  }
+  TestResultClass.prototype.doneCallback = function(func) {
+    if(this.result !== NO_EXPECTATIONS) {
+      func(this.result, this.failReasons);
+    } else {
+      this.callbacks.push(func);
+    }
+  }
+  TestResultClass.prototype.done = function() {
+    this.callbacks.forEach(c=>c(this.result, this.failReasons));
   }
   TestResultClass.prototype.failExpectation = function(reason, stack){
     this.result = FAIL;
@@ -447,6 +471,7 @@
     const testContext = currentContext;
     const testResult = currentTestResult = new TestResultClass(test);
     const testSpies = spies;
+    results.trackResult(currentTestResult);
     currentContext.beforeEachChain.forEach(be => be.call(objContext));
 
     if(test.async) {
@@ -468,7 +493,7 @@
   function _postTest(objContext) {
     // framework context should already be restored, if needed
     currentContext.afterEachChain.forEach(ae => ae.call(objContext));
-    results.addResult(currentTestResult);
+    currentTestResult.done();
     currentTestResult = null;
 
     spies.forEach(s => {
@@ -481,15 +506,7 @@
     spies = [];
   }
 
-  window.runSpecs = (options) => {
-    debugMode = options.debug;
-    results = new ResultsClass();
-    // parse specs
-    parseContext(topContext);
-
-    // run specs
-    runContext(topContext);
-
+  function onAllDone() {
     let total = results.all.length;
     let totalPlural = total===1? '' : 's';
 
@@ -514,5 +531,19 @@
     }
 
     return results;
+  }
+
+  window.runSpecs = (options) => {
+    debugMode = options.debug;
+    results = new ResultsClass(onAllDone);
+    // parse specs
+    parseContext(topContext);
+
+    // run specs
+    runContext(topContext);
+
+    console.log('Waiting for Async Tests to Finish...');
+
+    results.doneStartingTests();
   };
 })();
