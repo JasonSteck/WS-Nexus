@@ -301,8 +301,12 @@ describe('stub(obj)', function() {
 
 describe('An async test', function() {
   wait('can pass after the fact', function(done) {
+    this.val = 5;
+    setTimeout(done, 10);
+  }).then(function(done) {
+    this.val++;
     setTimeout(done, 10);
   }).then(function() {
-    expect(true).toBe(true);
+    expect(this.val).toBe(6);
   });
 });

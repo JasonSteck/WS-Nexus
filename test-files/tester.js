@@ -57,11 +57,14 @@
       async: true,
       doneChain,
     });
-    return {
+
+    const tail = {
       then: onDone => {
         doneChain.push(onDone);
+        return tail;
       }
     }
+    return tail;
   };
 
   window.fwait = (str, func) => {
@@ -484,7 +487,7 @@
         currentTestResult = testResult;
         spies = testSpies;
 
-        test.doneChain.forEach(then=>then());
+        test.doneChain.forEach(then=>then.call(objContext));
         _postTest(objContext);
       });
     } else {
