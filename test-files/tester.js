@@ -434,50 +434,51 @@
 
   function runContext(context) {
     currentContext = context; // this is, in fact, used elsewhere
-    if(context.focused.ref) { // if our context is focused
-      context.its.forEach(runTest);
+    if(currentContext.focused.ref) { // if our context is focused
+      currentContext.its.forEach(runTest);
     }
-    context.fits.forEach(runTest);
+    currentContext.fits.forEach(runTest);
 
-    context.contexts.forEach(runContext)
+    currentContext.contexts.forEach(runContext)
   }
 
   function runTest(test) {
-    const obj = {}; // new object context for each test
+    const objContext = {}; // new object context for each test
     const testContext = currentContext;
     const testResult = currentTestResult = new TestResultClass(test);
     const testSpies = spies;
-    currentContext.beforeEachChain.forEach(be => be.call(obj));
+    currentContext.beforeEachChain.forEach(be => be.call(objContext));
 
     if(test.async) {
-      test.func.call(obj, ()=>{
+      test.func.call(objContext, ()=>{
         // Restore framework context
         currentContext = testContext;
         currentTestResult = testResult;
         spies = testSpies;
 
         test.doneChain.forEach(then=>then());
-        postTest();
+        _postTest(objContext);
       });
     } else {
-      test.func.call(obj);
-      postTest();
+      test.func.call(objContext);
+      _postTest(objContext);
     }
+  }
 
-    function postTest() {
-      currentContext.afterEachChain.forEach(ae => ae.call(obj));
-      results.addResult(currentTestResult);
-      currentTestResult = null;
+  function _postTest(objContext) {
+    // framework context should already be restored, if needed
+    currentContext.afterEachChain.forEach(ae => ae.call(objContext));
+    results.addResult(currentTestResult);
+    currentTestResult = null;
 
-      spies.forEach(s => {
-        if(s.object) {
-          s.object[s.methodName] = s.originalFunc;
-        } else {
-          // This is a detached spy
-        }
-      });
-      spies = [];
-    }
+    spies.forEach(s => {
+      if(s.object) {
+        s.object[s.methodName] = s.originalFunc;
+      } else {
+        // This is a detached spy
+      }
+    });
+    spies = [];
   }
 
   window.runSpecs = (options) => {
