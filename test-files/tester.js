@@ -89,6 +89,11 @@
     this.doneStarting = false;
     this.onAllDone = onAllDone;
   }
+  ResultsClass.prototype.finishIfDone = function() {
+    if(this.doneStarting && this.doneCount >= this.all.length) {
+      this.onAllDone && this.onAllDone();
+    }
+  }
   ResultsClass.prototype.trackResult = function (testResult){
     this.all.push(testResult);
     testResult.doneCallback(()=>this.recordResult(testResult))
@@ -100,12 +105,11 @@
       this.noExpectations.push(testResult);
     }
     this.doneCount++;
-    if(this.doneStarting && this.doneCount >= this.all.length) {
-      this.onAllDone && this.onAllDone();
-    }
+    this.finishIfDone();
   };
   ResultsClass.prototype.doneStartingTests = function() {
     this.doneStarting = true;
+    this.finishIfDone();
   };
 
   function TestResultClass(test) {
