@@ -82,7 +82,7 @@ describe('nexus-host.js', function() {
 
         expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
           type: 'HOST',
-          payload: defaultHostName,
+          hostName: defaultHostName,
         }));
       });
     });

@@ -2,12 +2,15 @@ function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
   if(!nexusServer) throw new Error('Missing nexusServer address');
   if(!hostName) throw new Error('Missing hostName');
   if(!disableDefaultCallbacks) this.setDefaultCallbacks();
+  this.name = hostName;
+  this.id = null;
+
   this._ws = new WebSocket(nexusServer);
 
   this._ws.onopen = () => {
     this._ws.send(JSON.stringify({
       type: 'HOST',
-      payload: hostName,
+      hostName: hostName,
     }));
   };
 
@@ -27,8 +30,11 @@ function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
         this.onClientLost && this.onClientLost(req.payload); // TODO change to req.clientID
         break;
       case 'REGISTERED':
+        this.id = req.hostID;
         this.onRegistered && this.onRegistered(req.hostID);
         break;
+      default:
+        console.warn('Host #%s:"%s" could not parse type of response:', this.id, this.name, req);
     }
   };
 
