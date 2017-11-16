@@ -46,7 +46,14 @@
     return window.it(name, func);
   };
 
-  window.xwait = () => {};
+  window.xwait = () => {
+    const tail = {
+      then: () => {
+        return tail;
+      }
+    };
+    return tail;
+  };
 
   window.wait = (name, func) => {
     if(typeof func !== 'function') throw new Error(`Missing function in 'wait' block of "${name}"`);
@@ -63,7 +70,7 @@
         doneChain.push(onDone);
         return tail;
       }
-    }
+    };
     return tail;
   };
 
