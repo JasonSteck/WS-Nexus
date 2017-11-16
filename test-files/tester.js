@@ -16,6 +16,8 @@
   };
 
   let currentContext = topContext;
+  let currentTest = null;
+  let spies = [];
 
   /* should only be used during parse stage  */
 
@@ -85,8 +87,8 @@
 
 
   /*  during tests  */
+  let runningTests = false;
   let debugMode = false;
-  let spies = [];
 
   function ResultsClass(onAllDone) {
     this.all = [];
@@ -153,7 +155,6 @@
   };
 
   let results = null;
-  let currentTestResult = null;
 
   function getFileNameFromErrorLine(line) {
     return line.match(/(file:.*):\d+:\d+/)[1];
@@ -173,9 +174,9 @@
   }
 
   function failWithConsole(msg) {
-    currentTestResult.failExpectation(msg, getErrorStack());
+    currentTest.result.failExpectation(msg, getErrorStack());
     if(debugMode){
-      consoleFailMessage(failMessage(currentTestResult));
+      consoleFailMessage(failMessage(currentTest.result));
       return true;
     }
     return false;
@@ -227,13 +228,13 @@
 
   function toEqual(actual, expected, not) {
     if(isEqual(actual,expected) ^ not){
-      currentTestResult.passExpectation();
+      currentTest.result.passExpectation();
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
-      currentTestResult.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorStack());
+      currentTest.result.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorStack());
       if (debugMode) {
-        consoleFailMessage(failMessage(currentTestResult));
+        consoleFailMessage(failMessage(currentTest.result));
         debugger;
       }
     }
@@ -241,7 +242,7 @@
 
   function toExist(actual, not) {
     if((actual != null) ^ not) {
-      currentTestResult.passExpectation();
+      currentTest.result.passExpectation();
     } else {
       let notStr = not? 'not ' : '';
       if(failWithConsole(`Expected "${actual}" \nto ${notStr}exist`))
@@ -251,13 +252,13 @@
 
   function toBe(actual, expected, not) {
     if((actual === expected) ^ not){
-      currentTestResult.passExpectation();
+      currentTest.result.passExpectation();
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
-      currentTestResult.failExpectation(`Expected "${a}" \n   to be ${b}`, getErrorStack());
+      currentTest.result.failExpectation(`Expected "${a}" \n   to be ${b}`, getErrorStack());
       if(debugMode){
-        consoleFailMessage(failMessage(currentTestResult));
+        consoleFailMessage(failMessage(currentTest.result));
         debugger;
       }
     }
@@ -289,11 +290,11 @@
         if(failWithConsole(`Expected ${actual} \nnot to throw ${exceptionStr}\n but it did`))
           debugger;
       } else {
-        currentTestResult.passExpectation();
+        currentTest.result.passExpectation();
       }
     } else {
       if(correctlyThrew) {
-        currentTestResult.passExpectation();
+        currentTest.result.passExpectation();
       } else if(threw) {
         let notString = not?'not':'';
         if(failWithConsole(`Expected ${actual} \n${notString}to throw ${exceptionStr}\n but got "${error}"`))
@@ -316,7 +317,7 @@
     }
 
     if((actual.calls.length > 0) ^ not) {
-      currentTestResult.passExpectation();
+      currentTest.result.passExpectation();
     } else {
       if(failWithConsole(`Expected "${actual.methodName}" \nto have been called, but it wasn't`))
         debugger;
@@ -342,7 +343,7 @@
     }
     
     if(found ^ not) {
-      currentTestResult.passExpectation();
+      currentTest.result.passExpectation();
     } else {
       if(found) {
         if(failWithConsole(`Expected "${actual.methodName}" \nto not have been called with "${expected}" but actual calls were:\n${actual.calls.join('\n')}`))
@@ -474,47 +475,52 @@
   }
 
   function runContext(context) {
+    runningTests = true;
     currentContext = context; // this is, in fact, used elsewhere
     if(currentContext.focused.ref) { // if our context is focused
       currentContext.its.forEach(runTest);
     }
     currentContext.fits.forEach(runTest);
 
-    currentContext.contexts.forEach(runContext)
+    currentContext.contexts.forEach(runContext);
+    runningTests = false;
   }
 
-  function runTest(test) {
-    const objContext = {}; // new object context for each test
-    const testContext = currentContext;
-    const testResult = currentTestResult = new TestResultClass(test);
-    const testSpies = spies;
-    results.trackResult(currentTestResult);
-    currentContext.beforeEachChain.forEach(be => be.call(objContext));
+  function runTest(testDefinition) {
+    const test = currentTest = {
+      objContext: {}, // new object context for each test
+      context: currentContext,
+      definition: testDefinition,
+      result: new TestResultClass(testDefinition),
+      spies: spies,
+    };
+    results.trackResult(test.result);
 
-    if(test.async) {
-      test.func.call(objContext, ()=>{
+    currentContext.beforeEachChain.forEach(be => be.call(test.objContext));
+
+    if(testDefinition.async) {
+      testDefinition.func.call(test.objContext, ()=>{
         // Restore framework context
-        currentContext = testContext;
-        currentTestResult = testResult;
-        spies = testSpies;
+        currentTest = test;
+        currentContext = test.context;
+        spies = test.spies;
 
-        test.doneChain.forEach(then=>then.call(objContext));
-        _postTest(objContext);
+        testDefinition.doneChain.forEach(then=>then.call(test.objContext));
+        _postTest(test.objContext);
       });
     } else {
-      test.func.call(objContext);
-      _postTest(objContext);
+      testDefinition.func.call(test.objContext);
+      _postTest(test.objContext);
     }
   }
 
   function _postTest(objContext) {
     // framework context should already be restored, if needed
     currentContext.afterEachChain.forEach(ae => ae.call(objContext));
-    if(currentTestResult.didPass()) {
-      console.log('Passed: %s', currentTestResult.testPath.join(' '));
+    if(currentTest.result.didPass()) {
+      console.log('Passed: %s', currentTest.result.testPath.join(' '));
     }
-    currentTestResult.done();
-    currentTestResult = null;
+    currentTest.result.done();
 
     spies.forEach(s => {
       if(s.object) {
