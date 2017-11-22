@@ -65,7 +65,7 @@
       test.timeLine.stoppers.add(snippet);
       return () => {
         currentTest = test;
-        callback.call(currentTest.objContext);
+        callback && callback.call(currentTest.objContext);
         test.timeLine.stoppers.remove(snippet);
       };
     }

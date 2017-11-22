@@ -299,7 +299,7 @@ describe('stub(obj)', function() {
 
 //===================== Async Tests =====================//
 
-fdescribe('using "then"s', function() {
+describe('using "then"s', function() {
   const delay = 10;
 
   describe('when you have a beforeEach and afterEach', function() {
@@ -345,11 +345,14 @@ fdescribe('using "then"s', function() {
 
         setTimeout(then(function() {
           this.cash++;
-        }), delay);
+        }), delay*3);
       }), delay);
 
       // should not be blocking:
       ()=>{ then(function(){this.cash = 0}) }
+
+      // doesn't require a callback
+      setTimeout(then(), delay*5);
     });
 
     it('waits for all loaded "then"s to finish', function() {
