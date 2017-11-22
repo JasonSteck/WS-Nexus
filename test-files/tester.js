@@ -48,39 +48,6 @@
     return window.it(name, func);
   };
 
-  window.xwait = () => {
-    const tail = {
-      then: () => {
-        return tail;
-      }
-    };
-    return tail;
-  };
-
-  window.wait = (name, func) => {
-    if(typeof func !== 'function') throw new Error(`Missing function in 'wait' block of "${name}"`);
-    const doneChain = [];
-    currentContext.its.push({
-      name,
-      func,
-      async: true,
-      doneChain,
-    });
-
-    const tail = {
-      then: onDone => {
-        doneChain.push(onDone);
-        return tail;
-      }
-    };
-    return tail;
-  };
-
-  window.fwait = (str, func) => {
-    currentContext.focused.ref = false;
-    return window.wait(str, func);
-  };
-
   window.afterEach = (func) => {
     currentContext.afterEachChain.unshift(func);
   };
@@ -89,6 +56,31 @@
   /*  during tests  */
   let runningTests = false;
   let debugMode = false;
+
+  // Used to implement async actions during tests
+  window.then = (callback) => {
+    if(runningTests) {
+      const test = currentTest;
+      const snippet = {};
+      test.timeLine.stoppers.add(snippet);
+      return () => {
+        currentTest = test;
+        callback.call(currentTest.objContext);
+        test.timeLine.stoppers.remove(snippet);
+      };
+    }
+    console.error(new Error("Cannot use 'then()' outside of test blocks!"));
+    return ()=>{};
+  }
+
+  function Test(currentContext, testDefinition, spies) {
+    this.objContext = {}; // new object context for each test
+    this.context = currentContext;
+    this.definition = testDefinition;
+    this.result = new TestResultClass(testDefinition);
+    this.spies = spies; // TODO get spies to work with pended/restored test contexts
+    this.timeLine = new TimeLine(this);
+  }
 
   function ResultsClass(onAllDone) {
     this.all = [];
@@ -153,6 +145,93 @@
   TestResultClass.prototype.didPass = function() {
     return this.result === PASS
   };
+
+  /* After it begins receiving "then" blocks, it will stop working and
+   * notify listeners when its list has been emptied.
+   */
+  function TimeStoppers() {
+    this.isDead = false;
+    this.blocks = [];
+    this.callbacks = []; // Yeah, this could be done with Promises
+  }
+
+  TimeStoppers.prototype.clear = function() {
+    if(this.blocks.length) throw new Error("Cannot clear timeLine! Something is weird!");
+    this.isDead = false;
+  }
+
+  TimeStoppers.prototype.whenDone = function(callback) {
+    if(this.isDead) {
+      throw new Error('Cannot start "then()" after the section is done!');
+    }
+
+    this.callbacks.push(callback);
+    this._checkDone();
+  }
+
+  TimeStoppers.prototype.add = function(block) {
+    if(this.isDead) {
+      throw new Error('Cannot start "then()" after the section is done!');
+    }
+    this.blocks.push(block);
+  }
+
+  TimeStoppers.prototype.remove = function(block) {
+    if(this.isDead) {
+      throw new Error('Cannot start "then()" after the section is done!');
+    }
+    const index = this.blocks.indexOf(block);
+    if(index<0) {
+      throw new Error('Cannot find "then()" block in list! Something weird is happening!');
+    }
+    this.blocks.splice(index,1);
+    this._checkDone();
+  }
+
+  TimeStoppers.prototype._checkDone = function() {
+    if(!this.blocks.length) {
+      this.isDead = true;
+      const toCall = this.callbacks;
+      this.callbacks = [];
+      toCall.forEach(c => c());
+    }
+  }
+
+  /* Manages when each block of code in a series gets run. Using the 'then()'
+   * command inside a block will make the series wait until
+   * all of the Then callback have finished.
+   */
+  function TimeLine(test) {
+    this.test = test;
+    this.i = 0;
+    this.series = [];
+    this.callback = [];
+    this.stoppers = new TimeStoppers();
+  }
+
+  TimeLine.prototype.run = function(series, callback) {
+    if(this.i !== 0) throw new Error('Cannot have two TimeLines running in a test! Something is weird!');
+    this.series = series;
+    this.callback = callback;
+    this._runNextBlock();
+  }
+
+  TimeLine.prototype._runNextBlock = function() {
+//     debugger
+    currentContext = this.test.context;
+    currentTest = this.test;
+    if(this.i >= this.series.length) {
+      this.i = 0;
+      this.callback();
+    } else {
+      const block = this.series[this.i++];
+      this.stoppers.clear();
+      block.call(this.test.objContext);
+      this.stoppers.whenDone(()=>{
+        this._runNextBlock();
+      });
+    }
+  }
 
   let results = null;
 
@@ -475,7 +554,6 @@
   }
 
   function runContext(context) {
-    runningTests = true;
     currentContext = context; // this is, in fact, used elsewhere
     if(currentContext.focused.ref) { // if our context is focused
       currentContext.its.forEach(runTest);
@@ -483,40 +561,26 @@
     currentContext.fits.forEach(runTest);
 
     currentContext.contexts.forEach(runContext);
-    runningTests = false;
   }
 
   function runTest(testDefinition) {
-    const test = currentTest = {
-      objContext: {}, // new object context for each test
-      context: currentContext,
-      definition: testDefinition,
-      result: new TestResultClass(testDefinition),
-      spies: spies,
-    };
+    const test = currentTest = new Test(currentContext, testDefinition, spies)
+
     results.trackResult(test.result);
 
-    currentContext.beforeEachChain.forEach(be => be.call(test.objContext));
+    const allBlocks = [
+      ...currentContext.beforeEachChain,
+      testDefinition.func,
+      ...currentContext.afterEachChain,
+    ];
 
-    if(testDefinition.async) {
-      testDefinition.func.call(test.objContext, ()=>{
-        // Restore framework context
-        currentTest = test;
-        currentContext = test.context;
-        spies = test.spies;
-
-        testDefinition.doneChain.forEach(then=>then.call(test.objContext));
-        _postTest(test.objContext);
-      });
-    } else {
-      testDefinition.func.call(test.objContext);
+    test.timeLine.run(allBlocks, function () {
       _postTest(test.objContext);
-    }
+    });
   }
 
   function _postTest(objContext) {
     // framework context should already be restored, if needed
-    currentContext.afterEachChain.forEach(ae => ae.call(objContext));
     if(currentTest.result.didPass()) {
       console.log('Passed: %s', currentTest.result.testPath.join(' '));
     }
@@ -533,6 +597,8 @@
   }
 
   function onAllDone() {
+    runningTests = false;
+
     let total = results.all.length;
     let totalPlural = total===1? '' : 's';
 
@@ -563,6 +629,7 @@
     parseContext(topContext);
 
     // run specs
+    runningTests = true;
     runContext(topContext);
 
     console.log('Waiting for Async Tests to Finish...');

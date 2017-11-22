@@ -299,14 +299,61 @@ describe('stub(obj)', function() {
 
 //===================== Async Tests =====================//
 
-describe('An async test', function() {
-  wait('can pass after the fact', function(done) {
-    this.val = 5;
-    setTimeout(done, 10);
-  }).then(function(done) {
-    this.val++;
-    setTimeout(done, 10);
-  }).then(function() {
-    expect(this.val).toBe(6);
+fdescribe('using "then"s', function() {
+  const delay = 10;
+
+  describe('when you have a beforeEach and afterEach', function() {
+    beforeEach(function() {
+      this.val = 1;
+      setTimeout(then(function(){
+        this.val++;
+      }), delay);
+    });
+
+    it('each "then" blocks the chain of execution', function() {
+      expect(this.val).toBe(2);
+      setTimeout(then(function(){
+        this.val++;
+      }), delay);
+    });
+
+    it('does not spill over into other "it" blocks', function() {
+      expect(this.val).toBe(2);
+      setTimeout(then(function(){
+        this.val++;
+      }), delay);
+    });
+
+    afterEach(function() {
+      expect(this.val).toBe(3);
+      setTimeout(then(function(){
+        this.val++;
+        expect(this.val).toBe(4);
+      }), delay);
+    });
+  });
+
+  describe('when you have nested "then"s', function() {
+    beforeEach(function() {
+      this.cash = 5;
+
+      setTimeout(then(function() {
+        this.cash++;
+        setTimeout(then(function() {
+          this.cash++;
+        }), delay);
+
+        setTimeout(then(function() {
+          this.cash++;
+        }), delay);
+      }), delay);
+
+      // should not be blocking:
+      ()=>{ then(function(){this.cash = 0}) }
+    });
+
+    it('waits for all loaded "then"s to finish', function() {
+      expect(this.cash).toBe(8);
+    });
   });
 });
