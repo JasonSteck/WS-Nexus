@@ -10,7 +10,6 @@
     afterEachChain: [],
     focused: { ref: true },
     its: [],
-    fits: [],
     describes: [],
     contexts: [],
   };
@@ -65,6 +64,7 @@
       test.timeLine.stoppers.add(snippet);
       return () => {
         currentTest = test;
+        currentContext = test.context;
         callback && callback.call(currentTest.objContext);
         test.timeLine.stoppers.remove(snippet);
       };
@@ -162,7 +162,7 @@
 
   TimeStoppers.prototype.whenDone = function(callback) {
     if(this.isDead) {
-      throw new Error('Cannot start "then()" after the section is done!');
+      throw new Error('Cannot register callback after the section is done!');
     }
 
     this.callbacks.push(callback);
@@ -199,7 +199,7 @@
 
   /* Manages when each block of code in a series gets run. Using the 'then()'
    * command inside a block will make the series wait until
-   * all of the Then callback have finished.
+   * all of the Then callbacks have finished.
    */
   function TimeLine(test) {
     this.test = test;
@@ -540,7 +540,6 @@
         afterEachChain: context.afterEachChain.slice(0),
         focused: desc[2]? { ref: true } : prevContext.focused,
         its: [],
-        fits: [],
         describes: [],
         contexts: [],
       };
