@@ -557,7 +557,6 @@
     if(currentContext.focused.ref) { // if our context is focused
       currentContext.its.forEach(runTest);
     }
-    currentContext.fits.forEach(runTest);
 
     currentContext.contexts.forEach(runContext);
   }
