@@ -336,27 +336,24 @@ describe('using "then"s', function() {
   describe('when you have nested "then"s', function() {
     beforeEach(function() {
       this.cash = 5;
+      const asyncAddOne = (delay)=>setTimeout(then(()=>this.cash++), delay);
 
       setTimeout(then(function() {
         this.cash++;
-        setTimeout(then(function() {
-          this.cash++;
-        }), delay);
-
-        setTimeout(then(function() {
-          this.cash++;
-        }), delay*3);
+        asyncAddOne(delay*2);
+        asyncAddOne(delay);
+        asyncAddOne(delay*2);
       }), delay);
 
       // should not be blocking:
       ()=>{ then(function(){this.cash = 0}) }
 
       // doesn't require a callback
-      setTimeout(then(), delay*5);
+      setTimeout(then(), delay);
     });
 
     it('waits for all loaded "then"s to finish', function() {
-      expect(this.cash).toBe(8);
+      expect(this.cash).toBe(9);
     });
   });
 });
