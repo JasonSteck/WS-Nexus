@@ -1,5 +1,9 @@
 // Custom test suite (without webpack) by Jason Steck
 (function(){
+  // Steal references so spies don't interfere
+  const setTimeout = window.setTimeout;
+  const clearTimeout = window.clearTimeout;
+
   const PASS = 1;
   const FAIL = 0;
   const NO_EXPECTATIONS = null;
@@ -56,11 +60,16 @@
   let runningTests = false;
   let debugMode = false;
 
+  function Then(test) {
+    this.test = test;
+    this.location = getErrorLocation();
+  }
+
   // Used to implement async actions during tests
   window.then = (callback) => {
     if(runningTests) {
       const test = currentTest;
-      const snippet = {};
+      const snippet = new Then(test);
       test.timeLine.stoppers.add(snippet);
       return () => {
         currentTest = test;
@@ -71,7 +80,7 @@
     }
     console.error(new Error("Cannot use 'then()' outside of test blocks!"));
     return ()=>{};
-  }
+  };
 
   function Test(currentContext, testDefinition, spies) {
     this.objContext = {}; // new object context for each test
@@ -94,7 +103,7 @@
     if(this.doneStarting && this.doneCount >= this.all.length) {
       this.onAllDone && this.onAllDone();
     }
-  }
+  };
   ResultsClass.prototype.trackResult = function (testResult){
     this.all.push(testResult);
     testResult.doneCallback(()=>this.recordResult(testResult))
@@ -129,13 +138,13 @@
     } else {
       this.callbacks.push(func);
     }
-  }
+  };
   TestResultClass.prototype.done = function() {
     this.callbacks.forEach(c=>c(this.result, this.failReasons));
-  }
-  TestResultClass.prototype.failExpectation = function(reason, stack){
+  };
+  TestResultClass.prototype.failExpectation = function(...reasons){
     this.result = FAIL;
-    this.failReasons.push(reason+'\n'+stack);
+    this.failReasons.push(reasons.join('\n'));
   };
   TestResultClass.prototype.passExpectation = function() {
     if(this.result === NO_EXPECTATIONS) {
@@ -158,7 +167,7 @@
   TimeStoppers.prototype.clear = function() {
     if(this.blocks.length) throw new Error("Cannot clear timeLine! Something is weird!");
     this.isDead = false;
-  }
+  };
 
   TimeStoppers.prototype.whenDone = function(callback) {
     if(this.isDead) {
@@ -167,14 +176,14 @@
 
     this.callbacks.push(callback);
     this._checkDone();
-  }
+  };
 
   TimeStoppers.prototype.add = function(block) {
     if(this.isDead) {
       throw new Error('Cannot start "then()" after the section is done!');
     }
     this.blocks.push(block);
-  }
+  };
 
   TimeStoppers.prototype.remove = function(block) {
     if(this.isDead) {
@@ -186,7 +195,7 @@
     }
     this.blocks.splice(index,1);
     this._checkDone();
-  }
+  };
 
   TimeStoppers.prototype._checkDone = function() {
     if(!this.blocks.length) {
@@ -195,7 +204,15 @@
       this.callbacks = [];
       toCall.forEach(c => c());
     }
-  }
+  };
+
+  TimeStoppers.prototype.getActive = function() {
+    return this.blocks;
+  };
+
+  TimeStoppers.prototype.getActiveLocations = function() {
+    return this.blocks.map(b => b.location);
+  };
 
   /* Manages when each block of code in a series gets run. Using the 'then()'
    * command inside a block will make the series wait until
@@ -203,6 +220,7 @@
    */
   function TimeLine(test) {
     this.test = test;
+    this.alive = true;
     this.i = 0;
     this.series = [];
     this.callback = [];
@@ -217,7 +235,7 @@
   }
 
   TimeLine.prototype._runNextBlock = function() {
-//     debugger
+    if(!this.alive) return;
     currentContext = this.test.context;
     currentTest = this.test;
     if(this.i >= this.series.length) {
@@ -233,15 +251,25 @@
     }
   }
 
+  TimeLine.prototype.kill = function() {
+    currentContext = this.test.context;
+    currentTest = this.test;
+    this.alive = false;
+
+    const timeoutList = this.stoppers.getActiveLocations().map(l => '\n * '+l);
+    const failMsg = "Async code that took too long:" + timeoutList;
+    failWithConsole(failMsg, '');
+  }
+
   let results = null;
 
   function getFileNameFromErrorLine(line) {
     return line.match(/(file:.*):\d+:\d+/)[1];
   }
 
-  function getErrorStack() {
-    let errorLines = (new Error()).stack.split('\n');
-    let currentFile = getFileNameFromErrorLine(errorLines[1]);
+  function getErrorLocation(error = new Error()) {
+    const errorLines = error.stack.split('\n');
+    const currentFile = getFileNameFromErrorLine(errorLines[1]);
     for(let i=2;i<errorLines.length;i++) {
       let file = getFileNameFromErrorLine(errorLines[i]);
       if(file !== currentFile) {
@@ -252,8 +280,8 @@
     return errorLines.slice(5,6).join('\n'); //fallback
   }
 
-  function failWithConsole(msg) {
-    currentTest.result.failExpectation(msg, getErrorStack());
+  function failWithConsole(msg, errorStack = getErrorLocation()) {
+    currentTest.result.failExpectation(msg, errorStack);
     if(debugMode){
       consoleFailMessage(failMessage(currentTest.result));
       return true;
@@ -311,7 +339,7 @@
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
-      currentTest.result.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorStack());
+      currentTest.result.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorLocation());
       if (debugMode) {
         consoleFailMessage(failMessage(currentTest.result));
         debugger;
@@ -335,7 +363,7 @@
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
-      currentTest.result.failExpectation(`Expected "${a}" \n   to be ${b}`, getErrorStack());
+      currentTest.result.failExpectation(`Expected "${a}" \n   to be ${b}`, getErrorLocation());
       if(debugMode){
         consoleFailMessage(failMessage(currentTest.result));
         debugger;
@@ -572,7 +600,13 @@
       ...currentContext.afterEachChain,
     ];
 
+    const timeLimitId = setTimeout(function() {
+      test.timeLine.kill();
+      _postTest(test.objContext);
+    }, 1000);
+
     test.timeLine.run(allBlocks, function () {
+      clearTimeout(timeLimitId);
       _postTest(test.objContext);
     });
   }
