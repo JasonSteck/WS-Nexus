@@ -10,6 +10,8 @@ it('can run an describe-less test', function() {
   expectProps.bind(this)(['be1']);
 });
 
+describe('tester-spec.js', function() {
+
 describe('contexts', function() {
   beforeEach(function() {
     expectProps.bind(this)(['be1']);
@@ -299,61 +301,97 @@ describe('stub(obj)', function() {
 
 //===================== Async Tests =====================//
 
-describe('using "then"s', function() {
-  const delay = 10;
+describe('async test functions', () => {
+  const delay = (ms=50) => new Promise(resolve => setTimeout(resolve, ms));
 
-  describe('when you have a beforeEach and afterEach', function() {
+  describe('when multiple async tests are run', function() {
+    let val = 0;
+    it('the first can seemingly run synchronously', async function() {
+      val++;
+      await delay();
+      expect(val).toBe(1);
+      val++;
+      await delay();
+      expect(val).toBe(2);
+      val++;
+      await delay();
+      expect(val).toBe(3);
+      val++;
+    });
+
+    it('the second runs after the first', async function() {
+      expect(val).toBe(4);
+      val++;
+      await delay();
+      expect(val).toBe(5);
+      val++;
+    });
+
+    it('the third runs after the second', async function() {
+      expect(val).toBe(6);
+      val++;
+      await delay();
+      expect(val).toBe(7);
+    });
+  })
+
+  describe('when mixed with non async blocks', ()=>{
+    let i = 0;
+
+    beforeEach(async function() {
+      i = 0;
+      this.i = 10;
+
+      expect(i).toBe(0);
+      expect(this.i).toBe(10);
+      await delay();
+      expect(i).toBe(0);
+      expect(this.i).toBe(10);
+      i++;
+      this.i++;
+    });
+
     beforeEach(function() {
-      this.val = 1;
-      setTimeout(then(function(){
-        this.val++;
-      }), delay);
+      expect(i).toBe(1);
+      expect(this.i).toBe(11);
+      i++;
+      this.i++;
     });
 
-    it('each "then" blocks the chain of execution', function() {
-      expect(this.val).toBe(2);
-      setTimeout(then(function(){
-        this.val++;
-      }), delay);
+    it('behaves in an orderly manner', async function(){
+      expect(i).toBe(2);
+      expect(this.i).toBe(12);
+      await delay();
+      expect(i).toBe(2);
+      expect(this.i).toBe(12);
+      i++;
+      this.i++;
     });
 
-    it('does not spill over into other "it" blocks', function() {
-      expect(this.val).toBe(2);
-      setTimeout(then(function(){
-        this.val++;
-      }), delay);
+    it('also behaves in an orderly manner', function(){
+      expect(i).toBe(2);
+      expect(this.i).toBe(12);
+      i++;
+      this.i++;
     });
 
+    // Currently, all afterEach blocks are simply run in reverse so
+    // this is actually the last thing to run in this describe block.
     afterEach(function() {
-      expect(this.val).toBe(3);
-      setTimeout(then(function(){
-        this.val++;
-        expect(this.val).toBe(4);
-      }), delay);
-    });
-  });
-
-  describe('when you have nested "then"s', function() {
-    beforeEach(function() {
-      this.cash = 5;
-      const asyncAddOne = (delay)=>setTimeout(then(()=>this.cash++), delay);
-
-      setTimeout(then(function() {
-        this.cash++;
-        asyncAddOne(delay*2);
-        asyncAddOne(delay);
-        asyncAddOne(delay*2);
-      }), delay);
-
-      // should not be blocking:
-      ()=>{ then(function(){this.cash = 0}) }
-
-      // doesn't require a callback
-      setTimeout(then(), delay);
+      expect(i).toBe(4);
+      expect(this.i).toBe(14);
     });
 
-    it('waits for all loaded "then"s to finish', function() {
-      expect(this.cash).toBe(9);
+    afterEach(async function() {
+      expect(i).toBe(3);
+      expect(this.i).toBe(13);
+      await delay();
+      expect(i).toBe(3);
+      expect(this.i).toBe(13);
+      i++;
+      this.i++;
     });
   });
 });
+
+}); // end of describe('tester-spec',...

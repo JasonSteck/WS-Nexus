@@ -60,35 +60,11 @@
   let runningTests = false;
   let debugMode = false;
 
-  function Then(test) {
-    this.test = test;
-    this.location = getErrorLocation();
-  }
-
-  // Used to implement async actions during tests
-  window.then = (callback) => {
-    if(runningTests) {
-      const test = currentTest;
-      const snippet = new Then(test);
-      test.timeLine.stoppers.add(snippet);
-      return () => {
-        currentTest = test;
-        currentContext = test.context;
-        callback && callback.call(currentTest.objContext);
-        test.timeLine.stoppers.remove(snippet);
-      };
-    }
-    console.error(new Error("Cannot use 'then()' outside of test blocks!"));
-    return ()=>{};
-  };
-
-  function Test(currentContext, testDefinition, spies) {
+  function Test(currentContext, testDefinition) {
     this.objContext = {}; // new object context for each test
     this.context = currentContext;
     this.definition = testDefinition;
     this.result = new TestResultClass(testDefinition);
-    this.spies = spies; // TODO get spies to work with pended/restored test contexts
-    this.timeLine = new TimeLine(this);
   }
 
   function ResultsClass(onAllDone) {
@@ -154,112 +130,6 @@
   TestResultClass.prototype.didPass = function() {
     return this.result === PASS
   };
-
-  /* After it begins receiving "then" blocks, it will stop working and
-   * notify listeners when its list has been emptied.
-   */
-  function TimeStoppers() {
-    this.isDead = false;
-    this.blocks = [];
-    this.callbacks = []; // Yeah, this could be done with Promises
-  }
-
-  TimeStoppers.prototype.clear = function() {
-    if(this.blocks.length) throw new Error("Cannot clear timeLine! Something is weird!");
-    this.isDead = false;
-  };
-
-  TimeStoppers.prototype.whenDone = function(callback) {
-    if(this.isDead) {
-      throw new Error('Cannot register callback after the section is done!');
-    }
-
-    this.callbacks.push(callback);
-    this._checkDone();
-  };
-
-  TimeStoppers.prototype.add = function(block) {
-    if(this.isDead) {
-      throw new Error('Cannot start "then()" after the section is done!');
-    }
-    this.blocks.push(block);
-  };
-
-  TimeStoppers.prototype.remove = function(block) {
-    if(this.isDead) {
-      throw new Error('Cannot start "then()" after the section is done!');
-    }
-    const index = this.blocks.indexOf(block);
-    if(index<0) {
-      throw new Error('Cannot find "then()" block in list! Something weird is happening!');
-    }
-    this.blocks.splice(index,1);
-    this._checkDone();
-  };
-
-  TimeStoppers.prototype._checkDone = function() {
-    if(!this.blocks.length) {
-      this.isDead = true;
-      const toCall = this.callbacks;
-      this.callbacks = [];
-      toCall.forEach(c => c());
-    }
-  };
-
-  TimeStoppers.prototype.getActive = function() {
-    return this.blocks;
-  };
-
-  TimeStoppers.prototype.getActiveLocations = function() {
-    return this.blocks.map(b => b.location);
-  };
-
-  /* Manages when each block of code in a series gets run. Using the 'then()'
-   * command inside a block will make the series wait until
-   * all of the Then callbacks have finished.
-   */
-  function TimeLine(test) {
-    this.test = test;
-    this.alive = true;
-    this.i = 0;
-    this.series = [];
-    this.callback = [];
-    this.stoppers = new TimeStoppers();
-  }
-
-  TimeLine.prototype.run = function(series, callback) {
-    if(this.i !== 0) throw new Error('Cannot have two TimeLines running in a test! Something is weird!');
-    this.series = series;
-    this.callback = callback;
-    this._runNextBlock();
-  }
-
-  TimeLine.prototype._runNextBlock = function() {
-    if(!this.alive) return;
-    currentContext = this.test.context;
-    currentTest = this.test;
-    if(this.i >= this.series.length) {
-      this.i = 0;
-      this.callback();
-    } else {
-      const block = this.series[this.i++];
-      this.stoppers.clear();
-      block.call(this.test.objContext);
-      this.stoppers.whenDone(()=>{
-        this._runNextBlock();
-      });
-    }
-  }
-
-  TimeLine.prototype.kill = function() {
-    currentContext = this.test.context;
-    currentTest = this.test;
-    this.alive = false;
-
-    const timeoutList = this.stoppers.getActiveLocations().map(l => '\n * '+l);
-    const failMsg = "Async code that took too long:" + timeoutList;
-    failWithConsole(failMsg, '');
-  }
 
   let results = null;
 
@@ -446,9 +316,9 @@
       let call = actual.calls[i];
       if(call.length === expected.length) {
         found = found || isEqual(call, expected);
-      } 
+      }
     }
-    
+
     if(found ^ not) {
       currentTest.result.passExpectation();
     } else {
@@ -558,6 +428,12 @@
     console.log(msg);
   }
 
+  async function asyncForEach(arr, func) {
+    for(let i = 0; i < arr.length; i++) {
+      await func(arr[i]);
+    }
+  }
+
   /*  spec execution  */
   function parseContext(context) {
     let prevContext = currentContext;
@@ -580,17 +456,17 @@
     currentContext = prevContext;
   }
 
-  function runContext(context) {
+  async function runContext(context) {
     currentContext = context; // this is, in fact, used elsewhere
     if(currentContext.focused.ref) { // if our context is focused
-      currentContext.its.forEach(runTest);
+      await asyncForEach(currentContext.its, runTest);
     }
 
-    currentContext.contexts.forEach(runContext);
+    await asyncForEach(currentContext.contexts, runContext);
   }
 
-  function runTest(testDefinition) {
-    const test = currentTest = new Test(currentContext, testDefinition, spies)
+  async function runTest(testDefinition) {
+    const test = currentTest = new Test(currentContext, testDefinition);
 
     results.trackResult(test.result);
 
@@ -600,15 +476,28 @@
       ...currentContext.afterEachChain,
     ];
 
+    let runningTest = true;
+
     const timeLimitId = setTimeout(function() {
-      test.timeLine.kill();
-      _postTest(test.objContext);
+      runningTest = false;
+
+      //TODO report test failure
+      console.error('TEMP: Test timed out', test);
     }, 1000);
 
-    test.timeLine.run(allBlocks, function () {
-      clearTimeout(timeLimitId);
-      _postTest(test.objContext);
+    // Possiblity: break this up into three sections (beforeEach/it/afterEach)
+    await asyncForEach(allBlocks, async block => {
+      if(runningTest) {
+        await block.call(test.objContext);
+      }
+    }).catch(err => { // if any of the blocks fail, jump here
+      //TODO report error to test.
+      console.error('TEMP: async test error:', err);
     });
+
+    clearTimeout(timeLimitId);
+    currentTest = test; // restore just in case
+    _postTest(test.objContext);
   }
 
   function _postTest(objContext) {
@@ -662,10 +551,9 @@
 
     // run specs
     runningTests = true;
-    runContext(topContext);
 
-    console.log('Waiting for Async Tests to Finish...');
-
-    results.doneStartingTests();
+    runContext(topContext).then(()=>{
+      results.doneStartingTests();
+    });
   };
 })();
