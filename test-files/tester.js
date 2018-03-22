@@ -67,6 +67,15 @@
     this.result = new TestResultClass(testDefinition);
   }
 
+  Test.prototype.fail = function (msg, error = new Error) {
+    const errorStack = getErrorLocation(error);
+    this.result.failExpectation(msg, errorStack);
+    if(debugMode){
+      consoleFailMessage(failMessage(this.result));
+      debugger;
+    }
+  }
+
   function ResultsClass(onAllDone) {
     this.all = [];
     this.failed = [];
@@ -137,12 +146,14 @@
     return line.match(/(file:.*):\d+:\d+/)[1];
   }
 
+  let testFramworkFile = getFileNameFromErrorLine((new Error).stack.split('\n')[1]);
+
   function getErrorLocation(error = new Error()) {
-    const errorLines = error.stack.split('\n');
-    const currentFile = getFileNameFromErrorLine(errorLines[1]);
-    for(let i=2;i<errorLines.length;i++) {
+    const errorLines = error.stack && error.stack.split('\n') || [];
+//     const testFramworkFile = getFileNameFromErrorLine(errorLines[1]);
+    for(let i=1;i<errorLines.length;i++) {
       let file = getFileNameFromErrorLine(errorLines[i]);
-      if(file !== currentFile) {
+      if(file !== testFramworkFile) {
         return errorLines[i];
       }
     }
@@ -481,8 +492,7 @@
     const timeLimitId = setTimeout(function() {
       runningTest = false;
 
-      //TODO report test failure
-      console.error('TEMP: Test timed out', test);
+      test.fail('Test timed out');
     }, 1000);
 
     // Possiblity: break this up into three sections (beforeEach/it/afterEach)
@@ -491,8 +501,8 @@
         await block.call(test.objContext);
       }
     }).catch(err => { // if any of the blocks fail, jump here
-      //TODO report error to test.
-      console.error('TEMP: async test error:', err);
+      const msg = err && err.message || err;
+      test.fail('Uncaught Exception: ' + msg, err);
     });
 
     clearTimeout(timeLimitId);
