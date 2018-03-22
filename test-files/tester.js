@@ -67,6 +67,10 @@
     this.result = new TestResultClass(testDefinition);
   }
 
+  Test.prototype.passExpectation = function() {
+    this.result.passExpectation();
+  }
+
   Test.prototype.fail = function (msg, error = new Error) {
     const errorStack = getErrorLocation(error);
     this.result.failExpectation(msg, errorStack);
@@ -213,7 +217,7 @@
 
   function toEqual(actual, expected, not) {
     if(isEqual(actual,expected) ^ not){
-      currentTest.result.passExpectation();
+      currentTest.passExpectation();
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
@@ -223,7 +227,7 @@
 
   function toExist(actual, not) {
     if((actual != null) ^ not) {
-      currentTest.result.passExpectation();
+      currentTest.passExpectation();
     } else {
       let notStr = not? 'not ' : '';
       currentTest.fail(`Expected: ${actual}\nto ${notStr}exist`);
@@ -232,7 +236,7 @@
 
   function toBe(actual, expected, not) {
     if((actual === expected) ^ not){
-      currentTest.result.passExpectation();
+      currentTest.passExpectation();
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
@@ -266,11 +270,11 @@
         if(failWithConsole(`Expected ${actual}\nnot to throw ${exceptionStr}\n but it did`))
           debugger;
       } else {
-        currentTest.result.passExpectation();
+        currentTest.passExpectation();
       }
     } else {
       if(correctlyThrew) {
-        currentTest.result.passExpectation();
+        currentTest.passExpectation();
       } else if(threw) {
         let notString = not?'not':'';
         currentTest.fail(`Expected: ${actual}\n${notString}to throw: ${exceptionStr}\n but got: "${error}"`);
@@ -287,7 +291,7 @@
     }
 
     if((actual.calls.length > 0) ^ not) {
-      currentTest.result.passExpectation();
+      currentTest.passExpectation();
     } else {
       currentTest.fail(`Expected: "${actual.methodName}"\nto have been called, but it wasn't`);
     }
@@ -308,7 +312,7 @@
     }
 
     if(found ^ not) {
-      currentTest.result.passExpectation();
+      currentTest.passExpectation();
     } else {
       if(found) {
         currentTest.fail(`Expected spy "${actual.methodName}" \nto not have been called with: ${expected}\nbut actual calls were:\n${actual.calls.join('\n')}`);
