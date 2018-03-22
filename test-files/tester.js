@@ -148,7 +148,6 @@
 
   function getErrorLocation(error = new Error()) {
     const errorLines = error.stack && error.stack.split('\n') || [];
-//     const testFramworkFile = getFileNameFromErrorLine(errorLines[1]);
     for(let i=1;i<errorLines.length;i++) {
       let file = getFileNameFromErrorLine(errorLines[i]);
       if(file !== testFramworkFile) {
@@ -218,11 +217,7 @@
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
-      currentTest.result.failExpectation(`Expected ${a}\nto equal ${b}`, getErrorLocation());
-      if (debugMode) {
-        consoleFailMessage(failMessage(currentTest.result));
-        debugger;
-      }
+      currentTest.fail(`Expected: ${a}\nto equal: ${b}`);
     }
   }
 
@@ -231,8 +226,7 @@
       currentTest.result.passExpectation();
     } else {
       let notStr = not? 'not ' : '';
-      if(failWithConsole(`Expected ${actual}\nto ${notStr}exist`))
-        debugger;
+      currentTest.fail(`Expected: ${actual}\nto ${notStr}exist`);
     }
   }
 
@@ -242,11 +236,7 @@
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
-      currentTest.result.failExpectation(`Expected ${a}\n   to be ${b}`, getErrorLocation());
-      if(debugMode){
-        consoleFailMessage(failMessage(currentTest.result));
-        debugger;
-      }
+      currentTest.fail(`Expected: ${a}\n   to be: ${b}`);
     }
   }
 
@@ -283,11 +273,9 @@
         currentTest.result.passExpectation();
       } else if(threw) {
         let notString = not?'not':'';
-        if(failWithConsole(`Expected ${actual}\n${notString}to throw ${exceptionStr}\n but got "${error}"`))
-          debugger;
+        currentTest.fail(`Expected: ${actual}\n${notString}to throw: ${exceptionStr}\n but got: "${error}"`);
       } else {
-        if(failWithConsole(`Expected ${actual}\nto throw ${exceptionStr} but didn't get anything`))
-          debugger;
+        currentTest.fail(`Expected: ${actual}\nto throw: ${exceptionStr}\n but didn't get anything`);
       }
     }
   }
@@ -295,29 +283,20 @@
   function toHaveBeenCalled(actual, not) {
     if(!(actual && typeof actual==='function' && actual._isSpy)) {
       let msg = `Error: cannot expect "${actual && actual.methodName}" toHaveBeenCalled. It is not a spy.`;
-      if(failWithConsole(msg)) {
-        debugger;
-      } else {
-        throw new Error(msg);
-      }
+      currentTest.fail(msg);
     }
 
     if((actual.calls.length > 0) ^ not) {
       currentTest.result.passExpectation();
     } else {
-      if(failWithConsole(`Expected "${actual.methodName}" \nto have been called, but it wasn't`))
-        debugger;
+      currentTest.fail(`Expected: "${actual.methodName}"\nto have been called, but it wasn't`);
     }
   }
 
   function toHaveBeenCalledWith(actual, expected, not) {
     if(!(actual && typeof actual==='function' && actual._isSpy)) {
       let msg = `Error: cannot expect "${actual && actual.methodName}" toHaveBeenCalled. It is not a spy.`;
-      if(failWithConsole(msg)) {
-        debugger;
-      } else {
-        throw new Error(msg);
-      }
+      currentTest.fail(msg);
     }
 
     let found = false;
@@ -332,11 +311,9 @@
       currentTest.result.passExpectation();
     } else {
       if(found) {
-        if(failWithConsole(`Expected "${actual.methodName}" \nto not have been called with "${expected}" but actual calls were:\n${actual.calls.join('\n')}`))
-          debugger;
+        currentTest.fail(`Expected spy "${actual.methodName}" \nto not have been called with: ${expected}\nbut actual calls were:\n${actual.calls.join('\n')}`);
       } else {
-        if(failWithConsole(`Expected "${actual.methodName}" \nto have been called with "${expected}" but actual calls were:\n${actual.calls.join('\n')}`))
-          debugger;
+        currentTest.fail(`Expected spy "${actual.methodName}" \nto have been called with: ${expected}\nbut actual calls were:\n${actual.calls.join('\n')}`);
       }
     }
 
