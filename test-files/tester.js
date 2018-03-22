@@ -108,12 +108,10 @@
   };
 
   function TestResultClass(test) {
-    this.testPath = null;
     this.test = test;
     this.result = NO_EXPECTATIONS;
     this.failReasons = [];
     this.callbacks = [];
-
     this.testPath = currentContext.descriptionChain.slice(0);
     this.testPath.push(test.name);
   }
@@ -127,7 +125,7 @@
   TestResultClass.prototype.done = function() {
     this.callbacks.forEach(c=>c(this.result, this.failReasons));
   };
-  TestResultClass.prototype.failExpectation = function(...reasons){
+  TestResultClass.prototype.failExpectation = function(...reasons) {
     this.result = FAIL;
     this.failReasons.push(reasons.join('\n'));
   };
@@ -220,7 +218,7 @@
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
-      currentTest.result.failExpectation(`Expected ${a} \nto equal ${b}`, getErrorLocation());
+      currentTest.result.failExpectation(`Expected ${a}\nto equal ${b}`, getErrorLocation());
       if (debugMode) {
         consoleFailMessage(failMessage(currentTest.result));
         debugger;
@@ -233,7 +231,7 @@
       currentTest.result.passExpectation();
     } else {
       let notStr = not? 'not ' : '';
-      if(failWithConsole(`Expected "${actual}" \nto ${notStr}exist`))
+      if(failWithConsole(`Expected ${actual}\nto ${notStr}exist`))
         debugger;
     }
   }
@@ -244,7 +242,7 @@
     } else {
       let a = getOutputFormat(actual);
       let b = getOutputFormat(expected);
-      currentTest.result.failExpectation(`Expected "${a}" \n   to be ${b}`, getErrorLocation());
+      currentTest.result.failExpectation(`Expected ${a}\n   to be ${b}`, getErrorLocation());
       if(debugMode){
         consoleFailMessage(failMessage(currentTest.result));
         debugger;
@@ -275,7 +273,7 @@
     exceptionStr = anyException? 'an error': `"${exception}"`;
     if(not) {
       if(correctlyThrew) {
-        if(failWithConsole(`Expected ${actual} \nnot to throw ${exceptionStr}\n but it did`))
+        if(failWithConsole(`Expected ${actual}\nnot to throw ${exceptionStr}\n but it did`))
           debugger;
       } else {
         currentTest.result.passExpectation();
@@ -285,10 +283,10 @@
         currentTest.result.passExpectation();
       } else if(threw) {
         let notString = not?'not':'';
-        if(failWithConsole(`Expected ${actual} \n${notString}to throw ${exceptionStr}\n but got "${error}"`))
+        if(failWithConsole(`Expected ${actual}\n${notString}to throw ${exceptionStr}\n but got "${error}"`))
           debugger;
       } else {
-        if(failWithConsole(`Expected ${actual} \nto throw ${exceptionStr} but didn't get anything`))
+        if(failWithConsole(`Expected ${actual}\nto throw ${exceptionStr} but didn't get anything`))
           debugger;
       }
     }
