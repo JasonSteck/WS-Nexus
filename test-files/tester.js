@@ -66,11 +66,9 @@
     this.definition = testDefinition;
     this.result = new TestResultClass(testDefinition);
   }
-
   Test.prototype.passExpectation = function() {
     this.result.passExpectation();
   }
-
   Test.prototype.fail = function (msg, error = new Error) {
     const errorStack = getErrorLocation(error);
     this.result.failExpectation(msg, errorStack);
@@ -160,15 +158,6 @@
     }
 
     return errorLines.slice(5,6).join('\n'); //fallback
-  }
-
-  function failWithConsole(msg, errorStack = getErrorLocation()) {
-    currentTest.result.failExpectation(msg, errorStack);
-    if(debugMode){
-      consoleFailMessage(failMessage(currentTest.result));
-      return true;
-    }
-    return false;
   }
 
   function isEqual(a,b) {
@@ -267,8 +256,7 @@
     exceptionStr = anyException? 'an error': `"${exception}"`;
     if(not) {
       if(correctlyThrew) {
-        if(failWithConsole(`Expected ${actual}\nnot to throw ${exceptionStr}\n but it did`))
-          debugger;
+        currentTest.fail(`Expected ${actual}\nnot to throw ${exceptionStr}\n but it did`);
       } else {
         currentTest.passExpectation();
       }
