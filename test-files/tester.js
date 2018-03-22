@@ -70,7 +70,7 @@
     this.result.passExpectation();
   }
   Test.prototype.fail = function (msg, error = new Error) {
-    const errorStack = getErrorLocation(error);
+    const errorStack = getStackStartingAtErrorLocation(error);
     this.result.failExpectation(msg, errorStack);
     if(debugMode){
       consoleFailMessage(failMessage(this.result));
@@ -148,7 +148,7 @@
 
   let testFramworkFile = getFileNameFromErrorLine((new Error).stack.split('\n')[1]);
 
-  function getErrorLocation(error = new Error()) {
+  function getErrorLocation(error = new Error) {
     const errorLines = error.stack && error.stack.split('\n') || [];
     for(let i=1;i<errorLines.length;i++) {
       let file = getFileNameFromErrorLine(errorLines[i]);
@@ -158,6 +158,16 @@
     }
 
     return errorLines.slice(5,6).join('\n'); //fallback
+  }
+
+  function getStackStartingAtErrorLocation(error = new Error) {
+    const errorLines = error.stack && error.stack.split('\n') || [];
+    for(let i=1;i<errorLines.length;i++) {
+      let file = getFileNameFromErrorLine(errorLines[i]);
+      if(file !== testFramworkFile) {
+        return errorLines.slice(i, errorLines.length).join('\n');
+      }
+    }
   }
 
   function isEqual(a,b) {
