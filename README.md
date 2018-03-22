@@ -1,4 +1,4 @@
 # JS-Nexus
-JavaScript Nexus is a Node app that creates a Web Socket Proxy which allows browser windows to emulate a Client/Server Model.
+JavaScript Nexus is a Node app that acts as a Web Socket Proxy which allows browser windows to emulate Client/Server Models.
 
-To put it simply, it lets your browser window talk with other browser windows, even on other devices.
+To put it simply, it lets your browser talk with browsers on other devices.
