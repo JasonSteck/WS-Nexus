@@ -489,7 +489,7 @@
       runningTest = false;
 
       test.fail('Test timed out');
-    }, 1000);
+    }, 5000);
 
     // Possiblity: break this up into three sections (beforeEach/it/afterEach)
     await asyncForEach(allBlocks, async block => {
