@@ -62,7 +62,7 @@
 
   /*  during tests  */
   let runningTests = false;
-  let debugMode = false;
+  let pauseOnErrors = false;
 
   function Test(currentContext, testDefinition) {
     this.objContext = {}; // new object context for each test
@@ -76,7 +76,7 @@
   Test.prototype.fail = function (msg, error = new Error) {
     const errorStack = getStackStartingAtErrorLocation(error);
     this.result.failExpectation(msg, errorStack);
-    if(debugMode){
+    if(pauseOnErrors){
       consoleFailMessage(failMessage(this.result));
       debugger;
     }
@@ -531,7 +531,7 @@
 
     if(results.failed.length > 0) {
       results.failed.forEach(result => {
-        if(!debugMode) {
+        if(!pauseOnErrors) {
           consoleFailMessage(failMessage(result, true));
         }
       });
@@ -550,7 +550,7 @@
   }
 
   window.runSpecs = (options) => {
-    debugMode = options.debug;
+    pauseOnErrors = options.pauseOnErrors;
     results = new ResultsClass(onAllDone);
     // parse specs
     parseContext(topContext);
