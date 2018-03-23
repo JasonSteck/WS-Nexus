@@ -321,23 +321,38 @@
 
   }
 
-  window.expect = (actual) => {
-    return {
-      not: {
-        toHaveBeenCalledWith: (...expected) => toHaveBeenCalledWith(actual, expected, true),
-        toHaveBeenCalled: () => toHaveBeenCalled(actual, true),
-        toThrow: expected => toThrow(actual, expected, true),
-        toEqual: expected => toEqual(actual, expected, true),
-        toExist: () => toExist(actual, true),
-        toBe: expected => toBe(actual, expected, true),
-      },
-      toHaveBeenCalledWith: (...expected) => toHaveBeenCalledWith(actual, expected, false),
-      toHaveBeenCalled: () => toHaveBeenCalled(actual, false),
-      toThrow: exception => toThrow(actual, exception, false),
-      toEqual: expected => toEqual(actual, expected, false),
-      toExist: () => toExist(actual, false),
-      toBe: expected => toBe(actual, expected, false),
+  function Expectation(actual) {
+    this.actual = actual;
+    this.negate = false;
+  }
+  // allow for `expectation.not.` instead of `expectation.not().`
+  Object.defineProperty(Expectation.prototype, 'not', {
+    get() {
+      this.negate = !this.negate;
+      return this;
     }
+  })
+  Expectation.prototype.toHaveBeenCalledWith = function(...expected) {
+     return toHaveBeenCalledWith(this.actual, expected, this.negate);
+  }
+  Expectation.prototype.toHaveBeenCalled = function() {
+    return toHaveBeenCalled(this.actual, this.negate);
+  }
+  Expectation.prototype.toThrow = function(expected) {
+     return toThrow(this.actual, expected, this.negate);
+  }
+  Expectation.prototype.toEqual = function(expected) {
+     return toEqual(this.actual, expected, this.negate);
+  }
+  Expectation.prototype.toExist = function() {
+     return toExist(this.actual, this.negate);
+  }
+  Expectation.prototype.toBe = function(expected) {
+     return toBe(this.actual, expected, this.negate);
+  }
+
+  window.expect = (actual) => {
+    return new Expectation(actual);
   };
 
   function ensureSpy(str, obj) {
