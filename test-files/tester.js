@@ -24,46 +24,39 @@
 
   /* should only be used during parse stage  */
 
-  window.xdescribe = () => {};
+  window.beforeEach = (func) => {
+    currentContext.beforeEachChain.push(func);
+  };
+  window.afterEach = (func) => {
+    currentContext.afterEachChain.unshift(func);
+  };
 
+  window.xdescribe = () => {};
   window.describe = (str, func) => {
     currentContext.describes.push([str, func, false]);
   };
-
   window.fdescribe = (str, func) => {
     currentContext.focused.ref = false;
     currentContext.describes.push([str, func, true]);
   }
 
   window.xwhen = () => {};
-
   window.when = (str, func) => {
     currentContext.describes.push(['when '+str, func, false]);
   };
-
   window.fwhen = (str, func) => {
     currentContext.focused.ref = false;
     currentContext.describes.push(['when '+str, func, true]);
   }
 
-  window.beforeEach = (func) => {
-    currentContext.beforeEachChain.push(func);
-  };
-
   window.xit = () => {};
-
   window.it = (name, func) => {
     if(typeof func !== 'function') throw new Error(`Missing function in 'it' block of "${name}"`);
     currentContext.its.push({ name, func });
   };
-
   window.fit = (name, func) => {
     currentContext.focused.ref = false;
     return window.it(name, func);
-  };
-
-  window.afterEach = (func) => {
-    currentContext.afterEachChain.unshift(func);
   };
 
 
