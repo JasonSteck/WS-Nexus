@@ -35,6 +35,17 @@
     currentContext.describes.push([str, func, true]);
   }
 
+  window.xwhen = () => {};
+
+  window.when = (str, func) => {
+    currentContext.describes.push(['when '+str, func, false]);
+  };
+
+  window.fwhen = (str, func) => {
+    currentContext.focused.ref = false;
+    currentContext.describes.push(['when '+str, func, true]);
+  }
+
   window.beforeEach = (func) => {
     currentContext.beforeEachChain.push(func);
   };

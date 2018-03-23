@@ -67,7 +67,7 @@ describe('nexusClient.js', function() {
       expect(window.WebSocket).toHaveBeenCalledWith(this.defaultServer);
     });
 
-    describe('when provided an autoConnectOptions', function() {
+    when('provided an autoConnectOptions', function() {
       it('tries to connect with the given options', function() {
         const hostID = 8;
         const hostName = 'fight club';
@@ -90,7 +90,7 @@ describe('nexusClient.js', function() {
       });
     });
 
-    describe('when not provided an autoConnectOptions', function() {
+    when('not provided an autoConnectOptions', function() {
       it('does not send anything after connecting to server', function() {
         this.newClient(this.defaultServer);
 
@@ -100,7 +100,7 @@ describe('nexusClient.js', function() {
       });
     });
 
-    describe('when it connects to the server', function() {
+    when('it connects to the server', function() {
       it('calls the .onServerConnect callback', function() {
         const callback = newSpy('onServerConnect');
         this.newClient().onServerConnect = callback;
@@ -112,7 +112,7 @@ describe('nexusClient.js', function() {
     });
   });
 
-  describe('when not connected to a host', function() {
+  when('not connected to a host', function() {
     describe('#getHostList(callback)', function() {
       it('sends a request', function() {
         this.newClient();
@@ -227,7 +227,7 @@ describe('nexusClient.js', function() {
     });
   });
 
-  describe('when connected to a host', function() {
+  when('connected to a host', function() {
     describe('#getHostList()', function() {
       it('throws an error', function() {
         this.newConnectingClient();

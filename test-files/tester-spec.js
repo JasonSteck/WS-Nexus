@@ -304,7 +304,7 @@ describe('stub(obj)', function() {
 describe('async test functions', () => {
   const delay = (ms=50) => new Promise(resolve => setTimeout(resolve, ms));
 
-  describe('when multiple async tests are run', function() {
+  when('multiple async tests are run', function() {
     let val = 0;
     it('the first can seemingly run synchronously', async function() {
       val++;
@@ -335,7 +335,7 @@ describe('async test functions', () => {
     });
   })
 
-  describe('when mixed with non async blocks', ()=>{
+  when('mixed with non async blocks', ()=>{
     let i = 0;
 
     beforeEach(async function() {

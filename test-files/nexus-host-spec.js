@@ -109,7 +109,7 @@ describe('nexus-host.js', function() {
     });
   });
 
-  describe('when a new user connects', function() {
+  when('a new user connects', function() {
     it('calls the .onNewClient if provided', function() {
       this.stubWebSocket();
       const callback = newSpy('onNewClient');
@@ -130,7 +130,7 @@ describe('nexus-host.js', function() {
     });
   });
 
-  describe('when we get something from the user', function() {
+  when('we get something from the user', function() {
     it('calls the .onClientMessage if provided', function() {
       this.stubWebSocket();
       const callback = newSpy('onClientMessage');
@@ -151,7 +151,7 @@ describe('nexus-host.js', function() {
     });
   });
 
-  describe('when the user gets disconnected', function() {
+  when('the user gets disconnected', function() {
     it('calls the .onClientLost if provided', function() {
       this.stubWebSocket();
       const callback = newSpy('onClientLost');
@@ -197,7 +197,7 @@ describe('nexus-host.js', function() {
     });
   });
 
-  describe('when the host gets registered', function() {
+  when('the host gets registered', function() {
     it('calls the .onRegistered callback', function() {
       this.stubWebSocket();
       const callback = newSpy('onRegistered');
@@ -217,7 +217,7 @@ describe('nexus-host.js', function() {
     });
   });
 
-  describe('when the host gets registered', function() {
+  when('the host gets registered', function() {
     it('calls the .onRegistered callback', function() {
       this.stubWebSocket();
       const callback = newSpy('onRegistered');
@@ -237,7 +237,7 @@ describe('nexus-host.js', function() {
     });
   });
 
-  describe('when the connection gets closed', function() {
+  when('the connection gets closed', function() {
     it('calls the .onClosed callback', function() {
       this.stubWebSocket();
       const callback = newSpy('onClosed');
@@ -266,7 +266,7 @@ describe('nexus-host.js', function() {
     "onClientLost",
   ]);
 
-  describe('when disableDefaultCallbacks is true', function() {
+  when('disableDefaultCallbacks is true', function() {
     it('does not set default callbacks', function() {
       this.stubWebSocket();
       const host = this.newHost({disableDefaultCallbacks: true});
@@ -276,7 +276,7 @@ describe('nexus-host.js', function() {
     });
   });
 
-  describe('when disableDefaultCallbacks is not defined', function() {
+  when('disableDefaultCallbacks is not defined', function() {
     it('sets default callbacks', function() {
       this.stubWebSocket();
       const host = this.newHost();
