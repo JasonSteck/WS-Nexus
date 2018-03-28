@@ -1,12 +1,59 @@
 const ServerAddr = 'ws://localhost:3000';
-describe('JS-Nexus', function() {
-  // Throw error if a Nexus server is not running
-  ensureNexusServerIsRunning();
-});
+const DefaultName = 'defaultName';
 
-function ensureNexusServerIsRunning() {
-  const ws = new WebSocket(ServerAddr);
-  ws.onclose = function() {
-    console.error("No Connection to Nexus Server!");
+class EnsureConnection {
+  constructor() {
+    this.ws = new WebSocket(ServerAddr);
+    this.closed = false;
+    this._shouldClose = false;
+
+    this.ws.onclose = () => {
+      if(!this._shouldClose) {
+        console.warn("No Connection to Nexus Server!");
+      }
+      this.closed = true;
+    }
+  }
+
+  close() {
+    this._shouldClose = true;
+    this.ws.close();
   }
 }
+
+class NexusSpecHelpers {
+  newHost({ nexusServer, hostName, disableDefaultCallbacks = true }={}) {
+    this.host = new nexusHost(
+      nexusServer || ServerAddr,
+      hostName || DefaultName,
+      disableDefaultCallbacks,
+    );
+    return this.host;
+  }
+
+  onRegistered(host = this.host) {
+    return new Promise(resolve => host.onRegistered = resolve);
+  }
+}
+
+describe('JS-Nexus Server', function() {
+  // Throw error if a Nexus server is not running
+  const testConnection = new EnsureConnection();
+  onDoneTesting.then(() => testConnection.close());
+
+  beforeEach(function() {
+    if(testConnection.closed) throw new Error('no connection');
+    this.host; // may be read/set by NexusSpecHelpers
+
+    // add async helper functions to context
+    Object.setPrototypeOf(this, NexusSpecHelpers.prototype);
+  });
+
+  when('a host and client connect', function() {
+    it('can let them communicate', async function() {
+      this.newHost();
+      await this.onRegistered();
+      expect(this.host.id).not.toEqual(undefined);
+    });
+  });
+});

@@ -59,6 +59,12 @@
     return window.it(name, func);
   };
 
+  let testFrameworkDone;
+  window.onDoneTesting = new Promise(resolve => testFrameworkDone=resolve);
+
+  let testsShouldStop = false;
+  window.stopTests = () => testsShouldStop = true;
+
 
   /*  during tests  */
   let runningTests = false;
@@ -523,7 +529,7 @@
     spies = [];
   }
 
-  function onAllDone() {
+  function doneRunningSpecs() {
     runningTests = false;
 
     let total = results.all.length;
@@ -551,15 +557,17 @@
 
   window.runSpecs = (options) => {
     pauseOnErrors = options.pauseOnErrors;
-    results = new ResultsClass(onAllDone);
+    testsShouldStop = false;
+    results = new ResultsClass(doneRunningSpecs);
+
     // parse specs
     parseContext(topContext);
 
     // run specs
     runningTests = true;
-
     runContext(topContext).then(()=>{
       results.doneStartingTests();
+      testFrameworkDone(results);
     });
   };
 })();
