@@ -16,6 +16,7 @@
     its: [],
     describes: [],
     contexts: [],
+    specHelper: Object,
   };
 
   let currentContext = topContext;
@@ -23,6 +24,8 @@
   let spies = [];
 
   /* should only be used during parse stage  */
+
+  window.setSpecHelper = (klass)=>currentContext.specHelper=klass;
 
   window.beforeEach = (func) => {
     currentContext.beforeEachChain.push(func);
@@ -71,7 +74,7 @@
   let pauseOnErrors = false;
 
   function Test(currentContext, testDefinition) {
-    this.objContext = {}; // new object context for each test
+    this.objContext = new currentContext.specHelper; // new object context for each test
     this.context = currentContext;
     this.definition = testDefinition;
     this.result = new TestResultClass(testDefinition);
@@ -447,7 +450,6 @@
     }
   }
 
-  /*  spec execution  */
   function parseContext(context) {
     let prevContext = currentContext;
     context.describes.forEach(desc => {
@@ -459,6 +461,7 @@
         its: [],
         describes: [],
         contexts: [],
+        specHelper: context.specHelper,
       };
       newContext.descriptionChain.push(desc[0]);
       context.contexts.push(newContext);
@@ -469,6 +472,7 @@
     currentContext = prevContext;
   }
 
+  /*  spec execution  */
   async function runContext(context) {
     currentContext = context; // this is, in fact, used elsewhere
     if(currentContext.focused.ref) { // if our context is focused

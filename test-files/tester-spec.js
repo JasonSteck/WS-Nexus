@@ -394,4 +394,37 @@ describe('async test functions', () => {
   });
 });
 
+describe('setSpecHelper()', function() {
+  when('given a class', function() {
+    const x = setSpecHelper(class a {
+      get val() {
+        return 5;
+      }
+    });
+
+    it('creates the test context with said class', function() {
+      expect(this.__proto__.val).toBe(5);
+    });
+
+    when('then overridden in a nested context', function() {
+      setSpecHelper(class a {
+        get val() {
+          return 6;
+        }
+      });
+
+      it('only uses the new context and does not overwrite the other', function() {
+        expect(this.__proto__.val).toBe(6);
+        expect(x.prototype.val).toBe(5);
+      });
+    });
+  });
+
+  when('in a different context', function() {
+    it('does not get other specHelpers', function() {
+      expect(this.__proto__.val).toBe(undefined);
+    });
+  });
+});
+
 }); // end of describe('tester-spec',...
