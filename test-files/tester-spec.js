@@ -398,24 +398,24 @@ describe('setSpecHelper()', function() {
   when('given a class', function() {
     const x = setSpecHelper(class a {
       get val() {
-        return 5;
+        return 1;
       }
     });
 
     it('creates the test context with said class', function() {
-      expect(this.__proto__.val).toBe(5);
+      expect(this.__proto__.val).toBe(1);
     });
 
     when('then overridden in a nested context', function() {
       setSpecHelper(class a {
         get val() {
-          return 6;
+          return 2;
         }
       });
 
       it('only uses the new context and does not overwrite the other', function() {
-        expect(this.__proto__.val).toBe(6);
-        expect(x.prototype.val).toBe(5);
+        expect(this.__proto__.val).toBe(2);
+        expect(x.prototype.val).toBe(1);
       });
     });
   });
