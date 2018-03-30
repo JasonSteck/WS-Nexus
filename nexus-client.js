@@ -29,7 +29,7 @@ function nexusClient(nexusServer, autoConnectOptions) {
         case 'CONNECTED':
           if(!this._isConnectedToHost) {
             this._isConnectedToHost = true;
-            this.onHostConnect && this.onHostConnect();
+            this.onHostConnect && this.onHostConnect(req.payload);
           }
           break;
       }
@@ -46,6 +46,16 @@ nexusClient.prototype.setDefaultCallbacks = function() {
     hosts.forEach(h=>{
       console.log('  %d: %s', h.hostID, h.hostName);
     });
+  };
+
+  this.onHostConnect = (host) => {
+    /* example callback */
+    console.log('+ Connected to host:', host);
+  };
+
+  this.onMessage = (message) => {
+    /* example callback */
+    console.log('+ Recieved message:', message);
   };
 };
 
