@@ -3,6 +3,8 @@
   // Steal references so spies don't interfere
   const setTimeout = window.setTimeout;
   const clearTimeout = window.clearTimeout;
+  const consoleLog = console.log.bind(console);
+  const consoleWarn = console.warn.bind(console);
 
   const PASS = 1;
   const FAIL = 0;
@@ -440,8 +442,8 @@
   }
 
   function consoleFailMessage(msg) {
-    console.log('%cFailure:', 'color: red; font-weight: bold;');
-    console.log(msg);
+    consoleLog('%cFailure:', 'color: red; font-weight: bold;');
+    consoleLog(msg);
   }
 
   async function asyncForEach(arr, func) {
@@ -519,7 +521,7 @@
   function _postTest(objContext) {
     // framework context should already be restored, if needed
     if(currentTest.result.didPass()) {
-      console.log('Passed: %s', currentTest.result.testPath.join(' '));
+      consoleLog('Passed: %s', currentTest.result.testPath.join(' '));
     }
     currentTest.result.done();
 
@@ -546,13 +548,13 @@
         }
       });
       let failCount = results.failed.length;
-      console.log('\nTests Finished: %d Failure%s / %d Test%s', failCount, failCount===1?'':'s', total, totalPlural);
+      consoleLog('\nTests Finished: %d Failure%s / %d Test%s', failCount, failCount===1?'':'s', total, totalPlural);
     } else {
-      console.log('\nTests Finished: %d Successes%s / %d Test%s', total, totalPlural, total, totalPlural);
+      consoleLog('\nTests Finished: %d Successes%s / %d Test%s', total, totalPlural, total, totalPlural);
     }
     if(results.noExpectations.length > 0) {
       results.noExpectations.forEach(result => {
-        console.warn('No Expectations in: \n%s', indentLines(result.testPath).join('\n'), result.test.func);
+        consoleWarn('No Expectations in: \n%s', indentLines(result.testPath).join('\n'), result.test.func);
       });
     }
 
