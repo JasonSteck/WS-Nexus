@@ -14,6 +14,10 @@ function nexusClient(nexusServer, autoConnectOptions) {
     }
   };
 
+  this._ws.onclose = (...args) => {
+    this.onClose && this.onClose(...args);
+  }
+
   this._ws.onmessage = (event) => {
     //     console.log('Received:', event.data);
     if(this._isConnectedToHost) {
@@ -48,6 +52,11 @@ nexusClient.prototype.setDefaultCallbacks = function() {
     });
   };
 
+  this.onServerConnect = () => {
+    /* example callback */
+    console.log('+ Connected to nexus server.');
+  };
+
   this.onHostConnect = (host) => {
     /* example callback */
     console.log('+ Connected to host:', host);
@@ -56,6 +65,11 @@ nexusClient.prototype.setDefaultCallbacks = function() {
   this.onMessage = (message) => {
     /* example callback */
     console.log('+ Recieved message:', message);
+  };
+
+  this.onClose = (...args) => {
+    /* example callback */
+    console.log('+ Client closed:', ...args);
   };
 };
 
