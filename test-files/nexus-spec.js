@@ -21,8 +21,20 @@ describe('JS-Nexus Server', function() {
       this.newHost();
       await this.onRegistered();
       expect(this.host.id).not.toEqual(undefined);
+      expect(this.host.name).not.toEqual(undefined);
 
       this.newClient();
+      await this.onServerConnect();
+      let list = await this.getHostList();
+      expect(list && list.length).not.toEqual(0);
+      let hostRegistry = this.findHost(list, this.host.id);
+      expect(hostRegistry.hostName).toBe(this.host.name);
+
+      await this.closeHost();
+      list = await this.getHostList();
+      hostRegistry = this.findHost(list, this.host.id);
+      expect(hostRegistry.hostName).toBe(this.host.name);
+      await this.closeClient();
     });
   });
 });

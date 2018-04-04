@@ -31,7 +31,8 @@ function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
         break;
       case 'REGISTERED':
         this.id = req.hostID;
-        this.onRegistered && this.onRegistered(req.hostID);
+        this.name = req.hostName;
+        this.onRegistered && this.onRegistered(this.id, this.name);
         break;
       default:
         console.warn('Host #%s:"%s" could not parse type of response:', this.id, this.name, req);

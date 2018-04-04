@@ -29,6 +29,10 @@ ConnectionPool.prototype.addHost = function(conn) {
   return this.nextHostID++;
 }
 
+ConnectionPool.prototype.getDisplayList = function() {
+  return this.hosts.map(h => ({ hostID: h.hostID, hostName: h.hostName }));
+}
+
 // ======================================================= //
 
 function Connection(state, ws) {
@@ -36,6 +40,7 @@ function Connection(state, ws) {
   this.ws = ws;
   this.type = VISITOR;
   this._handleMessage = this._onVisitorMessage;
+  this.hostID;
 }
 
 Connection.prototype.onMessage = function(str) {
@@ -48,10 +53,20 @@ Connection.prototype._onVisitorMessage = function(str) {
     case 'HOST': //props: hostName
       this.type = HOST;
       this._handleMessage = this._onHostMessage;
+      this.hostID = this.state.connPool.addHost(this);
+      this.hostName = req.hostName;
       this.ws.send(JSON.stringify({
         type: 'REGISTERED',
-        hostID: this.state.connPool.addHost(this),
+        hostID: this.hostID,
+        hostName: this.hostName,
       }));
+      break;
+    case 'LIST':
+      this.ws.send(JSON.stringify({
+        type: 'LIST',
+        payload: this.state.connPool.getDisplayList(),
+      }));
+      break;
     default:
       log('Unknown request type:', req.type, 'for:', req);
   }

@@ -500,7 +500,7 @@
     const timeLimitId = setTimeout(function() {
       runningTest = false;
 
-      test.fail('Test timed out');
+      test.fail('Test forcefully timed out (consider throwing timeout errors yourself for better error messages)');
     }, 5000);
 
     // Possiblity: break this up into three sections (beforeEach/it/afterEach)

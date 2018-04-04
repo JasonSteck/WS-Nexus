@@ -1,4 +1,24 @@
 class NexusSpecHelpers {
+  // ===================== Spec Helpers ===================== //
+
+  timebox(desc, func, ms=1000) {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => { throw new Error('timeout while: ' + desc); }, ms);
+      return func(val => {
+        clearTimeout(timeout);
+        return resolve(val);
+      }, err => {
+        clearTimeout(timeout);
+        return reject(err);
+      })
+    });
+  }
+
+  findHost(hostList, id) {
+    // host := { hostID: integer, hostName: string}
+    // hostList := [ host, host, ...]
+    return hostList.find(host => host.hostID == id);
+  }
 
   // ===================== Host Helpers ===================== //
 
@@ -11,8 +31,21 @@ class NexusSpecHelpers {
     return this.host;
   }
 
-  onRegistered(host = this.host) {
-    return new Promise(resolve => host.onRegistered = resolve);
+  onRegistered({ host = this.host }={}) {
+    return this.timebox(
+      `waiting for host '${this.host.name}' to register`,
+      resolve => host.onRegistered = resolve,
+    );
+  }
+
+  closeHost({ host = this.host }={}) {
+    return this.timebox(
+      `waiting to close host '${this.host.name}'`,
+      resolve => {
+        host.onClose = resolve
+        host.close();
+      },
+    )
   }
 
   // ==================== Client Helpers ==================== //
@@ -23,6 +56,27 @@ class NexusSpecHelpers {
       autoConnectOptions || null,
     );
     return this.client;
+  }
+
+  onServerConnect({ client = this.client }={}) {
+    return this.timebox(
+      `waiting for client to connect to server`,
+      resolve => client.onServerConnect = resolve,
+    );
+  }
+
+  getHostList({ client = this.client }={}) {
+    return new Promise(resolve => client.getHostList(resolve));
+  }
+
+  closeClient({ client = this.client }={}) {
+    return this.timebox(
+      `waiting to close client`,
+      resolve => {
+        client.onClose = resolve;
+        client.close();
+      },
+    )
   }
 }
 
