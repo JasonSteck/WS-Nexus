@@ -1,3 +1,5 @@
+console.clear();
+
 const WebSocket = require('ws');
 
 const port = 3000;

@@ -2,8 +2,9 @@ class NexusSpecHelpers {
   // ===================== Spec Helpers ===================== //
 
   timebox(desc, func, ms=1000) {
+    const error = new Error('timeout while: ' + desc);
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => { throw new Error('timeout while: ' + desc); }, ms);
+      const timeout = setTimeout(() => { throw  error}, ms);
       return func(val => {
         clearTimeout(timeout);
         return resolve(val);
