@@ -16,8 +16,8 @@ describe('JS-Nexus Server', function() {
     this.client;
   });
 
-  when('a host and client connect', function() {
-    it('can let them communicate', async function() {
+  describe('client.getHostList()', function() {
+    it('only returns active hosts', async function() {
       this.newHost();
       await this.onRegistered();
       expect(this.host.id).not.toEqual(undefined);
@@ -25,15 +25,14 @@ describe('JS-Nexus Server', function() {
 
       this.newClient();
       await this.onServerConnect();
+      // Make sure the host is listed
       let list = await this.getHostList();
       expect(list && list.length).not.toEqual(0);
       let hostRegistry = this.findHost(list, this.host.id);
       expect(hostRegistry.hostName).toBe(this.host.name);
 
+      // cleanup
       await this.closeHost();
-      list = await this.getHostList();
-      hostRegistry = this.findHost(list, this.host.id);
-      expect(hostRegistry.hostName).toBe(this.host.name);
       await this.closeClient();
     });
   });
