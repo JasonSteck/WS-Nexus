@@ -31,6 +31,10 @@ ConnectionPool.prototype.addHost = function(conn) {
   return this.nextHostID++;
 }
 
+ConnectionPool.prototype.removeHost = function(conn) {
+  this.hosts.splice(this.hosts.indexOf(conn), 1);
+}
+
 ConnectionPool.prototype.getDisplayList = function() {
   return this.hosts.map(h => ({ hostID: h.hostID, hostName: h.hostName }));
 }
@@ -100,7 +104,7 @@ wss.on('connection', function connection(ws) {
 
     ws.on('close', function() {
       log('* Lost Connection');
-      // handleClose();
+      state.connPool.removeHost(conn);
     });
   } catch(e) {
     log('ERROR on connection:\n',e);
