@@ -15,72 +15,77 @@ const VISITOR = null;
 const CLIENT = 1;
 const HOST = 2;
 
+// ======================================================= //
+
+class ConnectionPool {
+  constructor() {
+    this.hosts = [];
+    this.nextHostID = 1; // not an index for array
+  }
+
+  addHost(conn) {
+    this.hosts.push(conn);
+    return this.nextHostID++;
+  }
+
+  removeHost(conn) {
+    this.hosts.splice(this.hosts.indexOf(conn), 1);
+  }
+
+  getDisplayList() {
+    return this.hosts.map(h => ({ hostID: h.hostID, hostName: h.hostName }));
+  }
+}
+
+// ======================================================= //
+
+class Connection {
+  constructor(state, ws) {
+    this.state = state;
+    this.ws = ws;
+    this.type = VISITOR;
+    this._handleMessage = this._onVisitorMessage;
+    this.hostID;
+  }
+
+  onMessage(str) {
+    this._handleMessage(str);
+  }
+
+  _onVisitorMessage(str) {
+    const req = JSON.parse(str);
+    switch(req.type) {
+      case 'HOST': //props: hostName
+        this.type = HOST;
+        this._handleMessage = this._onHostMessage;
+        this.hostID = this.state.connPool.addHost(this);
+        this.hostName = req.hostName;
+        this.ws.send(JSON.stringify({
+          type: 'REGISTERED',
+          hostID: this.hostID,
+          hostName: this.hostName,
+        }));
+        break;
+      case 'LIST':
+        this.ws.send(JSON.stringify({
+          type: 'LIST',
+          payload: this.state.connPool.getDisplayList(),
+        }));
+        break;
+      default:
+        log('Unknown request type:', req.type, 'for:', req);
+    }
+  }
+
+  _onHostMessage(str) {}
+}
+
+// ======================== Main ======================== //
+
 const state = {
   connPool: new ConnectionPool(),
 }
 
-// ======================================================= //
-
-function ConnectionPool() {
-  this.hosts = [];
-  this.nextHostID = 1; // not an index for array
-}
-
-ConnectionPool.prototype.addHost = function(conn) {
-  this.hosts.push(conn);
-  return this.nextHostID++;
-}
-
-ConnectionPool.prototype.removeHost = function(conn) {
-  this.hosts.splice(this.hosts.indexOf(conn), 1);
-}
-
-ConnectionPool.prototype.getDisplayList = function() {
-  return this.hosts.map(h => ({ hostID: h.hostID, hostName: h.hostName }));
-}
-
-// ======================================================= //
-
-function Connection(state, ws) {
-  this.state = state;
-  this.ws = ws;
-  this.type = VISITOR;
-  this._handleMessage = this._onVisitorMessage;
-  this.hostID;
-}
-
-Connection.prototype.onMessage = function(str) {
-  this._handleMessage(str);
-}
-
-Connection.prototype._onVisitorMessage = function(str) {
-  const req = JSON.parse(str);
-  switch(req.type) {
-    case 'HOST': //props: hostName
-      this.type = HOST;
-      this._handleMessage = this._onHostMessage;
-      this.hostID = this.state.connPool.addHost(this);
-      this.hostName = req.hostName;
-      this.ws.send(JSON.stringify({
-        type: 'REGISTERED',
-        hostID: this.hostID,
-        hostName: this.hostName,
-      }));
-      break;
-    case 'LIST':
-      this.ws.send(JSON.stringify({
-        type: 'LIST',
-        payload: this.state.connPool.getDisplayList(),
-      }));
-      break;
-    default:
-      log('Unknown request type:', req.type, 'for:', req);
-  }
-}
-
-Connection.prototype._onHostMessage = function(str) {}
-
-// ======================== Main ======================== //
 const wss = new WebSocket.Server({ port: port });
 
 console.log('Listening on port %d...', port);
