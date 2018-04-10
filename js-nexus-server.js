@@ -1,6 +1,6 @@
 console.clear && console.clear();
 
-const { startServer } = require('./server');
+const { Server } = require('./server');
 
 global.SHOW_DEBUG_MESSAGES = true;
 global.log = (...args) => {
@@ -9,4 +9,4 @@ global.log = (...args) => {
   }
 }
 
-startServer();
+(new Server()).start();
