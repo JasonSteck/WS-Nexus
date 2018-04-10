@@ -3,13 +3,6 @@ const Connection = require('./connection.js');
 const ConnectionPool = require('./connection-pool.js');
 const port = 3000;
 
-let SHOW_DEBUG_MESSAGES = true;
-const log = (...args) => {
-  if(SHOW_DEBUG_MESSAGES) {
-    console.log(...args);
-  }
-}
-
 // ======================== Main ======================== //
 
 function startServer() {
@@ -19,7 +12,7 @@ function startServer() {
 
   const wss = new WebSocket.Server({ port: port });
 
-  console.log('Listening on port %d...', port);
+  log('Listening on port %d...', port);
 
   try {
   wss.on('connection', function connection(ws) {
