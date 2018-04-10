@@ -1,9 +1,11 @@
 {
   "name": "js-nexus",
   "version": "1.0.0",
-  "description": "Facilitates a client/server model between browsers accross the internet",
-  "main": "index.js",
+  "description": "Creates a websocket proxy to let browsers communicate directly with each other.",
+  "main": "js-nexus-server.js",
   "scripts": {
+    "start": "node js-nexus-server.js",
+    "debug": "node --inspect js-nexus-server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
