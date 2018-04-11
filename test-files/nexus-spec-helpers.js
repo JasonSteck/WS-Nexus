@@ -1,83 +1,101 @@
+const defaultNexusServer = 'ws://localhost:3000';
+
+function timebox(desc, func, ms=1000) {
+  const error = new Error('timeout while `' + desc + '`');
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => { throw  error}, ms);
+    return func(val => {
+      clearTimeout(timeout);
+      return resolve(val);
+    }, err => {
+      clearTimeout(timeout);
+      return reject(err);
+    })
+  });
+}
+
+class HostWrapper {
+  constructor(opts={}) {
+    const { disableDefaultCallbacks = true } = opts;
+
+    this.host = new nexusHost(
+      opts.nexusServer || defaultNexusServer,
+      opts.hostName || 'defaultHostName',
+      disableDefaultCallbacks,
+    );
+  }
+
+  get id(){
+    return this.host.id;
+  }
+
+  get name() {
+    return this.host.name;
+  }
+
+  onRegistered() {
+    return timebox(
+      `waiting for host '${this.host.name}' to register`,
+      resolve => this.host.onRegistered = resolve,
+    );
+  }
+
+  close() {
+    return timebox(
+      `waiting to close host '${this.host.name}'`,
+      resolve => {
+        this.host.onClose = resolve
+        this.host.close();
+      },
+    )
+  }
+}
+
+class ClientWrapper {
+  constructor(opts={}) {
+    this.client = new nexusClient(
+      opts.nexusServer || defaultNexusServer,
+      opts.autoConnectOptions || null,
+    );
+  }
+
+  onServerConnect() {
+    return timebox(
+      `waiting for client to connect to server`,
+      resolve => this.client.onServerConnect = resolve,
+    );
+  }
+
+  getHostList() {
+    return new Promise(resolve => this.client.getHostList(resolve));
+  }
+
+  close() {
+    return timebox(
+      `waiting to close client`,
+      resolve => {
+        this.client.onClose = resolve;
+        this.client.close();
+      },
+    )
+  }
+}
+
 class NexusSpecHelpers {
   // ===================== Spec Helpers ===================== //
 
-  timebox(desc, func, ms=1000) {
-    const error = new Error('timeout while: ' + desc);
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => { throw  error}, ms);
-      return func(val => {
-        clearTimeout(timeout);
-        return resolve(val);
-      }, err => {
-        clearTimeout(timeout);
-        return reject(err);
-      })
-    });
-  }
-
   findHost(hostList, id) {
-    // host := { hostID: integer, hostName: string}
     // hostList := [ host, host, ...]
+    // host := { hostID: integer, hostName: string}
     return hostList.find(host => host.hostID == id);
   }
 
-  // ===================== Host Helpers ===================== //
-
-  newHost({ nexusServer, hostName, disableDefaultCallbacks = true }={}) {
-    this.host = new nexusHost(
-      nexusServer || ServerAddr,
-      hostName || this.hostName,
-      disableDefaultCallbacks,
-    );
-    return this.host;
+  newHost(opts) {
+    return this.host = new HostWrapper(opts);
   }
 
-  onRegistered({ host = this.host }={}) {
-    return this.timebox(
-      `waiting for host '${this.host.name}' to register`,
-      resolve => host.onRegistered = resolve,
-    );
-  }
-
-  closeHost({ host = this.host }={}) {
-    return this.timebox(
-      `waiting to close host '${this.host.name}'`,
-      resolve => {
-        host.onClose = resolve
-        host.close();
-      },
-    )
-  }
-
-  // ==================== Client Helpers ==================== //
-
-  newClient({ nexusServer, autoConnectOptions }={}) {
-    this.client = new nexusClient(
-      nexusServer || ServerAddr,
-      autoConnectOptions || null,
-    );
-    return this.client;
-  }
-
-  onServerConnect({ client = this.client }={}) {
-    return this.timebox(
-      `waiting for client to connect to server`,
-      resolve => client.onServerConnect = resolve,
-    );
-  }
-
-  getHostList({ client = this.client }={}) {
-    return new Promise(resolve => client.getHostList(resolve));
-  }
-
-  closeClient({ client = this.client }={}) {
-    return this.timebox(
-      `waiting to close client`,
-      resolve => {
-        client.onClose = resolve;
-        client.close();
-      },
-    )
+  newClient(opts) {
+    return this.client = new ClientWrapper(opts);
   }
 }
 

@@ -9,4 +9,5 @@ global.log = (...args) => {
   }
 }
 
-(new Server()).start();
+global.server = new Server(); // for debug convenience
+server.start();

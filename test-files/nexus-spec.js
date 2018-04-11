@@ -19,19 +19,19 @@ fdescribe('JS-Nexus Server', function() {
   describe('client.getHostList()', function() {
     it('only returns active hosts', async function() {
       this.host1 = this.newHost({ hostName: 'host1' });
-      await this.onRegistered({ host: this.host1 });
+      await this.host1.onRegistered();
       expect(this.host1.id).not.toEqual(undefined);
       expect(this.host1.name).not.toEqual(undefined);
 
       this.host2 = this.newHost({ hostName: 'host2' });
-      await this.onRegistered({ host: this.host2 });
+      await this.host2.onRegistered();
       expect(this.host2.id).not.toEqual(undefined);
       expect(this.host2.name).not.toEqual(undefined);
 
-      this.newClient();
-      await this.onServerConnect();
+      this.client = this.newClient();
+      await this.client.onServerConnect();
       // Make sure the host is listed
-      let list = await this.getHostList();
+      let list = await this.client.getHostList();
       expect(list && list.length).not.toEqual(0);
       let host1Registry = this.findHost(list, this.host1.id);
       expect(host1Registry && host1Registry.hostName).toBe(this.host1.name);
@@ -39,22 +39,22 @@ fdescribe('JS-Nexus Server', function() {
       expect(host2Registry && host2Registry.hostName).toBe(this.host2.name);
 
       // cleanup
-      await this.closeHost({ host: this.host1 });
-      list = await this.getHostList();
+      await this.host1.close();
+      list = await this.client.getHostList();
       // make sure host is no longer listed
       host1Registry = this.findHost(list, this.host1.id);
       expect(host1Registry).toBe(undefined);
       host2Registry = this.findHost(list, this.host2.id);
       expect(host2Registry && host2Registry.hostName).toBe(this.host2.name);
 
-      await this.closeHost({ host: this.host2 });
-      list = await this.getHostList();
+      await this.host2.close();
+      list = await this.client.getHostList();
       host1Registry = this.findHost(list, this.host1.id);
       expect(host1Registry).toBe(undefined);
       host2Registry = this.findHost(list, this.host2.id);
       expect(host2Registry).toBe(undefined);
 
-      await this.closeClient();
+      await this.client.close();
     });
   });
 });
