@@ -103,11 +103,21 @@ class NexusSpecHelpers {
     return hostList.find(host => host.hostID == id);
   }
 
-  newHost(opts) {
+  expectHostToBeListed(host, hostList) {
+    let hostRegistry = this.findHost(hostList, host.id);
+    expect(hostRegistry && hostRegistry.hostName).toBe(host.name);
+  }
+
+  expectHostNotToBeListed(host, hostList) {
+    let hostRegistry = this.findHost(hostList, host.id);
+    expect(hostRegistry).toBe(undefined);
+  }
+
+  newHost(opts={}) {
     return this.host = new HostWrapper(opts);
   }
 
-  newClient(opts) {
+  newClient(opts={}) {
     return this.client = new ClientWrapper(opts);
   }
 }

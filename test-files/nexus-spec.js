@@ -10,51 +10,41 @@ fdescribe('JS-Nexus Server', function() {
 
   beforeEach(function() {
     if(testConnection.closed) throw new Error('no connection');
-
-    this.hostName = 'defaultName';
-    this.host;
-    this.client;
   });
 
   describe('client.getHostList()', function() {
     it('only returns active hosts', async function() {
-      this.host1 = this.newHost({ hostName: 'host1' });
-      await this.host1.onRegistered();
-      expect(this.host1.id).not.toEqual(undefined);
-      expect(this.host1.name).not.toEqual(undefined);
+      const host1 = this.newHost();
+      await host1.onRegistered();
+      expect(host1.id).not.toEqual(undefined);
+      expect(host1.name).not.toEqual(undefined);
 
-      this.host2 = this.newHost({ hostName: 'host2' });
-      await this.host2.onRegistered();
-      expect(this.host2.id).not.toEqual(undefined);
-      expect(this.host2.name).not.toEqual(undefined);
+      const host2 = this.newHost();
+      await host2.onRegistered();
+      expect(host2.id).not.toEqual(undefined);
+      expect(host2.name).not.toEqual(undefined);
 
-      this.client = this.newClient();
-      await this.client.onServerConnect();
+      const client = this.newClient();
+      await client.onServerConnect();
       // Make sure the host is listed
-      let list = await this.client.getHostList();
+      let list = await client.getHostList();
       expect(list && list.length).not.toEqual(0);
-      let host1Registry = this.findHost(list, this.host1.id);
-      expect(host1Registry && host1Registry.hostName).toBe(this.host1.name);
-      let host2Registry = this.findHost(list, this.host2.id);
-      expect(host2Registry && host2Registry.hostName).toBe(this.host2.name);
+      this.expectHostToBeListed(host1, list);
+      this.expectHostToBeListed(host2, list);
 
       // cleanup
-      await this.host1.close();
-      list = await this.client.getHostList();
+      await host1.close();
+      list = await client.getHostList();
       // make sure host is no longer listed
-      host1Registry = this.findHost(list, this.host1.id);
-      expect(host1Registry).toBe(undefined);
-      host2Registry = this.findHost(list, this.host2.id);
-      expect(host2Registry && host2Registry.hostName).toBe(this.host2.name);
+      this.expectHostNotToBeListed(host1, list);
+      this.expectHostToBeListed(host2, list);
 
-      await this.host2.close();
-      list = await this.client.getHostList();
-      host1Registry = this.findHost(list, this.host1.id);
-      expect(host1Registry).toBe(undefined);
-      host2Registry = this.findHost(list, this.host2.id);
-      expect(host2Registry).toBe(undefined);
+      await host2.close();
+      list = await client.getHostList();
+      this.expectHostNotToBeListed(host1, list);
+      this.expectHostNotToBeListed(host2, list);
 
-      await this.client.close();
+      await client.close();
     });
   });
 });
