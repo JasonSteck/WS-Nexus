@@ -1,5 +1,13 @@
 const defaultNexusServer = 'ws://localhost:3000';
 
+const getUniqueId = (function() {
+  let id = 0;
+  return function() {
+    // provides a unique id even if called twice in a row
+    return `${Date.now()}.${id++}`;
+  }
+})();
+
 function timebox(desc, func, ms=1000) {
   const error = new Error('timeout while `' + desc + '`');
   return new Promise((resolve, reject) => {
@@ -16,12 +24,17 @@ function timebox(desc, func, ms=1000) {
 
 class HostWrapper {
   constructor(opts={}) {
-    const { disableDefaultCallbacks = true } = opts;
+    const defaults = {
+      disableDefaultCallbacks: true,
+      hostName: getUniqueId(),
+      nexusServer: defaultNexusServer,
+    }
+    const options = { ...defaults, ...opts}
 
     this.host = new nexusHost(
-      opts.nexusServer || defaultNexusServer,
-      opts.hostName || 'defaultHostName',
-      disableDefaultCallbacks,
+      options.nexusServer,
+      options.hostName,
+      options.disableDefaultCallbacks,
     );
   }
 
