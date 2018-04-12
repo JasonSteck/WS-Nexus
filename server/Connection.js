@@ -1,7 +1,8 @@
 class Connection {
-  constructor(state, ws) {
-    this.state = state;
+  constructor(ws, { addHost, getDisplayList }) {
     this.ws = ws;
+    this.addHost = addHost;
+    this.getDisplayList = getDisplayList;
     this.type = this.VISITOR;
     this._handleMessage = this._onVisitorMessage;
     this.hostID;
@@ -17,7 +18,7 @@ class Connection {
       case 'HOST': //props: hostName
         this.type = this.HOST;
         this._handleMessage = this._onHostMessage;
-        this.hostID = this.state.connPool.addHost(this);
+        this.hostID = this.addHost(this);
         this.hostName = req.hostName;
         this.ws.send(JSON.stringify({
           type: 'REGISTERED',
@@ -28,7 +29,7 @@ class Connection {
       case 'LIST':
         this.ws.send(JSON.stringify({
           type: 'LIST',
-          payload: this.state.connPool.getDisplayList(),
+          payload: this.getDisplayList(),
         }));
         break;
       default:

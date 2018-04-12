@@ -1,13 +1,10 @@
 const WebSocket = require('ws');
-const Connection = require('./connection.js');
 const ConnectionPool = require('./connection-pool.js');
 const port = 3000;
 
-// ======================== Main ======================== //
-
 class Server {
   constructor() {
-    this.connPool = new ConnectionPool();
+    this.conPool = new ConnectionPool();
   }
 
   start() {
@@ -20,13 +17,13 @@ class Server {
       try {
         log('New Connection');
 
-        const conn = new Connection(this, ws);
+        const con = this.conPool.newConnection(ws);
 
         ws.on('message', msg => {
           log('Received: %s', msg);
 
           try {
-            conn.onMessage(msg);
+            con.onMessage(msg);
           } catch (e) {
             log('ERROR onMessage: ',e,'\n- Trying to Process: `'+msg+'`');
           }
@@ -36,7 +33,7 @@ class Server {
           global.a = 'hi my love!';
 
           log('* Lost Connection');
-          this.connPool.removeHost(conn);
+          this.conPool.removeHost(con);
         });
       } catch(e) {
         log('ERROR on connection:\n',e);
