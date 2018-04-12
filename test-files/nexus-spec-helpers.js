@@ -1,3 +1,5 @@
+(function(){
+
 const defaultNexusServer = 'ws://localhost:3000';
 
 const getUniqueId = (function() {
@@ -21,6 +23,8 @@ function timebox(desc, func, ms=1000) {
     })
   });
 }
+
+// ===================== Host Wrapper ===================== //
 
 class HostWrapper {
   constructor(opts={}) {
@@ -64,6 +68,8 @@ class HostWrapper {
   }
 }
 
+// ===================== Client Wrapper ===================== //
+
 class ClientWrapper {
   constructor(opts={}) {
     this.client = new nexusClient(
@@ -94,9 +100,9 @@ class ClientWrapper {
   }
 }
 
-class NexusSpecHelpers {
-  // ===================== Spec Helpers ===================== //
+// ===================== Spec Helpers ===================== //
 
+window.NexusSpecHelpers = class NexusSpecHelpers {
   findHost(hostList, id) {
     // hostList := [ host, host, ...]
     // host := { hostID: integer, hostName: string}
@@ -122,7 +128,7 @@ class NexusSpecHelpers {
   }
 }
 
-class EnsureConnection {
+window.EnsureConnection = class EnsureConnection {
   constructor() {
     this.ws = new WebSocket(ServerAddr);
     this.closed = false;
@@ -141,3 +147,5 @@ class EnsureConnection {
     this.ws.close();
   }
 }
+
+})();
