@@ -12,17 +12,21 @@ fdescribe('JS-Nexus Server', function() {
     if(testConnection.closed) throw new Error('no connection');
   });
 
+  it('can register a host', async function() {
+    const host = this.newHost();
+    await host.onRegistered();
+    expect(host.id).not.toEqual(undefined);
+    expect(host.name).not.toEqual(undefined);
+    await host.close();
+  });
+
   describe('client.getHostList()', function() {
     it('only returns active hosts', async function() {
       const host1 = this.newHost();
       await host1.onRegistered();
-      expect(host1.id).not.toEqual(undefined);
-      expect(host1.name).not.toEqual(undefined);
 
       const host2 = this.newHost();
       await host2.onRegistered();
-      expect(host2.id).not.toEqual(undefined);
-      expect(host2.name).not.toEqual(undefined);
 
       const client = this.newClient();
       await client.onServerConnect();
