@@ -26,9 +26,8 @@ fdescribe('JS-Nexus Server', function() {
 
       const client = this.newClient();
       await client.onServerConnect();
-      // Make sure the host is listed
+      // Make sure the hosts are listed
       let list = await client.getHostList();
-      expect(list && list.length).not.toEqual(0);
       this.expectHostToBeListed(host1, list);
       this.expectHostToBeListed(host2, list);
 
