@@ -19,6 +19,7 @@
     describes: [],
     contexts: [],
     specHelper: Object,
+    testTimeout: 5000,
   };
 
   let currentContext = topContext;
@@ -27,7 +28,11 @@
 
   /* should only be used during parse stage  */
 
-  window.setSpecHelper = (klass)=>currentContext.specHelper=klass;
+  window.setSpecHelper = (klass) => currentContext.specHelper = klass;
+
+  window.setTestTimeout = (ms) => currentContext.testTimeout = ms;
+
+  window.clearTestTimeout = () => window.setTestTimeout(null);
 
   window.beforeEach = (func) => {
     currentContext.beforeEachChain.push(func);
@@ -464,6 +469,7 @@
         describes: [],
         contexts: [],
         specHelper: context.specHelper,
+        testTimeout: prevContext.testTimeout,
       };
       newContext.descriptionChain.push(desc[0]);
       context.contexts.push(newContext);
@@ -474,7 +480,8 @@
     currentContext = prevContext;
   }
 
-  /*  spec execution  */
+  /* ====================== spec execution ====================== */
+
   async function runContext(context) {
     currentContext = context; // this is, in fact, used elsewhere
     if(currentContext.focused.ref) { // if our context is focused
@@ -498,10 +505,12 @@
     let runningTest = true;
 
     const timeLimitId = setTimeout(function() {
-      runningTest = false;
+      if(currentContext.testTimeout != null) {
+        runningTest = false;
 
-      test.fail('Test forcefully timed out (consider throwing timeout errors yourself for better error messages)');
-    }, 5000);
+        test.fail('Test forcefully timed out (consider throwing timeout errors yourself for better error messages)');
+      }
+    }, currentContext.testTimeout);
 
     // Possiblity: break this up into three sections (beforeEach/it/afterEach)
     await asyncForEach(allBlocks, async block => {
