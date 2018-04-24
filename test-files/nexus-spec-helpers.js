@@ -33,6 +33,7 @@ class HostWrapper {
       hostName: getUniqueId(),
       nexusServer: defaultNexusServer,
     }
+    // let any specified property overwrite the default value (including undefined)
     const options = { ...defaults, ...opts}
 
     this.host = new nexusHost(
@@ -50,13 +51,6 @@ class HostWrapper {
     return this.host.name;
   }
 
-  onRegistered() {
-    return timebox(
-      `waiting for host '${this.host.name}' to register`,
-      resolve => this.host.onRegistered = resolve,
-    );
-  }
-
   close() {
     return timebox(
       `waiting to close host '${this.host.name}'`,
@@ -65,6 +59,15 @@ class HostWrapper {
         this.host.close();
       },
     )
+  }
+
+  // Callbacks
+
+  onRegistered() {
+    return timebox(
+      `waiting for host '${this.host.name}' to register`,
+      resolve => this.host.onRegistered = resolve,
+    );
   }
 }
 
@@ -78,15 +81,25 @@ class ClientWrapper {
     );
   }
 
-  onServerConnect() {
+  getHostList() {
+    return new Promise(resolve => this.client.getHostList(resolve));
+  }
+
+  connect(connectionOptions) {
     return timebox(
-      `waiting for client to connect to server`,
-      resolve => this.client.onServerConnect = resolve,
+      `connecting to host ${JSON.stringify(connectionOptions)}`,
+      resolve => this.client.connect(connectionOptions, resolve),
     );
   }
 
-  getHostList() {
-    return new Promise(resolve => this.client.getHostList(resolve));
+  failingConnect(connectionOptions) {
+    return timebox(
+      `waiting to hear that this host doesn't exist: ${JSON.stringify(connectionOptions)}`,
+      (resolve, reject) => {
+        this.client.onFailHostConnect = resolve;
+        this.client.connect(connectionOptions, reject); // if successfully connected, fail test
+      }
+    );
   }
 
   close() {
@@ -97,6 +110,15 @@ class ClientWrapper {
         this.client.close();
       },
     )
+  }
+
+  // Callbacks
+
+  onServerConnect() {
+    return timebox(
+      `waiting for client to connect to server`,
+      resolve => this.client.onServerConnect = resolve,
+    );
   }
 }
 

@@ -7,26 +7,37 @@ class ConnectionPool {
 
     this.addHost = this.addHost.bind(this);
     this.getDisplayList = this.getDisplayList.bind(this);
+    this.onConnectRequest = this.onConnectRequest.bind(this);
   }
 
   newConnection(ws) {
     return new Connection(ws, {
       addHost: this.addHost,
       getDisplayList: this.getDisplayList,
+      onConnectRequest: this.onConnectRequest,
     })
-  }
-
-  addHost(con) {
-    this.hosts.push(con);
-    return this.nextHostID++;
   }
 
   removeHost(con) {
     this.hosts.splice(this.hosts.indexOf(con), 1);
   }
 
+  // ========================== Callbacks ==========================
+
+  addHost(con) {
+    this.hosts.push(con);
+    return this.nextHostID++;
+  }
+
   getDisplayList() {
-    return this.hosts.map(h => ({ hostID: h.hostID, hostName: h.hostName }));
+    return this.hosts.map(h => ({
+      hostID: h.hostID,
+      hostName: h.hostName,
+    }));
+  }
+
+  onConnectRequest(req) {
+    
   }
 }
 

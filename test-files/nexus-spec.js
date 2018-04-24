@@ -50,4 +50,17 @@ fdescribe('JS-Nexus Server', function() {
       await client.close();
     });
   });
+
+  describe('a client', function() {
+    when('attempting to connect to a non-existant host', function() {
+      it('receives an error message', async function() {
+        const req = { hostID: -18237867 };
+        const client = this.newClient();
+        await client.onServerConnect();
+
+        const failedReq = await client.failingConnect(req);
+        expect(failedReq).toEqual(req);
+      });
+    });
+  });
 });

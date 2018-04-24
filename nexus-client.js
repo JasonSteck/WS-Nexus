@@ -36,6 +36,8 @@ function nexusClient(nexusServer, autoConnectOptions) {
             this.onHostConnect && this.onHostConnect(req.payload);
           }
           break;
+        case 'NO_SUCH_HOST':
+          this.onFailHostConnect && this.onFailHostConnect(req.request);
       }
     }
   };
@@ -60,6 +62,11 @@ nexusClient.prototype.setDefaultCallbacks = function() {
   this.onHostConnect = (host) => {
     /* example callback */
     console.log('+ Connected to host:', host);
+  };
+
+  this.onFailHostConnect = (host) => {
+    /* example callback */
+    console.log('+ Failed to connect to host:', host);
   };
 
   this.onMessage = (message) => {
