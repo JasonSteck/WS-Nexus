@@ -79,6 +79,12 @@ class ClientWrapper {
       opts.nexusServer || defaultNexusServer,
       opts.autoConnectOptions || null,
     );
+    this.client.onMessage = function(msg){
+      throw new Error("Client got unexpected message: " + msg);
+    };
+    this.client.onClose = function() {
+      throw new Error("Client closed unexpectedly!");
+    }
   }
 
   getHostList() {
