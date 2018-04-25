@@ -16,6 +16,7 @@
     afterEachChain: [],
     focused: { ref: true },
     its: [],
+    fits: [],
     describes: [],
     contexts: [],
     specHelper: Object,
@@ -66,7 +67,8 @@
   };
   window.fit = (name, func) => {
     currentContext.focused.ref = false;
-    return window.it(name, func);
+    if(typeof func !== 'function') throw new Error(`Missing function in 'fit' block of "${name}"`);
+    currentContext.fits.push({ name, func });
   };
 
   let testFrameworkDone;
@@ -466,6 +468,7 @@
         afterEachChain: context.afterEachChain.slice(0),
         focused: desc[2]? { ref: true } : prevContext.focused,
         its: [],
+        fits: [],
         describes: [],
         contexts: [],
         specHelper: context.specHelper,
@@ -486,6 +489,8 @@
     currentContext = context; // this is, in fact, used elsewhere
     if(currentContext.focused.ref) { // if our context is focused
       await asyncForEach(currentContext.its, runTest);
+    } else {
+      await asyncForEach(currentContext.fits, runTest);
     }
 
     await asyncForEach(currentContext.contexts, runContext);
