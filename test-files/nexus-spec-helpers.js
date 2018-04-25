@@ -13,7 +13,7 @@ const getUniqueId = (function() {
 function timebox(desc, func, ms=1000) {
   const error = new Error('timeout while `' + desc + '`');
   return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => { throw  error}, ms);
+    const timeout = setTimeout(() => { if(ms!=null) reject(error); }, ms);
     return func(val => {
       clearTimeout(timeout);
       return resolve(val);
@@ -27,12 +27,15 @@ function timebox(desc, func, ms=1000) {
 // ===================== Host Wrapper ===================== //
 
 class HostWrapper {
-  constructor(opts={}) {
+  constructor(opts={}, testOptions={}) {
     const defaults = {
       disableDefaultCallbacks: true,
       hostName: getUniqueId(),
       nexusServer: defaultNexusServer,
     }
+
+    this.requestTimeout = testOptions.requestTimeout;
+
     // let any specified property overwrite the default value (including undefined)
     const options = { ...defaults, ...opts}
 
@@ -58,6 +61,7 @@ class HostWrapper {
         this.host.onClose = resolve
         this.host.close();
       },
+      this.requestTimeout,
     )
   }
 
@@ -67,6 +71,7 @@ class HostWrapper {
     return timebox(
       `waiting for host '${this.host.name}' to register`,
       resolve => this.host.onRegistered = resolve,
+      this.requestTimeout,
     );
   }
 }
@@ -74,11 +79,13 @@ class HostWrapper {
 // ===================== Client Wrapper ===================== //
 
 class ClientWrapper {
-  constructor(opts={}) {
+  constructor(opts={}, testOptions={}) {
     this.client = new nexusClient(
       opts.nexusServer || defaultNexusServer,
       opts.autoConnectOptions || null,
     );
+    this.requestTimeout = testOptions.requestTimeout;
+
     this.client.onMessage = function(msg){
       throw new Error("Client got unexpected message: " + msg);
     };
@@ -95,6 +102,7 @@ class ClientWrapper {
     return timebox(
       `connecting to host ${JSON.stringify(connectionOptions)}`,
       resolve => this.client.connect(connectionOptions, resolve),
+      this.requestTimeout,
     );
   }
 
@@ -104,7 +112,8 @@ class ClientWrapper {
       (resolve, reject) => {
         this.client.onFailHostConnect = resolve;
         this.client.connect(connectionOptions, reject); // if successfully connected, fail test
-      }
+      },
+      this.requestTimeout,
     );
   }
 
@@ -115,6 +124,7 @@ class ClientWrapper {
         this.client.onClose = resolve;
         this.client.close();
       },
+      this.requestTimeout,
     )
   }
 
@@ -124,6 +134,7 @@ class ClientWrapper {
     return timebox(
       `waiting for client to connect to server`,
       resolve => this.client.onServerConnect = resolve,
+      this.requestTimeout,
     );
   }
 }
@@ -131,6 +142,18 @@ class ClientWrapper {
 // ===================== Spec Helpers ===================== //
 
 window.NexusSpecHelpers = class NexusSpecHelpers {
+  newHost(opts={}) {
+    return this.host = new HostWrapper(opts, {
+      requestTimeout: this.requestTimeout,
+    });
+  }
+
+  newClient(opts={}) {
+    return this.client = new ClientWrapper(opts, {
+      requestTimeout: this.requestTimeout,
+    });
+  }
+
   findHost(hostList, id) {
     // hostList := [ host, host, ...]
     // host := { hostID: integer, hostName: string}
@@ -145,14 +168,6 @@ window.NexusSpecHelpers = class NexusSpecHelpers {
   expectHostNotToBeListed(host, hostList) {
     let hostRegistry = this.findHost(hostList, host.id);
     expect(hostRegistry).toBe(undefined);
-  }
-
-  newHost(opts={}) {
-    return this.host = new HostWrapper(opts);
-  }
-
-  newClient(opts={}) {
-    return this.client = new ClientWrapper(opts);
   }
 }
 
