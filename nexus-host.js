@@ -67,8 +67,8 @@ nexusHost.prototype.initialize = function(nexusServer) {
     }));
   };
 
-  this._ws.onerror = (event) => (this.onError? this.onError(event) : undefined);
-  this._ws.onclose = (event) => (this.onClose? this.onClose(event) : undefined);
+  this._ws.onerror = (event) => (this.onError && this.onError(event));
+  this._ws.onclose = (event) => (this.onClose && this.onClose(event));
   this._ws.onmessage = (event) => {
   //     console.log('Received:', event.data);
     const req = JSON.parse(event.data);
