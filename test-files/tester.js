@@ -32,7 +32,7 @@
 
   window.setTestTimeout = (ms) => currentContext.testTimeout = ms;
 
-  window.clearTestTimeout = () => window.setTestTimeout(null);
+  window.disableTestTimeout = () => window.setTestTimeout(null);
 
   window.beforeEach = (func) => {
     currentContext.beforeEachChain.push(func);
