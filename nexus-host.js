@@ -34,11 +34,11 @@ nexusHost.prototype._setDefaultCallbacks = function() {
   };
   this.onError = (event)=>{
     /* example callback */
-    console.error('+ Nexus Error:', event);
+    console.error("+ Nexus Error:", event);
   };
   this.onClose = (event)=>{
     /* example callback */
-    console.warn('+ Connection Closed:', event);
+    console.warn("+ Connection Closed:", event);
   };
   this.onNewClient = (clientID, request)=>{
     /* example callback*/

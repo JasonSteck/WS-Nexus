@@ -46,10 +46,11 @@ describe('nexus-host.js', function() {
       this.ws.onmessage({ data });
     };
 
-    this.triggerHostRegistered = (hostID=9) => {
+    this.triggerHostRegistered = (hostID=9, hostName) => {
       const data = JSON.stringify({
         type: 'REGISTERED',
-        hostID: hostID,
+        hostID,
+        hostName,
       });
       this.ws.onmessage({ data });
     };
@@ -204,29 +205,10 @@ describe('nexus-host.js', function() {
       this.newHost().onRegistered = callback;
 
       const hostID = 5;
-      this.triggerHostRegistered(hostID); // simulate event
+      const hostName = 'givenName';
+      this.triggerHostRegistered(hostID, hostName); // simulate event
 
-      expect(callback).toHaveBeenCalledWith(hostID);
-    });
-
-    it('does not crash if there is no callback specified', function() {
-      this.stubWebSocket();
-      this.newHost().onRegistered = null;
-
-      expect(()=>this.triggerHostRegistered()).not.toThrow();
-    });
-  });
-
-  when('the host gets registered', function() {
-    it('calls the .onRegistered callback', function() {
-      this.stubWebSocket();
-      const callback = newSpy('onRegistered');
-      this.newHost().onRegistered = callback;
-
-      const hostID = 5;
-      this.triggerHostRegistered(hostID); // simulate event
-
-      expect(callback).toHaveBeenCalledWith(hostID);
+      expect(callback).toHaveBeenCalledWith(hostID, hostName);
     });
 
     it('does not crash if there is no callback specified', function() {
