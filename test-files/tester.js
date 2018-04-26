@@ -335,9 +335,9 @@
       currentTest.passExpectation();
     } else {
       if(found) {
-        currentTest.fail(`Expected spy "${actual.methodName}" \nto not have been called with: ${expected}\nbut actual calls were:\n${actual.calls.join('\n')}`);
+        currentTest.fail(`Expected spy "${actual.methodName}" \nto not have been called with: [${expected}]\nbut actual calls were:\n[${actual.calls.join(']\n[')}]`);
       } else {
-        currentTest.fail(`Expected spy "${actual.methodName}" \nto have been called with: ${expected}\nbut actual calls were:\n${actual.calls.join('\n')}`);
+        currentTest.fail(`Expected spy "${actual.methodName}" \nto have been called with: [${expected}]\nbut actual calls were:\n[${actual.calls.join(']\n[')}]`);
       }
     }
 
