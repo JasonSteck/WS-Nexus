@@ -59,8 +59,22 @@ fdescribe('JS-Nexus Server', function() {
         await client.onServerConnect();
 
         const failedReq = await client.failingConnect(req);
-        expect(failedReq).toEqual(req);
+        expect(failedReq.hostID).toEqual(req.hostID);
       });
+    });
+
+    it('can connect to an existing host', async function() {
+      const host = this.newHost();
+      await host.onRegistered();
+
+      const client = this.newClient();
+      await client.onServerConnect();
+
+      const onNewClient = host.onNewClient();
+      client.connect({ hostName: host.name });
+      const clientID = await onNewClient;
+
+      expect(clientID).toEqual(1);
     });
   });
 });

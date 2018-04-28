@@ -37,7 +37,9 @@ class ConnectionPool {
   }
 
   onConnectRequest(req) {
-    
+    return this.hosts.find(h => (
+      req.hostID === h.hostID || req.hostName === h.hostName
+    )) || null;
   }
 }
 

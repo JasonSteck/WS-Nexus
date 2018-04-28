@@ -74,6 +74,14 @@ class HostWrapper {
       this.requestTimeout,
     );
   }
+
+  onNewClient(req) {
+    return timebox(
+      `waiting for a client to connect to host`,
+      resolve => this.host.onNewClient = resolve,
+      this.requestTimeout,
+    );
+  }
 }
 
 // ===================== Client Wrapper ===================== //
@@ -101,7 +109,10 @@ class ClientWrapper {
   connect(connectionOptions) {
     return timebox(
       `connecting to host ${JSON.stringify(connectionOptions)}`,
-      resolve => this.client.connect(connectionOptions, resolve),
+      (resolve, reject) => {
+        this.client.onFailHostConnect = reject;
+        this.client.connect(connectionOptions, resolve);
+      },
       this.requestTimeout,
     );
   }
