@@ -12,6 +12,13 @@ fdescribe('JS-Nexus Server', function() {
     if(testConnection.closed) throw new Error('no connection');
   });
 
+  afterEach(async function() {
+    const conns = this.connections; // comes from spec helper
+    for(let i=0; i< conns.length; i++) {
+      await conns[i].close();
+    }
+  });
+
   it('can register a host', async function() {
     const host = this.newHost();
     await host.onRegistered();

@@ -55,6 +55,8 @@ class HostWrapper {
   }
 
   close() {
+    const state = this.host._ws.readyState;
+    if(state === WebSocket.CLOSED  || state === WebSocket.CLOSING) return Promise.resolve();
     return timebox(
       `waiting to close host '${this.host.name}'`,
       resolve => {
@@ -62,7 +64,7 @@ class HostWrapper {
         this.host.close();
       },
       this.requestTimeout,
-    )
+    );
   }
 
   // Callbacks
@@ -93,13 +95,6 @@ class ClientWrapper {
       opts.autoConnectOptions || null,
     );
     this.requestTimeout = testOptions.requestTimeout;
-
-    this.client.onMessage = function(msg){
-      throw new Error("Client got unexpected message: " + msg);
-    };
-    this.client.onClose = function() {
-      throw new Error("Client closed unexpectedly!");
-    }
   }
 
   getHostList() {
@@ -129,6 +124,8 @@ class ClientWrapper {
   }
 
   close() {
+    const state = this.client._ws.readyState;
+    if(state === WebSocket.CLOSED  || state === WebSocket.CLOSING) return Promise.resolve();
     return timebox(
       `waiting to close client`,
       resolve => {
@@ -136,7 +133,7 @@ class ClientWrapper {
         this.client.close();
       },
       this.requestTimeout,
-    )
+    );
   }
 
   // Callbacks
@@ -153,16 +150,24 @@ class ClientWrapper {
 // ===================== Spec Helpers ===================== //
 
 window.NexusSpecHelpers = class NexusSpecHelpers {
+  constructor() {
+    this.connections = [];
+  }
+
   newHost(opts={}) {
-    return this.host = new HostWrapper(opts, {
+    this.host = new HostWrapper(opts, {
       requestTimeout: this.requestTimeout,
     });
+    this.connections.push(this.host);
+    return this.host;
   }
 
   newClient(opts={}) {
-    return this.client = new ClientWrapper(opts, {
+    this.client = new ClientWrapper(opts, {
       requestTimeout: this.requestTimeout,
     });
+    this.connections.push(this.client);
+    return this.client;
   }
 
   findHost(hostList, id) {
