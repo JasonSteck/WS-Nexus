@@ -184,12 +184,14 @@
 
   function getStackStartingAtErrorLocation(error = new Error) {
     const errorLines = error.stack && error.stack.split('\n') || [];
+    let result = [];
     for(let i=1;i<errorLines.length;i++) {
       let file = getFileNameFromErrorLine(errorLines[i]);
       if(file !== testFramworkFile) {
-        return errorLines.slice(i, errorLines.length).join('\n');
+        result.push(errorLines[i]);
       }
     }
+    return result.join('\n');
   }
 
   function isEqual(a,b) {
