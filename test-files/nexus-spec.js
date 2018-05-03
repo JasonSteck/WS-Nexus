@@ -70,6 +70,26 @@ fdescribe('JS-Nexus Server', function() {
       });
     });
 
+    when('connecting to an existing host by name', function() {
+      beforeEach(async function() {
+        this.host = this.newHost();
+        await this.host.onRegistered();
+
+        const onNewClient = this.host.onNewClient(); // first, setup the listener
+        this.hostInfo = await this.client.connect({ hostName: this.host.name });
+        this.clientID = await onNewClient; // wait for host to get client
+      });
+
+      it("gets the host's information (id and name)", async function() {
+        expect(this.hostInfo.hostID).toEqual(this.host.id);
+        expect(this.hostInfo.hostName).toEqual(this.host.name);
+      });
+
+      it('is assigned an ID that is given to the host', async function() {
+        expect(this.clientID).toEqual(1);
+      });
+    });
+
     when('connecting to an existing host by id', function() {
       beforeEach(async function() {
         this.host = this.newHost();
@@ -90,24 +110,6 @@ fdescribe('JS-Nexus Server', function() {
       });
     });
 
-    when('connecting to an existing host by name', function() {
-      beforeEach(async function() {
-        this.host = this.newHost();
-        await this.host.onRegistered();
 
-        const onNewClient = this.host.onNewClient(); // first, setup the listener
-        this.hostInfo = await this.client.connect({ hostName: this.host.name });
-        this.clientID = await onNewClient; // wait for host to get client
-      });
-
-      it("gets the host's information (id and name)", async function() {
-        expect(this.hostInfo.hostID).toEqual(this.host.id);
-        expect(this.hostInfo.hostName).toEqual(this.host.name);
-      });
-
-      it('is assigned an ID that is given to the host', async function() {
-        expect(this.clientID).toEqual(1);
-      });
-    });
   });
 });

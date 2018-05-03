@@ -6,7 +6,7 @@ function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
   this.name = hostName;
   this.id = null;
 
-  this.initialize(nexusServer);
+  this._initialize(nexusServer);
 }
 
 /* ====================== Available Actions ====================== */
@@ -57,7 +57,7 @@ nexusHost.prototype._setDefaultCallbacks = function() {
 
 /* =================== (ignore the man behind the curtain, he's ugly) =================== */
 
-nexusHost.prototype.initialize = function(nexusServer) {
+nexusHost.prototype._initialize = function(nexusServer) {
   this._ws = new WebSocket(nexusServer);
 
   this._ws.onopen = () => {
