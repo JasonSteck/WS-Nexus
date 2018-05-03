@@ -155,19 +155,19 @@ window.NexusSpecHelpers = class NexusSpecHelpers {
   }
 
   newHost(opts={}) {
-    this.host = new HostWrapper(opts, {
+    const host = new HostWrapper(opts, {
       requestTimeout: this.requestTimeout,
     });
-    this.connections.push(this.host);
-    return this.host;
+    this.connections.push(host);
+    return host;
   }
 
   newClient(opts={}) {
-    this.client = new ClientWrapper(opts, {
+    const client = new ClientWrapper(opts, {
       requestTimeout: this.requestTimeout,
     });
-    this.connections.push(this.client);
-    return this.client;
+    this.connections.push(client);
+    return client;
   }
 
   findHost(hostList, id) {

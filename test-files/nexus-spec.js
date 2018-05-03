@@ -59,29 +59,33 @@ fdescribe('JS-Nexus Server', function() {
   });
 
   describe('a client', function() {
+    beforeEach(async function(){
+      this.client = this.newClient();
+      await this.client.onServerConnect();
+    });
+
     when('attempting to connect to a non-existant host', function() {
       it('receives an error message', async function() {
         const req = { hostID: -18237867 };
-        const client = this.newClient();
-        await client.onServerConnect();
 
-        const failedReq = await client.failingConnect(req);
+        const failedReq = await this.client.failingConnect(req);
         expect(failedReq.hostID).toEqual(req.hostID);
       });
     });
 
-    it('can connect to an existing host', async function() {
-      const host = this.newHost();
-      await host.onRegistered();
+    when('connecting to an existing host by name', function() {
+      beforeEach(async function() {
+        this.host = this.newHost();
+        await this.host.onRegistered();
 
-      const client = this.newClient();
-      await client.onServerConnect();
+        const onNewClient = this.host.onNewClient(); // first, setup the listener
+        await this.client.connect({ hostName: this.host.name });
+        this.clientID = await onNewClient; // wait for host to get client
+      });
 
-      const onNewClient = host.onNewClient();
-      client.connect({ hostName: host.name });
-      const clientID = await onNewClient;
-
-      expect(clientID).toEqual(1);
+      it('can connect to the host', async function() {
+        expect(this.clientID).toEqual(1);
+      });
     });
   });
 });
