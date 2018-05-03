@@ -33,7 +33,7 @@ function nexusClient(nexusServer, autoConnectOptions) {
         case 'CONNECTED':
           if(!this._isConnectedToHost) {
             this._isConnectedToHost = true;
-            this.onHostConnect && this.onHostConnect(req.payload);
+            this.onHostConnect && this.onHostConnect(req);
           }
           break;
         case 'NO_SUCH_HOST':

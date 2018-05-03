@@ -37,15 +37,12 @@ fdescribe('JS-Nexus Server', function() {
 
       const client = this.newClient();
       await client.onServerConnect();
-      // Make sure the hosts are listed
       let list = await client.getHostList();
       this.expectHostToBeListed(host1, list);
       this.expectHostToBeListed(host2, list);
 
-      // cleanup
       await host1.close();
       list = await client.getHostList();
-      // make sure host is no longer listed
       this.expectHostNotToBeListed(host1, list);
       this.expectHostToBeListed(host2, list);
 
@@ -79,11 +76,16 @@ fdescribe('JS-Nexus Server', function() {
         await this.host.onRegistered();
 
         const onNewClient = this.host.onNewClient(); // first, setup the listener
-        await this.client.connect({ hostName: this.host.name });
+        this.hostInfo = await this.client.connect({ hostName: this.host.name });
         this.clientID = await onNewClient; // wait for host to get client
       });
 
-      it('can connect to the host', async function() {
+      it("gets the host's information (id and name)", async function() {
+        expect(this.hostInfo.hostID).toEqual(this.host.id);
+        expect(this.hostInfo.hostName).toEqual(this.host.name);
+      });
+
+      it('is assigned an ID that is given to the host', async function() {
         expect(this.clientID).toEqual(1);
       });
     });

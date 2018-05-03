@@ -36,6 +36,8 @@ class Connection {
 
           this.ws.send(JSON.stringify({
             type: 'CONNECTED',
+            hostID: host.hostID,
+            hostName: host.hostName,
             request: req,
           }));
         }
