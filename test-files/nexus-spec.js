@@ -61,12 +61,32 @@ fdescribe('JS-Nexus Server', function() {
       await this.client.onServerConnect();
     });
 
-    when('attempting to connect to a non-existant host', function() {
+    when('attempting to connect to a non-existent host', function() {
       it('receives an error message', async function() {
         const req = { hostID: -18237867 };
 
         const failedReq = await this.client.failingConnect(req);
         expect(failedReq.hostID).toEqual(req.hostID);
+      });
+    });
+
+    when('connecting to an existing host by id', function() {
+      beforeEach(async function() {
+        this.host = this.newHost();
+        await this.host.onRegistered();
+
+        const onNewClient = this.host.onNewClient(); // first, setup the listener
+        this.hostInfo = await this.client.connect({ hostID: this.host.id });
+        this.clientID = await onNewClient; // wait for host to get client
+      });
+
+      it("gets the host's information (id and name)", async function() {
+        expect(this.hostInfo.hostID).toEqual(this.host.id);
+        expect(this.hostInfo.hostName).toEqual(this.host.name);
+      });
+
+      it('is assigned an ID that is given to the host', async function() {
+        expect(this.clientID).toEqual(1);
       });
     });
 
