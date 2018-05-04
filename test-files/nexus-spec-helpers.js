@@ -84,6 +84,14 @@ class HostWrapper {
       this.requestTimeout,
     );
   }
+
+  onClientMessage() {
+    return timebox(
+      `waiting for a client send a message`,
+      resolve => this.host.onClientMessage = (clientID, message) => resolve([clientID, message]),
+      this.requestTimeout,
+    );
+  }
 }
 
 // ===================== Client Wrapper ===================== //
@@ -121,6 +129,10 @@ class ClientWrapper {
       },
       this.requestTimeout,
     );
+  }
+
+  send(msg) {
+    this.client.send(msg);
   }
 
   close() {

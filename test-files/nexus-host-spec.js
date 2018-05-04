@@ -33,7 +33,7 @@ describe('nexus-host.js', function() {
       const data = JSON.stringify({
         type: 'FROM_CLIENT',
         clientID: clientID || 7,
-        payload: message || "HAHA",
+        message: message || "HAHA",
       });
       this.ws.onmessage({ data });
     };

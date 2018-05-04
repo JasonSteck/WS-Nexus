@@ -12,6 +12,8 @@ class Connection {
 
     this.hostID;
     this.hostName;
+
+    this.host;
   }
 
   onMessage(str) {
@@ -22,22 +24,21 @@ class Connection {
     const req = JSON.parse(str);
     switch(req.type) {
       case 'CONNECT': //props: hostName AND/OR hostID AND/OR <anything>
-        const host = this.onConnectRequest(req);
-        if(host==null) {
+        this.host = this.onConnectRequest(req);
+        if(this.host==null) {
           this.ws.send(JSON.stringify({
             type: 'NO_SUCH_HOST',
             request: req,
           }));
         } else {
-          this.hostID = host.hostID;
-          this.hostName = host.hostName;
+          this.host.newClient(this, req);
 
-          host.newClient(this, req);
+          this._handleMessage = this._onClientMessage;
 
           this.ws.send(JSON.stringify({
             type: 'CONNECTED',
-            hostID: host.hostID,
-            hostName: host.hostName,
+            hostID: this.host.hostID,
+            hostName: this.host.hostName,
             request: req,
           }));
         }
@@ -75,6 +76,7 @@ class Connection {
   newClient(clientConnection, req) {
     this.clients.push(clientConnection);
     const clientID = this.nextClientID++;
+    clientConnection.setID(clientID);
 
     this.ws.send(JSON.stringify({
       type: 'NEW_CLIENT',
@@ -84,11 +86,16 @@ class Connection {
   }
 
   _onClientMessage(str) {
-    const req = JSON.parse(str);
-    console.log('+ message from Client:', str);
-    switch(req.type) {
-      
-    }
+    log('+ message from Client:', str);
+    this.host.ws.send(JSON.stringify({
+      type: 'FROM_CLIENT',
+      clientID: this.clientID,
+      message: str,
+    }));
+  }
+
+  setID(clientID) {
+    this.clientID = clientID;
   }
 }
 

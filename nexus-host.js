@@ -77,7 +77,7 @@ nexusHost.prototype._initialize = function(nexusServer) {
         this.onNewClient && this.onNewClient(req.clientID, req.request);
         break;
       case 'FROM_CLIENT':
-        this.onClientMessage && this.onClientMessage(req.clientID, req.payload);
+        this.onClientMessage && this.onClientMessage(req.clientID, req.message);
         break;
       case 'LOST_CLIENT':
         this.onClientLost && this.onClientLost(req.payload); // TODO change to req.clientID

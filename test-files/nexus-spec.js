@@ -108,8 +108,14 @@ fdescribe('JS-Nexus Server', function() {
       it('is assigned an ID that is given to the host', async function() {
         expect(this.clientID).toEqual(1);
       });
+
+      it('can send and recieve messages from a host', async function() {
+        const msg = "Hello there";
+        this.client.send(msg);
+        const [id, recieved] = await this.host.onClientMessage();
+        expect(id).toEqual(1);
+        expect(recieved).toEqual(msg);
+      });
     });
-
-
   });
 });
