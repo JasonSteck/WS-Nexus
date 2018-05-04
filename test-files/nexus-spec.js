@@ -19,46 +19,34 @@ describe('JS-Nexus Server', function() {
     }
   });
 
-  it('can register a host', async function() {
-    const host = this.newHost();
-    await host.onRegistered();
-    expect(host.id).not.toEqual(undefined);
-    expect(host.name).not.toEqual(undefined);
-    await host.close();
-  });
-
-  describe('client.getHostList()', function() {
-    it('only returns active hosts', async function() {
-      const host1 = this.newHost();
-      await host1.onRegistered();
-
-      const host2 = this.newHost();
-      await host2.onRegistered();
-
-      const client = this.newClient();
-      await client.onServerConnect();
-      let list = await client.getHostList();
-      this.expectHostToBeListed(host1, list);
-      this.expectHostToBeListed(host2, list);
-
-      await host1.close();
-      list = await client.getHostList();
-      this.expectHostNotToBeListed(host1, list);
-      this.expectHostToBeListed(host2, list);
-
-      await host2.close();
-      list = await client.getHostList();
-      this.expectHostNotToBeListed(host1, list);
-      this.expectHostNotToBeListed(host2, list);
-
-      await client.close();
-    });
-  });
-
   describe('a client', function() {
     beforeEach(async function(){
       this.client = this.newClient();
       await this.client.onServerConnect();
+    });
+
+    describe('getHostList()', function() {
+      it('only returns active hosts', async function() {
+        const host1 = this.newHost();
+        await host1.onRegistered();
+
+        const host2 = this.newHost();
+        await host2.onRegistered();
+
+        let list = await this.client.getHostList();
+        this.expectHostToBeListed(host1, list);
+        this.expectHostToBeListed(host2, list);
+
+        await host1.close();
+        list = await this.client.getHostList();
+        this.expectHostNotToBeListed(host1, list);
+        this.expectHostToBeListed(host2, list);
+
+        await host2.close();
+        list = await this.client.getHostList();
+        this.expectHostNotToBeListed(host1, list);
+        this.expectHostNotToBeListed(host2, list);
+      });
     });
 
     when('attempting to connect to a non-existent host', function() {
@@ -123,6 +111,18 @@ describe('JS-Nexus Server', function() {
         const recieved = await this.client.onMessage();
         expect(recieved).toEqual(msg);
       });
+    });
+  });
+
+  describe('a host', function() {
+    beforeEach(async function() {
+      this.host = this.newHost();
+      await this.host.onRegistered();
+    });
+
+    it('can register', async function() {
+      expect(this.host.id).not.toEqual(undefined);
+      expect(this.host.name).not.toEqual(undefined);
     });
   });
 });
