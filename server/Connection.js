@@ -67,9 +67,19 @@ class Connection {
 
   _onHostMessage(str) {
     const req = JSON.parse(str);
-    console.log('+ message from Host:', str);
+    log('+ request from Host:', str);
     switch(req.type) {
-      
+      case 'SEND':
+        const { clientIDs, message } = req;
+        this.clients.some(c => {
+          if(c.clientID == clientIDs) {
+            c.ws.send(message);
+            return true;
+          }
+        });
+        break;
+      default:
+        log('! Unknown request from a host:', str);
     }
   }
 
@@ -86,7 +96,7 @@ class Connection {
   }
 
   _onClientMessage(str) {
-    log('+ message from Client:', str);
+    log('+ request from Client:', str);
     this.host.ws.send(JSON.stringify({
       type: 'FROM_CLIENT',
       clientID: this.clientID,

@@ -54,6 +54,10 @@ class HostWrapper {
     return this.host.name;
   }
 
+  send(msg, clientID=undefined) {
+    this.host.send(msg, clientID);
+  }
+
   close() {
     const state = this.host._ws.readyState;
     if(state === WebSocket.CLOSED  || state === WebSocket.CLOSING) return Promise.resolve();
@@ -133,6 +137,14 @@ class ClientWrapper {
 
   send(msg) {
     this.client.send(msg);
+  }
+
+  onMessage(msg) {
+    return timebox(
+      `waiting for host to send a message`,
+      resolve => this.client.onMessage = resolve,
+      this.requestTimeout,
+    );
   }
 
   close() {

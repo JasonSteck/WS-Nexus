@@ -11,11 +11,11 @@ function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
 
 /* ====================== Available Actions ====================== */
 
-nexusHost.prototype.send = function(payload, clientID=undefined) {
+nexusHost.prototype.send = function(message, clientIDs=undefined) {
   this._ws.send(JSON.stringify({
     type: 'SEND',
-    clientID,
-    payload,
+    clientIDs,
+    message,
   }));
 };
 
