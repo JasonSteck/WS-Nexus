@@ -1,6 +1,6 @@
 const ServerAddr = 'ws://localhost:3000';
 
-fdescribe('JS-Nexus Server', function() {
+describe('JS-Nexus Server', function() {
 
   // Throw error if a Nexus server is not running
   const testConnection = new EnsureConnection();

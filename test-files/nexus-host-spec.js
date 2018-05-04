@@ -176,12 +176,12 @@ describe('nexus-host.js', function() {
     it('tries to send the message to the client with the ID', function() {
       this.stubWebSocket();
       const clientID = 8;
-      const payload = 'hello there';
-      this.newHost().send(payload, clientID);
+      const message = 'hello there';
+      this.newHost().send(message, clientID);
       expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
         type: 'SEND',
-        clientID,
-        payload,
+        clientIDs: clientID,
+        message,
       }));
     });
   });
@@ -189,11 +189,11 @@ describe('nexus-host.js', function() {
   describe('#send(msg)', function() {
     it('tries to send the message everyone', function() {
       this.stubWebSocket();
-      const payload = 'hello there';
-      this.newHost().send(payload);
+      const message = 'hello there';
+      this.newHost().send(message);
       expect(this.ws.send).toHaveBeenCalledWith(JSON.stringify({
         type: 'SEND',
-        payload,
+        message,
       }));
     });
   });
