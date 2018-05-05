@@ -3,14 +3,9 @@ const ServerAddr = 'ws://localhost:3000';
 describe('JS-Nexus Server', function() {
 
   // Throw error if a Nexus server is not running
-  const testConnection = new EnsureConnection();
-  onDoneTesting.then(() => testConnection.close());
+  new EnsureConnection();
 
   setSpecHelper(NexusSpecHelpers);
-
-  beforeEach(function() {
-    if(testConnection.closed) throw new Error('no connection');
-  });
 
   afterEach(async function() {
     const conns = this.connections; // comes from spec helper

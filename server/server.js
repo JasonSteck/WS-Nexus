@@ -30,8 +30,6 @@ class Server {
         });
 
         ws.on('close', () => {
-          global.a = 'hi my love!';
-
           log('* Lost Connection');
           this.conPool.removeHost(con);
         });
