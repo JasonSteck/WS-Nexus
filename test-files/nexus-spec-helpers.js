@@ -92,7 +92,7 @@ class HostWrapper {
   onClientMessage() {
     return timebox(
       `waiting for a client send a message`,
-      resolve => this.host.onClientMessage = (clientID, message) => resolve([clientID, message]),
+      resolve => this.host.onClientMessage = (message, clientID) => resolve([message, clientID]),
       this.requestTimeout,
     );
   }

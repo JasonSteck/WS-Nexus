@@ -95,7 +95,7 @@ describe('JS-Nexus Server', function() {
       it('can send messages to the host', async function() {
         const msg = "Hello there";
         this.client.send(msg);
-        const [id, recieved] = await this.host.onClientMessage();
+        const [recieved, id] = await this.host.onClientMessage();
         expect(id).toEqual(1);
         expect(recieved).toEqual(msg);
       });

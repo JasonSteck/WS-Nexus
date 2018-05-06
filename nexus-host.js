@@ -44,7 +44,7 @@ nexusHost.prototype._setDefaultCallbacks = function() {
     /* example callback*/
     console.log("+ User #%s joined. Their connection request was:", clientID, request);
   };
-  this.onClientMessage = (clientID, message)=>{
+  this.onClientMessage = (message, clientID)=>{
     /* example callback*/
     console.log("+ User #%s sent you:", clientID, message);
   };
@@ -77,7 +77,7 @@ nexusHost.prototype._initialize = function(nexusServer) {
         this.onNewClient && this.onNewClient(req.clientID, req.request);
         break;
       case 'FROM_CLIENT':
-        this.onClientMessage && this.onClientMessage(req.clientID, req.message);
+        this.onClientMessage && this.onClientMessage(req.message, req.clientID);
         break;
       case 'LOST_CLIENT':
         this.onClientLost && this.onClientLost(req.payload); // TODO change to req.clientID
