@@ -315,7 +315,11 @@
     if((actual.calls.length > 0) ^ not) {
       currentTest.passExpectation();
     } else {
-      currentTest.fail(`Expected: "${actual.methodName}"\nto have been called, but it wasn't`);
+      if(not) {
+        currentTest.fail(`Expected: "${actual.methodName}"\nto not have been called, but it was`);
+      } else {
+        currentTest.fail(`Expected: "${actual.methodName}"\nto have been called, but it wasn't`);
+      }
     }
   }
 
