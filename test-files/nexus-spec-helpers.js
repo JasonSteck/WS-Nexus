@@ -178,19 +178,21 @@ window.NexusSpecHelpers = class NexusSpecHelpers {
     this.connections = [];
   }
 
-  newHost(opts={}) {
+  async newHost(opts={}) {
     const host = new HostWrapper(opts, {
       requestTimeout: this.requestTimeout,
     });
     this.connections.push(host);
+    await host.onRegistered();
     return host;
   }
 
-  newClient(opts={}) {
+  async newClient(opts={}) {
     const client = new ClientWrapper(opts, {
       requestTimeout: this.requestTimeout,
     });
     this.connections.push(client);
+    await client.onServerConnect();
     return client;
   }
 

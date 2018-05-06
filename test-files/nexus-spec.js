@@ -16,17 +16,13 @@ describe('JS-Nexus Server', function() {
 
   describe('a client', function() {
     beforeEach(async function(){
-      this.client = this.newClient();
-      await this.client.onServerConnect();
+      this.client = await this.newClient();
     });
 
     describe('getHostList()', function() {
       it('only returns active hosts', async function() {
-        const host1 = this.newHost();
-        await host1.onRegistered();
-
-        const host2 = this.newHost();
-        await host2.onRegistered();
+        const host1 = await this.newHost();
+        const host2 = await this.newHost();
 
         let list = await this.client.getHostList();
         this.expectHostToBeListed(host1, list);
@@ -55,8 +51,7 @@ describe('JS-Nexus Server', function() {
 
     when('connecting to an existing host by name', function() {
       beforeEach(async function() {
-        this.host = this.newHost();
-        await this.host.onRegistered();
+        this.host = await this.newHost();
 
         const onNewClient = this.host.onNewClient(); // first, setup the listener
         this.hostInfo = await this.client.connect({ hostName: this.host.name });
@@ -75,8 +70,7 @@ describe('JS-Nexus Server', function() {
 
     when('connecting to an existing host by id', function() {
       beforeEach(async function() {
-        this.host = this.newHost();
-        await this.host.onRegistered();
+        this.host = await this.newHost();
 
         const onNewClient = this.host.onNewClient(); // first, setup the listener
         this.hostInfo = await this.client.connect({ hostID: this.host.id });
