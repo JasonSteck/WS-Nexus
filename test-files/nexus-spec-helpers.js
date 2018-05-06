@@ -139,14 +139,6 @@ class ClientWrapper {
     this.client.send(msg);
   }
 
-  onMessage(msg) {
-    return timebox(
-      `waiting for host to send a message`,
-      resolve => this.client.onMessage = resolve,
-      this.requestTimeout,
-    );
-  }
-
   close() {
     const state = this.client._ws.readyState;
     if(state === WebSocket.CLOSED  || state === WebSocket.CLOSING) return Promise.resolve();
@@ -168,6 +160,21 @@ class ClientWrapper {
       resolve => this.client.onServerConnect = resolve,
       this.requestTimeout,
     );
+  }
+
+  onMessage({ timeout=this.requestTimeout }={}) {
+    return timebox(
+      `waiting for host to send a message`,
+      resolve => this.client.onMessage = resolve,
+      timeout,
+    );
+  }
+
+  throwOnMessage() {
+    //   Unfortunately, this may fail after a test is over, so for
+    // now it just throws an error without failing a test.
+    const err = new Error('Expected client to not recieve a message but it did');
+    this.client.onMessage = () => { throw err };
   }
 }
 

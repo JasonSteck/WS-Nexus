@@ -105,13 +105,59 @@ describe('JS-Nexus Server', function() {
 
   describe('a host', function() {
     beforeEach(async function() {
-      this.host = this.newHost();
-      await this.host.onRegistered();
+      this.host = await this.newHost();
     });
 
     it('can register', async function() {
       expect(this.host.id).not.toEqual(undefined);
       expect(this.host.name).not.toEqual(undefined);
+    });
+
+    when('it has clients', function() {
+      beforeEach(async function() {
+        const target = { hostID: this.host.id };
+
+        this.client1 = await this.newClient();
+        await this.client1.connect(target);
+
+        this.client2 = await this.newClient();
+        await this.client2.connect(target);
+
+        this.client3 = await this.newClient();
+        await this.client3.connect(target);
+      });
+
+      it('can message exactly one of them at a time', async function() {
+        let recieved;
+        this.client2.throwOnMessage();
+        this.client3.throwOnMessage();
+
+        this.host.send('one', 1);
+        recieved = await this.client1.onMessage();
+        expect(recieved).toEqual('one');
+        this.client1.throwOnMessage(); // should not recieve any more messages
+
+        this.host.send('two', 2);
+        recieved = await this.client2.onMessage();
+        expect(recieved).toEqual('two');
+        this.client2.throwOnMessage();
+
+        this.host.send('three', 3);
+        recieved = await this.client3.onMessage();
+        expect(recieved).toEqual('three');
+        this.client3.throwOnMessage(); // in case it recieves another message, somehow -.-
+      });
+
+      it('does not let a message from one client leak to others', async function() {
+        this.client1.throwOnMessage();
+        this.client2.throwOnMessage();
+        this.client3.throwOnMessage();
+
+        this.client2.send('secret');
+        const [msg, id] = await this.host.onClientMessage();
+        expect(msg).toEqual('secret');
+        expect(id).toEqual(2);
+      });
     });
   });
 });
