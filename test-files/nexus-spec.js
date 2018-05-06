@@ -158,6 +158,21 @@ describe('JS-Nexus Server', function() {
         expect(msg).toEqual('secret');
         expect(id).toEqual(2);
       });
+
+      it('can message multiple clients', async function() {
+        const msg = 'two and three';
+        this.client1.throwOnMessage();
+
+        this.host.send(msg, [2,3]);
+        const onTwoMessage = this.client2.onMessage();
+        const onThreeMessage = this.client3.onMessage();
+
+        const twoMessage = await onTwoMessage;
+        const threeMessage = await onThreeMessage;
+
+        expect(twoMessage).toEqual(msg);
+        expect(threeMessage).toEqual(msg);
+      });
     });
   });
 });

@@ -7,7 +7,7 @@ class Connection {
     this.type = this.VISITOR;
     this._handleMessage = this._onVisitorMessage;
 
-    this.clients = [];
+    this.clients = new ClientList;
     this.nextClientID = 1; // not an array position
 
     this.hostID;
@@ -70,13 +70,20 @@ class Connection {
     log('+ request from Host:', str);
     switch(req.type) {
       case 'SEND':
-        const { clientIDs, message } = req;
-        this.clients.some(c => {
-          if(c.clientID == clientIDs) {
-            c.ws.send(message);
-            return true;
+        let { clientIDs, message } = req;
+        if(Array.isArray(clientIDs)) {
+          clientIDs.forEach(id => {
+            const client = this.clients.hash[id];
+            if(client) {
+              client.ws.send(message);
+            }
+          });
+        } else {
+          const client = this.clients.hash[clientIDs];
+          if(client) {
+            client.ws.send(message);
           }
-        });
+        }
         break;
       default:
         log('! Unknown request from a host:', str);
@@ -84,9 +91,9 @@ class Connection {
   }
 
   newClient(clientConnection, req) {
-    this.clients.push(clientConnection);
     const clientID = this.nextClientID++;
     clientConnection.setID(clientID);
+    this.clients.addClient(clientConnection);
 
     this.ws.send(JSON.stringify({
       type: 'NEW_CLIENT',
@@ -106,6 +113,26 @@ class Connection {
 
   setID(clientID) {
     this.clientID = clientID;
+  }
+}
+
+class ClientList {
+  constructor() {
+    this.hash = {};
+    this.array = [];
+  }
+
+  addClient(client) {
+    this.hash[client.clientID] = client;
+    this.array.push(client);
+  }
+
+  removeClient(client) {
+    delete this.hash[client.clientID];
+    const index = this.array.indexOf(client);
+    if(index >= 0) {
+      this.array = this.array.slice().splice(index, 1);
+    }
   }
 }
 
