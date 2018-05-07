@@ -6,6 +6,9 @@ class Connection {
     this.type = this.VISITOR;
     this._handleMessage = this._onVisitorMessage;
 
+    ws.on('message', this.onMessage.bind(this));
+    ws.on('close', this.onClose.bind(this));
+
     this.clients = new ClientList;
     this.nextClientID = 1; // not an array position
 

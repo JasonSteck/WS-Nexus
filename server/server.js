@@ -17,22 +17,8 @@ class Server {
       try {
         log('New Connection');
 
-        const con = this.conPool.newConnection(ws);
+        this.conPool.newConnection(ws);
 
-        ws.on('message', msg => {
-          log('Received: %s', msg);
-
-          try {
-            con.onMessage(msg);
-          } catch (e) {
-            log('ERROR onMessage: ',e,'\n- Trying to Process: `'+msg+'`');
-          }
-        });
-
-        ws.on('close', () => {
-          log('* Lost Connection');
-          this.conPool.removeHost(con);
-        });
       } catch(e) {
         log('ERROR on connection:\n',e);
       }
