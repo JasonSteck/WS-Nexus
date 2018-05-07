@@ -1,9 +1,8 @@
 class Connection {
-  constructor(ws, { addHost, getDisplayList, onConnectRequest }) {
+  // options: { addHost, getDisplayList, onConnectRequest, onClose }
+  constructor(ws, options) {
     this.ws = ws;
-    this.addHost = addHost;
-    this.getDisplayList = getDisplayList;
-    this.onConnectRequest = onConnectRequest;
+    this.options = options;
     this.type = this.VISITOR;
     this._handleMessage = this._onVisitorMessage;
 
@@ -17,14 +16,24 @@ class Connection {
   }
 
   onMessage(str) {
-    this._handleMessage(str);
+    log('Received: %s', str);
+    try {
+      this._handleMessage(str);
+    } catch (e) {
+      log('ERROR onMessage: ',e,'\n- Trying to Process: `'+str+'`');
+    }
+  }
+
+  onClose() {
+    log('* Lost Connection');
+    this.options.onClose();
   }
 
   _onVisitorMessage(str) {
     const req = JSON.parse(str);
     switch(req.type) {
       case 'CONNECT': //props: hostName AND/OR hostID AND/OR <anything>
-        this.host = this.onConnectRequest(req);
+        this.host = this.options.onConnectRequest(req);
         if(this.host==null) {
           this.ws.send(JSON.stringify({
             type: 'NO_SUCH_HOST',
@@ -46,7 +55,7 @@ class Connection {
       case 'HOST': //props: hostName
         this.type = this.HOST;
         this._handleMessage = this._onHostMessage;
-        this.hostID = this.addHost(this);
+        this.hostID = this.options.addHost(this);
         this.hostName = req.hostName;
         this.ws.send(JSON.stringify({
           type: 'REGISTERED',
@@ -57,7 +66,7 @@ class Connection {
       case 'LIST':
         this.ws.send(JSON.stringify({
           type: 'LIST',
-          payload: this.getDisplayList(),
+          payload: this.options.getDisplayList(),
         }));
         break;
       default:
