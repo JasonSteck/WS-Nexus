@@ -11,15 +11,19 @@ class ConnectionPool {
   }
 
   newConnection(ws) {
-    return new Connection(ws, {
+    const con = new Connection(ws, {
       addHost: this.addHost,
       getDisplayList: this.getDisplayList,
       onConnectRequest: this.onConnectRequest,
-    })
+      onClose: () => this.removeHost(con),
+    });
   }
 
   removeHost(con) {
-    this.hosts.splice(this.hosts.indexOf(con), 1);
+    const index = this.hosts.indexOf(con);
+    if(index >= 0) {
+      this.hosts.splice(index, 1);
+    }
   }
 
   // ========================== Callbacks ==========================
