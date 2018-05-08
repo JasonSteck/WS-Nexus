@@ -173,6 +173,23 @@ describe('JS-Nexus Server', function() {
         expect(twoMessage).toEqual(msg);
         expect(threeMessage).toEqual(msg);
       });
+
+      it('can message all clients', async function() {
+        const msg = 'all';
+
+        this.host.send(msg);
+        const onOneMessage = this.client1.onMessage();
+        const onTwoMessage = this.client2.onMessage();
+        const onThreeMessage = this.client3.onMessage();
+
+        const oneMessage = await onOneMessage;
+        const twoMessage = await onTwoMessage;
+        const threeMessage = await onThreeMessage;
+
+        expect(oneMessage).toEqual(msg);
+        expect(twoMessage).toEqual(msg);
+        expect(threeMessage).toEqual(msg);
+      });
     });
   });
 });

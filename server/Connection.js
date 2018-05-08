@@ -83,7 +83,11 @@ class Connection {
     switch(req.type) {
       case 'SEND':
         let { clientIDs, message } = req;
-        if(Array.isArray(clientIDs)) {
+        if(clientIDs == null) {
+          this.clients.array.forEach(client => {
+            client.ws.send(message);
+          })
+        } else if(Array.isArray(clientIDs)) {
           clientIDs.forEach(id => {
             const client = this.clients.hash[id];
             if(client) {
