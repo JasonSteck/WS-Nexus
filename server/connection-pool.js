@@ -5,33 +5,21 @@ class ConnectionPool {
     this.hosts = [];
     this.nextHostID = 1; // not an index for array
 
-    this.addHost = this.addHost.bind(this);
     this.getDisplayList = this.getDisplayList.bind(this);
     this.onConnectRequest = this.onConnectRequest.bind(this);
+    this.onNewHost = this.onNewHost.bind(this);
   }
 
   newConnection(ws) {
     const con = new Connection(ws, {
-      addHost: this.addHost,
       getDisplayList: this.getDisplayList,
       onConnectRequest: this.onConnectRequest,
-      onClose: () => this.removeHost(con),
+      onLostHost: () => this.onLostHost(con),
+      onNewHost: this.onNewHost,
     });
   }
 
-  removeHost(con) {
-    const index = this.hosts.indexOf(con);
-    if(index >= 0) {
-      this.hosts.splice(index, 1);
-    }
-  }
-
   // ========================== Callbacks ==========================
-
-  addHost(con) {
-    this.hosts.push(con);
-    return this.nextHostID++;
-  }
 
   getDisplayList() {
     return this.hosts.map(h => ({
@@ -44,6 +32,18 @@ class ConnectionPool {
     return this.hosts.find(h => (
       req.hostID === h.hostID || req.hostName === h.hostName
     )) || null;
+  }
+
+  onLostHost(con) {
+    const index = this.hosts.indexOf(con);
+    if(index >= 0) {
+      this.hosts.splice(index, 1);
+    }
+  }
+
+  onNewHost(con) {
+    this.hosts.push(con);
+    return this.nextHostID++;
   }
 }
 

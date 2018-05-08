@@ -1,5 +1,5 @@
 class Connection {
-  // options: { addHost, getDisplayList, onConnectRequest, onClose }
+  // options: { getDisplayList, onConnectRequest, onLostHost, onNewHost }
   constructor(ws, options) {
     this.ws = ws;
     this.options = options;
@@ -29,7 +29,7 @@ class Connection {
 
   onClose() {
     log('* Lost Connection');
-    this.options.onClose();
+    this.options.onLostHost();
   }
 
   _onVisitorMessage(str) {
@@ -58,7 +58,7 @@ class Connection {
       case 'HOST': //props: hostName
         this.type = this.HOST;
         this._handleMessage = this._onHostMessage;
-        this.hostID = this.options.addHost(this);
+        this.hostID = this.options.onNewHost(this);
         this.hostName = req.hostName;
         this.ws.send(JSON.stringify({
           type: 'REGISTERED',
