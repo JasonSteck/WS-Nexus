@@ -223,28 +223,30 @@ window.NexusSpecHelpers = class NexusSpecHelpers {
 window.EnsureConnection = class EnsureConnection {
   constructor() {
     this.ws = new WebSocket(ServerAddr);
-    this._shouldBeOpen = true;
+    this._shouldClose = false;
 
-    let connected = new Promise((resolve, reject) => {
-      this.ws.onopen = resolve;
-      this.ws.onclose = () => {
-        if(this._shouldBeOpen) {
-          const err = new Error('no connection');
-          reject(err);
-          connected = Promise.reject(err); // change to rejected if we lose connection
-        }
+    let connectionPromise = timebox(
+      `waiting for connecton to server`,
+      resolve => this.ws.onopen = resolve,
+      this.requestTimeout,
+    );
+
+    this.ws.onclose = () => {
+      if(!this._shouldClose) {
+        connectionPromise = Promise.reject(new Error('lost connection to server'));
       }
-    });
+    }
 
     beforeEach(async function() {
-      await connected;
+      if(this._shouldClose) throw new Error('Test connection was already closed');
+      await connectionPromise;
     });
 
     onDoneTesting.then(() => this.close());
   }
 
   close() {
-    this._shouldBeOpen = false;
+    this._shouldClose = true;
     this.ws.close();
   }
 }
