@@ -1,19 +1,16 @@
 class Connection {
-  // options: { getDisplayList, onConnectRequest, onLostHost, onNewHost }
+  // options: { getDisplayList, onConnectRequest, onNewHost }
   constructor(ws, options) {
     this.ws = ws;
     this.options = options;
     this.type = this.VISITOR;
     this._handleMessage = this._onVisitorMessage;
 
-    ws.on('message', this.onMessage.bind(this));
-    ws.on('close', this.onClose.bind(this));
+    this.onMessage = this.onMessage.bind(this);
+    this.onClose = this.onClose.bind(this);
 
-    this.clients = new ClientList;
-    this.nextClientID = 1; // not an array position
-
-    this.hostID;
-    this.hostName;
+    ws.on('message', this.onMessage);
+    ws.on('close', this.onClose);
 
     this.host;
   }
@@ -28,8 +25,7 @@ class Connection {
   }
 
   onClose() {
-    log('* Lost Connection');
-    this.options.onLostHost();
+    log('* Lost Visitor Connection');
   }
 
   _onVisitorMessage(str) {
@@ -56,15 +52,13 @@ class Connection {
         }
         break;
       case 'HOST': //props: hostName
-        this.type = this.HOST;
-        this._handleMessage = this._onHostMessage;
-        this.hostID = this.options.onNewHost(this);
-        this.hostName = req.hostName;
-        this.ws.send(JSON.stringify({
-          type: 'REGISTERED',
-          hostID: this.hostID,
-          hostName: this.hostName,
-        }));
+        this.ws.removeListener('message', this.onMessage);
+        this.ws.removeListener('close', this.onClose);
+
+        this.options.onNewHost(this, {
+          ws: this.ws,
+          request: req,
+        });
         break;
       case 'LIST':
         this.ws.send(JSON.stringify({
@@ -75,47 +69,6 @@ class Connection {
       default:
         log('Unknown request type:', req.type, 'for:', req);
     }
-  }
-
-  _onHostMessage(str) {
-    const req = JSON.parse(str);
-    log('+ request from Host:', str);
-    switch(req.type) {
-      case 'SEND':
-        let { clientIDs, message } = req;
-        if(clientIDs == null) {
-          this.clients.array.forEach(client => {
-            client.ws.send(message);
-          })
-        } else if(Array.isArray(clientIDs)) {
-          clientIDs.forEach(id => {
-            const client = this.clients.hash[id];
-            if(client) {
-              client.ws.send(message);
-            }
-          });
-        } else {
-          const client = this.clients.hash[clientIDs];
-          if(client) {
-            client.ws.send(message);
-          }
-        }
-        break;
-      default:
-        log('! Unknown request from a host:', str);
-    }
-  }
-
-  newClient(clientConnection, req) {
-    const clientID = this.nextClientID++;
-    clientConnection.setID(clientID);
-    this.clients.addClient(clientConnection);
-
-    this.ws.send(JSON.stringify({
-      type: 'NEW_CLIENT',
-      clientID,
-      request: req,
-    }));
   }
 
   _onClientMessage(str) {
@@ -131,27 +84,6 @@ class Connection {
     this.clientID = clientID;
   }
 }
-
-class ClientList {
-  constructor() {
-    this.hash = {};
-    this.array = [];
-  }
-
-  addClient(client) {
-    this.hash[client.clientID] = client;
-    this.array.push(client);
-  }
-
-  removeClient(client) {
-    delete this.hash[client.clientID];
-    const index = this.array.indexOf(client);
-    if(index >= 0) {
-      this.array = this.array.slice().splice(index, 1);
-    }
-  }
-}
-
 
 Connection.VISITOR = null;
 Connection.CLIENT = 1;

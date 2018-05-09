@@ -1,4 +1,5 @@
 const Connection = require('./connection');
+const Host = require('./host');
 
 class ConnectionPool {
   constructor() {
@@ -7,14 +8,14 @@ class ConnectionPool {
 
     this.getDisplayList = this.getDisplayList.bind(this);
     this.onConnectRequest = this.onConnectRequest.bind(this);
+    this.onLostHost = this.onLostHost.bind(this);
     this.onNewHost = this.onNewHost.bind(this);
   }
 
   newConnection(ws) {
-    const con = new Connection(ws, {
+    new Connection(ws, {
       getDisplayList: this.getDisplayList,
       onConnectRequest: this.onConnectRequest,
-      onLostHost: () => this.onLostHost(con),
       onNewHost: this.onNewHost,
     });
   }
@@ -34,16 +35,19 @@ class ConnectionPool {
     )) || null;
   }
 
-  onLostHost(con) {
-    const index = this.hosts.indexOf(con);
+  onLostHost(host) {
+    const index = this.hosts.indexOf(host);
     if(index >= 0) {
       this.hosts.splice(index, 1);
     }
   }
 
-  onNewHost(con) {
-    this.hosts.push(con);
-    return this.nextHostID++;
+  onNewHost(connection, { ws, request }) {
+    this.hosts.push(new Host(ws, {
+      hostID: this.nextHostID++,
+      hostName: request.hostName,
+      onClose: this.onLostHost,
+    }));
   }
 }
 
