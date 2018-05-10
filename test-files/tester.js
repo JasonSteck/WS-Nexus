@@ -165,7 +165,8 @@
   let results = null;
 
   function getFileNameFromErrorLine(line) {
-    return line.match(/(file:.*):\d+:\d+/)[1];
+    const res = line.match(/(file:.*):\d+:\d+/);
+    return res && res[1] || '<anonymous>';
   }
 
   let testFramworkFile = getFileNameFromErrorLine((new Error).stack.split('\n')[1]);
