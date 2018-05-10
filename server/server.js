@@ -9,20 +9,17 @@ class Server {
 
   start() {
     const wss = new WebSocket.Server({ port: port });
-
     log('Listening on port %d...', port);
 
     try {
-    wss.on('connection', ws => {
-      try {
-        log('New Connection');
-
-        this.conPool.newConnection(ws);
-
-      } catch(e) {
-        log('ERROR on connection:\n',e);
-      }
-    });
+      wss.on('connection', ws => {
+        try {
+          log('New Connection');
+          this.conPool.newVisitor(ws);
+        } catch(e) {
+          log('ERROR handling new Visitor:\n',e);
+        }
+      });
     } catch(e) {
       log('ERROR listening for connections:\n', e);
     }

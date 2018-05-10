@@ -1,5 +1,5 @@
 const Client = require('./client');
-const Connection = require('./connection');
+const Visitor = require('./visitor');
 const Host = require('./host');
 
 class ConnectionPool {
@@ -13,8 +13,8 @@ class ConnectionPool {
     this.onNewHost = this.onNewHost.bind(this);
   }
 
-  newConnection(ws) {
-    new Connection(ws, {
+  newVisitor(ws) {
+    new Visitor(ws, {
       getDisplayList: this.getDisplayList,
       onConnectRequest: this.onConnectRequest,
       onClientRequest: this.onClientRequest,
