@@ -1,4 +1,4 @@
-class Connection {
+class Visitor {
   // options: { onClientRequest, onNewHost }
   constructor(ws, options) {
     this.ws = ws;
@@ -12,8 +12,8 @@ class Connection {
   }
 
   onMessage(str) {
-    log('Received: %s', str);
     try {
+      log('+ request from Visitor:', str);
       const req = JSON.parse(str);
       switch(req.type) {
         case 'CONNECT': //props: hostName AND/OR hostID AND/OR <anything>
@@ -60,4 +60,4 @@ class Connection {
   }
 }
 
-module.exports = Connection;
+module.exports = Visitor;
