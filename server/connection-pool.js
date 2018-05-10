@@ -9,15 +9,15 @@ class ConnectionPool {
 
     this.getDisplayList = this.getDisplayList.bind(this);
     this.onLostHost = this.onLostHost.bind(this);
-    this.onClientRequest = this.onClientRequest.bind(this);
-    this.onNewHost = this.onNewHost.bind(this);
+    this.onBecomeClient = this.onBecomeClient.bind(this);
+    this.onBecomeHost = this.onBecomeHost.bind(this);
   }
 
   newVisitor(ws) {
     new Visitor(ws, {
       getDisplayList: this.getDisplayList,
-      onClientRequest: this.onClientRequest,
-      onNewHost: this.onNewHost,
+      onBecomeClient: this.onBecomeClient,
+      onBecomeHost: this.onBecomeHost,
     });
   }
 
@@ -43,7 +43,7 @@ class ConnectionPool {
     }
   }
 
-  onClientRequest(connection, { ws, request }) {
+  onBecomeClient(connection, { ws, request }) {
     const host = this.findHost(request);
     if(host==null) {
       return false;
@@ -56,7 +56,7 @@ class ConnectionPool {
     }
   }
 
-  onNewHost(connection, { ws, request }) {
+  onBecomeHost(connection, { ws, request }) {
     this.hosts.push(new Host(ws, {
       hostID: this.nextHostID++,
       hostName: request.hostName,

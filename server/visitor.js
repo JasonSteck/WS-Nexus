@@ -1,5 +1,5 @@
 class Visitor {
-  // options: { onClientRequest, onNewHost }
+  // options: { onBecomeClient, onBecomeHost }
   constructor(ws, options) {
     this.ws = ws;
     this.options = options;
@@ -17,7 +17,7 @@ class Visitor {
       const req = JSON.parse(str);
       switch(req.type) {
         case 'CONNECT': //props: hostName AND/OR hostID AND/OR <anything>
-          const success = this.options.onClientRequest(this, {
+          const success = this.options.onBecomeClient(this, {
             ws: this.ws,
             request: req,
           });
@@ -36,7 +36,7 @@ class Visitor {
           this.ws.removeListener('message', this.onMessage);
           this.ws.removeListener('close', this.onClose);
 
-          this.options.onNewHost(this, {
+          this.options.onBecomeHost(this, {
             ws: this.ws,
             request: req,
           });
