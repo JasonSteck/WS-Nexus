@@ -16,10 +16,15 @@ class ConnectionPool {
   newVisitor(ws) {
     new Visitor(ws, {
       getDisplayList: this.getDisplayList,
-      onConnectRequest: this.onConnectRequest,
       onClientRequest: this.onClientRequest,
       onNewHost: this.onNewHost,
     });
+  }
+
+  findHost(req) {
+    return this.hosts.find(h => (
+      req.hostID === h.hostID || req.hostName === h.hostName
+    )) || null;
   }
 
   // ========================== Callbacks ==========================
@@ -29,12 +34,6 @@ class ConnectionPool {
       hostID: h.hostID,
       hostName: h.hostName,
     }));
-  }
-
-  findHost(req) {
-    return this.hosts.find(h => (
-      req.hostID === h.hostID || req.hostName === h.hostName
-    )) || null;
   }
 
   onLostHost(host) {
