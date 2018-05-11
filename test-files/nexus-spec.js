@@ -190,6 +190,18 @@ describe('JS-Nexus Server', function() {
         expect(twoMessage).toEqual(msg);
         expect(threeMessage).toEqual(msg);
       });
+
+      it('gets notified when a client disconnects', async function() {
+        let id;
+
+        this.client1.close();
+        id = await this.host.onClientLost();
+        expect(id).toEqual(1);
+
+        this.client2.close();
+        id = await this.host.onClientLost();
+        expect(id).toEqual(2);
+      });
     });
   });
 });

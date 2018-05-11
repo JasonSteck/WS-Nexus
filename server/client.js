@@ -36,6 +36,7 @@ class Client {
 
   onClose() {
     log('* Lost Client Connection');
+    this.host.clientLost(this.clientID);
   }
 }
 

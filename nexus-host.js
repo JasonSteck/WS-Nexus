@@ -80,7 +80,7 @@ nexusHost.prototype._initialize = function(nexusServer) {
         this.onClientMessage && this.onClientMessage(req.message, req.clientID);
         break;
       case 'LOST_CLIENT':
-        this.onClientLost && this.onClientLost(req.payload); // TODO change to req.clientID
+        this.onClientLost && this.onClientLost(req.clientID);
         break;
       case 'REGISTERED':
         this.id = req.hostID;

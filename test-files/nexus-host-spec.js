@@ -41,7 +41,7 @@ describe('nexus-host.js', function() {
     this.triggerClientLost = (clientID) => {
       const data = JSON.stringify({
         type: 'LOST_CLIENT',
-        payload: clientID || 7,
+        clientID: clientID || 7,
       });
       this.ws.onmessage({ data });
     };
@@ -141,7 +141,7 @@ describe('nexus-host.js', function() {
       const message = 'Yo';
       this.triggerClientMessage({clientID, message}); // simulate event
 
-      expect(callback).toHaveBeenCalledWith(clientID, message);
+      expect(callback).toHaveBeenCalledWith(message, clientID);
     });
 
     it('does not crash if there is no callback specified', function() {

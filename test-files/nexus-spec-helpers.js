@@ -96,6 +96,14 @@ class HostWrapper {
       this.requestTimeout,
     );
   }
+
+  onClientLost() {
+    return timebox(
+      `waiting for a client to disconnect`,
+      resolve => this.host.onClientLost = resolve,
+      this.requestTimeout,
+    );
+  }
 }
 
 // ===================== Client Wrapper ===================== //

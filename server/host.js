@@ -33,6 +33,16 @@ class Host {
     }));
   }
 
+  clientLost(clientID) {
+    this.clients.remove(clientID);
+    if(this.ws.readyState === this.ws.OPEN) {
+      this.ws.send(JSON.stringify({
+        type: 'LOST_CLIENT',
+        clientID,
+      }));
+    }
+  }
+
   onMessage(str) {
     try {
       log('+ request from Host:', str);
