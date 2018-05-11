@@ -4,11 +4,8 @@ class Client {
     this.ws = ws;
     this.options = options;
 
-    this.onMessage = this.onMessage.bind(this);
-    this.onClose = this.onClose.bind(this);
-
-    ws.on('message', this.onMessage);
-    ws.on('close', this.onClose);
+    ws.on('message', this.onMessage.bind(this));
+    ws.on('close', this.onClose.bind(this));
 
     this.host = options.host;
 

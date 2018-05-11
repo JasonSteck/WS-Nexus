@@ -6,7 +6,6 @@ class Visitor {
 
     this.onMessage = this.onMessage.bind(this);
     this.onClose = this.onClose.bind(this);
-
     ws.on('message', this.onMessage);
     ws.on('close', this.onClose);
   }
@@ -17,35 +16,13 @@ class Visitor {
       const req = JSON.parse(str);
       switch(req.type) {
         case 'CONNECT': //props: hostName AND/OR hostID AND/OR <anything>
-          const success = this.options.onBecomeClient(this, {
-            ws: this.ws,
-            request: req,
-          });
-
-          if(success) {
-            this.ws.removeListener('message', this.onMessage);
-            this.ws.removeListener('close', this.onClose);
-          } else {
-            this.ws.send(JSON.stringify({
-              type: 'NO_SUCH_HOST',
-              request: req,
-            }));
-          }
+          this._onConnect(req);
           break;
         case 'HOST': //props: hostName
-          this.ws.removeListener('message', this.onMessage);
-          this.ws.removeListener('close', this.onClose);
-
-          this.options.onBecomeHost(this, {
-            ws: this.ws,
-            request: req,
-          });
+          this._onHost(req);
           break;
         case 'LIST':
-          this.ws.send(JSON.stringify({
-            type: 'LIST',
-            payload: this.options.getDisplayList(),
-          }));
+          this._onList(req);
           break;
         default:
           log('Unknown request type:', req.type, 'for:', req);
@@ -57,6 +34,40 @@ class Visitor {
 
   onClose() {
     log('* Lost Visitor Connection');
+  }
+
+  _onConnect(req) {
+    const success = this.options.onBecomeClient(this, {
+      ws: this.ws,
+      request: req,
+    });
+
+    if(success) {
+      this.ws.removeListener('message', this.onMessage);
+      this.ws.removeListener('close', this.onClose);
+    } else {
+      this.ws.send(JSON.stringify({
+        type: 'NO_SUCH_HOST',
+        request: req,
+      }));
+    }
+  }
+
+  _onHost(req) {
+    this.ws.removeListener('message', this.onMessage);
+    this.ws.removeListener('close', this.onClose);
+
+    this.options.onBecomeHost(this, {
+      ws: this.ws,
+      request: req,
+    });
+  }
+
+  _onList(req) {
+    this.ws.send(JSON.stringify({
+      type: 'LIST',
+      payload: this.options.getDisplayList(),
+    }));
   }
 }
 
