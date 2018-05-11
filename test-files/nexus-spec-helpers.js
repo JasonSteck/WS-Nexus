@@ -81,7 +81,7 @@ class HostWrapper {
     );
   }
 
-  onNewClient(req) {
+  onNewClient() {
     return timebox(
       `waiting for a client to connect to host`,
       resolve => this.host.onNewClient = resolve,
