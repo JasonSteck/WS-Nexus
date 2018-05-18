@@ -14,8 +14,11 @@ function timebox(desc, func, ms=1000) {
   const error = new Error('timeout while `' + desc + '`');
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => { if(ms!=null) reject(error); }, ms);
-    return func(val => {
+    return func((...val) => {
       clearTimeout(timeout);
+      if(val.length <= 1) { // only pass an array if we have multiple values
+        val = val[0]; // might be undefined
+      }
       return resolve(val);
     }, err => {
       clearTimeout(timeout);
@@ -92,7 +95,7 @@ class HostWrapper {
   onClientMessage() {
     return timebox(
       `waiting for a client send a message`,
-      resolve => this.host.onClientMessage = (message, clientID) => resolve([message, clientID]),
+      resolve => this.host.onClientMessage = resolve,
       this.requestTimeout,
     );
   }
@@ -175,6 +178,14 @@ class ClientWrapper {
       `waiting for host to send a message`,
       resolve => this.client.onMessage = resolve,
       timeout,
+    );
+  }
+
+  onClose() {
+    return timebox(
+      `waiting for client to close`,
+      resolve => this.client.onClose = resolve,
+      this.requestTimeout,
     );
   }
 

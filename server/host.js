@@ -59,9 +59,13 @@ class Host {
     }
   }
 
-  onClose() {
-    log('* Lost Host Connection');
+  onClose(code) {
+    this.clients.array.forEach(c => {
+      c.close(code, 'Host was closed');
+    })
+    this.clients.clear();
     this.options.onClose(this);
+    log('* Lost Host Connection');
   }
 
   _onSend(req) {

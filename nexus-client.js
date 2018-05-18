@@ -80,9 +80,9 @@ nexusClient.prototype.setDefaultCallbacks = function() {
     console.log('+ Recieved message:', message);
   };
 
-  this.onClose = (...args) => {
+  this.onClose = (code, reason) => {
     /* example callback */
-    console.log('+ Client closed:', ...args);
+    console.log('+ Client closed:', code, reason);
   };
 };
 
@@ -92,6 +92,7 @@ nexusClient.prototype._initialize = function(nexusServer, autoConnectOptions) {
   this._ws = new WebSocket(nexusServer);
   this._ws.onopen = () => {
     if(this._isConnectedToHost) return;
+
     this.onServerConnect && this.onServerConnect();
     if(autoConnectOptions) {
       this._ws.send(JSON.stringify(Object.assign({
@@ -100,8 +101,8 @@ nexusClient.prototype._initialize = function(nexusServer, autoConnectOptions) {
     }
   };
 
-  this._ws.onclose = (...args) => {
-    this.onClose && this.onClose(...args);
+  this._ws.onclose = (closeEvent) => {
+    this.onClose && this.onClose(closeEvent.code, closeEvent.reason);
   }
 
   this._ws.onmessage = (event) => {

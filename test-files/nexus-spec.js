@@ -55,7 +55,7 @@ describe('JS-Nexus Server', function() {
 
         const onNewClient = this.host.onNewClient(); // first, setup the listener
         this.hostInfo = await this.client.connect({ hostName: this.host.name });
-        this.clientID = await onNewClient; // wait for host to get client
+        [this.clientID] = await onNewClient; // wait for host to get client
       });
 
       it("gets the host's information (id and name)", async function() {
@@ -74,7 +74,7 @@ describe('JS-Nexus Server', function() {
 
         const onNewClient = this.host.onNewClient(); // first, setup the listener
         this.hostInfo = await this.client.connect({ hostID: this.host.id });
-        this.clientID = await onNewClient; // wait for host to get client
+        [this.clientID, this.clientRequest] = await onNewClient; // wait for host to get client
       });
 
       it("gets the host's information (id and name)", async function() {
@@ -84,6 +84,10 @@ describe('JS-Nexus Server', function() {
 
       it('is assigned an ID that is given to the host', async function() {
         expect(this.clientID).toEqual(1);
+      });
+
+      it('gives the clients request to the host', async function() {
+        expect(this.clientRequest).toEqual({ type: 'CONNECT', hostID: this.host.id })
       });
 
       it('can send messages to the host', async function() {
@@ -201,6 +205,18 @@ describe('JS-Nexus Server', function() {
         this.client2.close();
         id = await this.host.onClientLost();
         expect(id).toEqual(2);
+      });
+
+      it('disconnects all clients when it closes (and handle clients that are already closed or closing)', async function() {
+        await this.client1.close(); // close 1 early
+        this.host.close();
+        const client2OnClose = this.client2.close(); // close 2 at the same time as host
+        const client3OnClose = this.client3.onClose(); // listen for 3 to close
+
+        await client2OnClose;
+        const [code, reason] = await client3OnClose;
+        expect(code).toEqual(1000);
+        expect(reason).toEqual('Host was closed');
       });
     });
   });

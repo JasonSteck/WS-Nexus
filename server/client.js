@@ -34,6 +34,10 @@ class Client {
     }
   }
 
+  close(code, reason) {
+    this.ws.close(code, reason);
+  }
+
   onClose() {
     log('* Lost Client Connection');
     this.host.clientLost(this.clientID);
