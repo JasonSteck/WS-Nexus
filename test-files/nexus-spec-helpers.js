@@ -42,7 +42,7 @@ class HostWrapper {
     // let any specified property overwrite the default value (including undefined)
     const options = { ...defaults, ...opts}
 
-    this.host = new nexusHost(
+    this.host = new NexusHost(
       options.nexusServer,
       options.hostName,
       options.disableDefaultCallbacks,
@@ -113,7 +113,7 @@ class HostWrapper {
 
 class ClientWrapper {
   constructor(opts={}, testOptions={}) {
-    this.client = new nexusClient(
+    this.client = new NexusClient(
       opts.nexusServer || defaultNexusServer,
       opts.autoConnectOptions || null,
     );

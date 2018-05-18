@@ -1,4 +1,4 @@
-describe('nexusClient.js', function() {
+describe('nexus-client.js', function() {
   beforeEach(function() {
     // Stub WebSocket
     this.ws = {
@@ -23,7 +23,7 @@ describe('nexusClient.js', function() {
 
     // Helper functions
     this.newClient = (nexusServer=this.defaultServer, autoConnectOptions) => {
-      return this.client = new nexusClient(nexusServer, autoConnectOptions);
+      return this.client = new NexusClient(nexusServer, autoConnectOptions);
     };
 
     this.newConnectingClient = () => {
@@ -57,9 +57,9 @@ describe('nexusClient.js', function() {
     }
   });
 
-  describe('new nexusClient(nexusServer, autoConnectOptions)', function() {
+  describe('new NexusClient(nexusServer, autoConnectOptions)', function() {
     it('requires a nexusServer address', function() {
-      expect(()=>new nexusClient()).toThrow(new Error('Missing nexusServer address'));
+      expect(()=>new NexusClient()).toThrow(new Error('Missing nexusServer address'));
     });
 
     it('connects to the nexus server provided', function() {

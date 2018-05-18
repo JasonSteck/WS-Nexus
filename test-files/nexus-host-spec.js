@@ -11,7 +11,7 @@ describe('nexus-host.js', function() {
     };
 
     this.newHost = ({nexusServer, hostName, disableDefaultCallbacks}={}) => (
-      this.host = new nexusHost(
+      this.host = new NexusHost(
         nexusServer || defaultNexusServer,
         hostName || defaultHostName,
         disableDefaultCallbacks
@@ -62,11 +62,11 @@ describe('nexus-host.js', function() {
 
   describe('#new NexusHost(nexusServer, hostName, [options])', function() {
     it('throws an error if a nexusServer address is not provided', function() {
-      expect(() => new nexusHost()).toThrow(new Error('Missing nexusServer address'));
+      expect(() => new NexusHost()).toThrow(new Error('Missing nexusServer address'));
     });
 
     it('throws an error if a hostName is not provided', function() {
-      expect(() => new nexusHost('ws://localhost:3000')).toThrow(new Error('Missing hostName'));
+      expect(() => new NexusHost('ws://localhost:3000')).toThrow(new Error('Missing hostName'));
     });
 
     it('connects to the nexus server', function() {

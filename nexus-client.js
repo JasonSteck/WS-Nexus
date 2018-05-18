@@ -1,4 +1,4 @@
-function nexusClient(nexusServer, autoConnectOptions) {
+function NexusClient(nexusServer, autoConnectOptions) {
   if(!nexusServer) throw new Error('Missing nexusServer address');
   this.nexusServer = nexusServer;
   this.autoConnectOptions = autoConnectOptions;
@@ -9,7 +9,7 @@ function nexusClient(nexusServer, autoConnectOptions) {
 
 /* ====================== Available Actions ====================== */
 
-nexusClient.prototype.getHostList = function(callback) {
+NexusClient.prototype.getHostList = function(callback) {
   if(this._isConnectedToHost) {
     throw new Error('Cannot get host list when connected to a host');
   }
@@ -22,7 +22,7 @@ nexusClient.prototype.getHostList = function(callback) {
   }))
 };
 
-nexusClient.prototype.connect = function(connectOptions, callback) {
+NexusClient.prototype.connect = function(connectOptions, callback) {
   if(this._isConnectedToHost) {
     throw new Error('Cannot connect to a host: already connected to one');
   }
@@ -36,20 +36,20 @@ nexusClient.prototype.connect = function(connectOptions, callback) {
   }, connectOptions)));
 }
 
-nexusClient.prototype.send = function(msg) {
+NexusClient.prototype.send = function(msg) {
   if(!this._isConnectedToHost) {
     throw new Error('Must be connected to a host before you send anything');
   }
   this._ws.send(msg);
 }
 
-nexusClient.prototype.close = function() {
+NexusClient.prototype.close = function() {
   this._ws.close();
 }
 
 /* ========================== Callbacks ========================== */
 
-nexusClient.prototype.setDefaultCallbacks = function() {
+NexusClient.prototype.setDefaultCallbacks = function() {
   /* You can set any of these to null to have no callback */
 
   this.onHostList = (hosts) => {
@@ -88,7 +88,7 @@ nexusClient.prototype.setDefaultCallbacks = function() {
 
 /* =================== (ignore the man behind the curtain, he's ugly) =================== */
 
-nexusClient.prototype._initialize = function(nexusServer, autoConnectOptions) {
+NexusClient.prototype._initialize = function(nexusServer, autoConnectOptions) {
   this._ws = new WebSocket(nexusServer);
   this._ws.onopen = () => {
     if(this._isConnectedToHost) return;

@@ -1,4 +1,4 @@
-function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
+function NexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
   if(!nexusServer) throw new Error('Missing nexusServer address');
   if(!hostName) throw new Error('Missing hostName');
   if(!disableDefaultCallbacks) this._setDefaultCallbacks();
@@ -11,7 +11,7 @@ function nexusHost(nexusServer, hostName, disableDefaultCallbacks=false) {
 
 /* ====================== Available Actions ====================== */
 
-nexusHost.prototype.send = function(message, clientIDs=undefined) {
+NexusHost.prototype.send = function(message, clientIDs=undefined) {
   this._ws.send(JSON.stringify({
     type: 'SEND',
     clientIDs,
@@ -19,13 +19,13 @@ nexusHost.prototype.send = function(message, clientIDs=undefined) {
   }));
 };
 
-nexusHost.prototype.close = function(code=1000, reason="Host closed their connection") {
+NexusHost.prototype.close = function(code=1000, reason="Host closed their connection") {
   this._ws.close(code, reason);
 }
 
 /* ========================== Callbacks ========================== */
 
-nexusHost.prototype._setDefaultCallbacks = function() {
+NexusHost.prototype._setDefaultCallbacks = function() {
   /* You can set any of these to null to have no callback */
 
   this.onRegistered = (hostID) => {
@@ -57,7 +57,7 @@ nexusHost.prototype._setDefaultCallbacks = function() {
 
 /* =================== (ignore the man behind the curtain, he's ugly) =================== */
 
-nexusHost.prototype._initialize = function(nexusServer) {
+NexusHost.prototype._initialize = function(nexusServer) {
   this._ws = new WebSocket(nexusServer);
 
   this._ws.onopen = () => {
