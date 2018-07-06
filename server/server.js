@@ -23,6 +23,8 @@ class Server {
     } catch(e) {
       log('ERROR listening for connections:\n', e);
     }
+
+    wss.on('error', e => log('Wss error:\n', e));
   }
 }
 
