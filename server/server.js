@@ -13,6 +13,7 @@ class Server {
 
     try {
       wss.on('connection', ws => {
+        ws.on('error', e => log('ws error:\n', e));
         try {
           log('New Connection');
           this.conPool.newVisitor(ws);
