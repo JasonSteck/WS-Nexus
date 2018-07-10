@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node js-nexus-server.js",
     "debug": "node --inspect js-nexus-server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: To run tests, open ./tests/run.html\" && exit 1"
   },
   "repository": {
     "type": "git",
