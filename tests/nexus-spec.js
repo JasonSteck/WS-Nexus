@@ -19,8 +19,8 @@ describe('JS-Nexus', function() {
 
     describe('getHosts()', function() {
       it('only returns active hosts', async function() {
-        const host1 = await Nexus(server).host('You Lost');
-        const host2 = await Nexus(server).host('The Game');
+        const host1 = await Nexus(server).host('Pac-Man');
+        const host2 = await Nexus(server).host('Donkey Kong');
 
         let list = await user.getHosts();
         this.expectHostToBeListed(host1, list);
@@ -39,10 +39,10 @@ describe('JS-Nexus', function() {
     });
 
     it('can connect to a host by name', async function() {
-      const name = 'Catch me if you can';
+      const name = 'Frogger';
       const host = await Nexus(server).host(name);
 
-      const newClient = host.newClient.then((id, request) => {
+      const onNewClient = host.onNewClient.then((id, request) => {
         expect(id).toBe(1);
         expect(request).toEqual({
           type: 'CONNECT',
@@ -50,14 +50,13 @@ describe('JS-Nexus', function() {
         });
       });
       await user.join(name);
-      await newClient;
+      await onNewClient;
     });
 
     it('can connect to a host by id', async function() {
-      const host = await Nexus(server).host("yo ho");
-      host.debug = true;
+      const host = await Nexus(server).host("Asteroids");
 
-      const newClient = host.newClient.then((id, request) => {
+      const onNewClient = host.onNewClient.then((id, request) => {
         expect(id).toBe(1);
         expect(request).toEqual({
           type: 'CONNECT',
@@ -65,7 +64,27 @@ describe('JS-Nexus', function() {
         });
       });
       await user.join(host.id);
-      await newClient;
+      await onNewClient;
+    });
+
+    when('connected to a host', function() {
+      beforeEach(async function() {
+        this.host = await Nexus(server).host('Space Invaders');
+
+        user.join(this.host.id);
+        await this.host.onNewClient;
+        await user.joined;
+      });
+
+      it('can send messages to the host', async function() {
+        const msg = "Hello there";
+        user.send(msg);
+
+        await this.host.onMessage.then((message, id) => {
+          expect(message).toBe(msg);
+          expect(id).toBe(1);
+        });
+      });
     });
   });
 });

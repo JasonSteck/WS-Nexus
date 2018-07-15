@@ -4,6 +4,9 @@ window.JSNexusUser = window.Nexus = (function() {
 const NexusTypes = {
 Client: {
   host: null,
+  send(message) {
+    this._ws.send(message);
+  },
   _onServerMessage(json) {
     switch(json.type) {
       case 'CONNECTED':
@@ -19,7 +22,8 @@ Client: {
 Host: {
   id: null,
   name: null,
-  newClient: createPromiseEventListener(),
+  onNewClient: createPromiseEventListener(),
+  onMessage: createPromiseEventListener(),
   _onServerMessage(json) {
     switch(json.type) {
       case 'REGISTERED':
@@ -28,7 +32,10 @@ Host: {
         this.hosting.resolve(json);
         break;
       case 'NEW_CLIENT':
-        this.newClient.trigger(json.clientID, json.request);
+        this.onNewClient.trigger(json.clientID, json.request);
+        break;
+      case 'FROM_CLIENT':
+        this.onMessage.trigger(json.message, json.clientID);
         break;
       default:
         this.default._onServerMessage(json);
