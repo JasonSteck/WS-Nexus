@@ -65,7 +65,7 @@ class Host {
     log('host onClose: ', ...arguments);
     try {
       this.clients.array.forEach(c => {
-        c.close(code, 'Host was closed');
+        c.close(1001, 'Host was closed');
       })
     } catch(e) {
       log(e);
