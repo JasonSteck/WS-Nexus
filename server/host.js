@@ -5,8 +5,10 @@ class Host {
   constructor(ws, options) {
     this.ws = ws;
     this.options = options;
-    this.hostID = options.hostID;
-    this.hostName = options.hostName;
+    this.publicData = {
+      id: options.hostID,
+      name: options.hostName,
+    }
 
     ws.on('message', this.onMessage.bind(this));
     ws.on('close', this.onClose.bind(this));
@@ -16,8 +18,8 @@ class Host {
 
     this.ws.send(JSON.stringify({
       type: 'REGISTERED',
-      hostID: this.hostID,
-      hostName: this.hostName,
+      hostID: this.publicData.id,
+      hostName: this.publicData.name,
     }));
   }
 
@@ -60,9 +62,14 @@ class Host {
   }
 
   onClose(code) {
-    this.clients.array.forEach(c => {
-      c.close(code, 'Host was closed');
-    })
+    log('host onClose: ', ...arguments);
+    try {
+      this.clients.array.forEach(c => {
+        c.close(code, 'Host was closed');
+      })
+    } catch(e) {
+      log(e);
+    }
     this.clients.clear();
     this.options.onClose(this);
     log('* Lost Host Connection');

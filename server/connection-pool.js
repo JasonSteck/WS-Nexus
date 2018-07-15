@@ -28,10 +28,7 @@ class ConnectionPool {
   }
 
   getDisplayList() {
-    return this.hosts.map(h => ({
-      hostID: h.hostID,
-      hostName: h.hostName,
-    }));
+    return this.hosts.map(h => h.publicData);
   }
 
   _onBecomeClient(connection, { ws, request }) {

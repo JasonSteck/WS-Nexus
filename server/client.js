@@ -2,8 +2,6 @@ class Client {
   // options: { host, request }
   constructor(ws, options) {
     this.ws = ws;
-    this.options = options;
-
     ws.on('message', this.onMessage.bind(this));
     ws.on('close', this.onClose.bind(this));
 
@@ -11,9 +9,7 @@ class Client {
 
     this.ws.send(JSON.stringify({
       type: 'CONNECTED',
-      hostID: this.host.hostID,
-      hostName: this.host.hostName,
-      request: options.request,
+      host: this.host.publicData,
     }));
   }
 
@@ -35,6 +31,7 @@ class Client {
   }
 
   close(code, reason) {
+    log('client onClose:', ...arguments);
     this.ws.close(code, reason);
   }
 

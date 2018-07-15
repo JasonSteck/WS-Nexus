@@ -37,5 +37,21 @@ describe('JS-Nexus', function() {
         this.expectHostNotToBeListed(host2, list);
       });
     });
+
+
+    it('can connect to a host by name', async function() {
+      const name = 'Catch me if you can';
+      const host = await Nexus(server).host(name);
+
+      const newClient = host.newClient.then((id, request) => {
+        expect(id).toBe(1);
+        expect(request).toEqual({
+          type: 'CONNECT',
+          hostName: name,
+        });
+      });
+      await user.join(name);
+      await newClient;
+    });
   });
 });

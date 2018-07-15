@@ -2,55 +2,84 @@ window.JSNexusUser = window.Nexus = (function() {
 
 // Experiment with morphing the current instance.
 const NexusTypes = {
-  Client: {},
-
-  Host: {
-    id: null,
-    name: null,
-  },
-
-  User: {
-    host(hostType) {
-      let req;
-      switch(typeof hostType) {
-        case 'string':
-          req = { hostName: hostType };
-          break;
-        case 'number':
-          req = { hostID: hostType };
-          break;
-        case 'object':
-          req = hostType;
-          break;
-        default:
-          throw new Error('Invalid hostType:', hostType);
-      }
-      req.type = 'HOST';
-      this.serverConnection.then(()=>this._ws.send(JSON.stringify(req)));
-      this._changeType('Host');
-      this._setThen(this.hostConnection);
-      return this;
-    },
-    client(hostType) {
-      this._changeType('Client');
-      return this;
+Client: {
+  host: null,
+  _onServerMessage(json) {
+    switch(json.type) {
+      case 'CONNECTED':
+        this.host = json.host;
+        this.joined.resolve(this.host);
+        break;
+      default:
+        this.default._onServerMessage(json);
     }
+  }
+},
+
+Host: {
+  id: null,
+  name: null,
+  newClient: createPromiseEventListener(),
+  _onServerMessage(json) {
+    switch(json.type) {
+      case 'REGISTERED':
+        this.id = json.hostID;
+        this.name = json.hostName;
+        this.hosting.resolve(json);
+        break;
+      case 'NEW_CLIENT':
+        this.newClient.trigger(json.clientID, json.request);
+        break;
+      default:
+        this.default._onServerMessage(json);
+    }
+  }
+},
+
+User: {
+  host(hostType) {
+    let req = hostTypeObject(hostType);
+    req.type = 'HOST';
+
+    this.serverConnection.then(()=>{
+      this._ws.send(JSON.stringify(req));
+    });
+    this._changeType('Host');
+    this._setThen(this.hosting);
+    return this;
   },
-}
+  join(hostType) {
+    let req = hostTypeObject(hostType);
+    req.type = 'CONNECT';
+
+    this.serverConnection.then(()=>{
+      this._ws.send(JSON.stringify(req));
+    });
+    this._changeType('Client');
+    this._setThen(this.joined);
+    return this;
+  }
+}};
 
 class NexusBase {
   constructor(nexusServerAddress) {
     this._type = null;
     this.nexusServerAddress = nexusServerAddress;
+    this.default = this.__proto__;
 
     this.serverConnection = promise();
     this.lostServerConnection = promise();
-    this.hostConnection = promise();
+    this.hosting = promise(); // when we have registered as a host
+    this.joined = promise(); // when we have joined a host
 
     this.onList = createPromiseEventListener();
 
     this._ws = new WebSocket(nexusServerAddress);
-    this._ws.onmessage = this._onServerMessage.bind(this);
+    this._ws.onmessage = e => {
+      this._log('_onServerMessage:', e.data);
+      const json = JSON.parse(e.data);
+      this._onServerMessage(json);
+    };
     this._ws.onopen = this.serverConnection.resolve;
     this._ws.onclose = this.lostServerConnection.resolve;
 
@@ -72,20 +101,19 @@ class NexusBase {
     return this.lostServerConnection;
   }
 
-  _onServerMessage(e) {
-    const json = JSON.parse(e.data);
-
+  _onServerMessage(json) {
     switch(json.type) {
       case 'LIST':
         this.onList.trigger(json.payload);
         break;
-      case 'REGISTERED':
-        this.id = json.hostID;
-        this.name = json.hostName;
-        this.hostConnection.resolve(json);
-        break;
       default:
         console.log('(ignorning message:', json);
+    }
+  }
+
+  _log(...args) {
+    if(this.debug) {
+      console.log(...args);
     }
   }
 
@@ -174,6 +202,24 @@ function createPromiseEventListener() {
     current.forEach(callback => callback(...args));
   }
   return promiseEventListener;
+}
+
+function hostTypeObject(hostType) {
+  let obj;
+  switch(typeof hostType) {
+    case 'string':
+      obj = { hostName: hostType };
+      break;
+    case 'number':
+      obj = { hostID: hostType };
+      break;
+    case 'object':
+      obj = hostType;
+      break;
+    default:
+      throw new Error('Invalid hostType:', hostType);
+  }
+  return obj;
 }
 
 return (serverAddress='ws://127.0.0.1:3000') => new NexusBase(serverAddress);

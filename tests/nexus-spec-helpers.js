@@ -28,15 +28,15 @@ window.NexusSpecHelpers = class NexusSpecHelpers {
 
   findHost(hostList, id) {
     // hostList := [ host, host, ...]
-    // host := { hostID: integer, hostName: string}
-    return hostList.find(host => host.hostID == id);
+    // host := { id: integer, name: string}
+    return hostList.find(host => host.id == id);
   }
 
   expectHostToBeListed(host, hostList) {
     expect(host && host.id).toExist();
     let hostRegistry = this.findHost(hostList, host.id);
     expect(hostRegistry).toExist();
-    expect(hostRegistry.hostName).toBe(host.name);
+    expect(hostRegistry.name).toBe(host.name);
   }
 
   expectHostNotToBeListed(host, hostList) {
