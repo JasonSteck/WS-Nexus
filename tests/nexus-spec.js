@@ -77,13 +77,21 @@ describe('JS-Nexus', function() {
       });
 
       it('can send messages to the host', async function() {
-        const msg = "Hello there";
+        const msg = "Hello there!";
         user.send(msg);
 
         await this.host.onMessage.then((message, id) => {
           expect(message).toBe(msg);
           expect(id).toBe(1);
         });
+      });
+
+      it('can receive messages from the host', async function() {
+        const msg = "General Kenobi";
+        this.host.send(msg);
+
+        const message = await user.onMessage;
+        expect(message).toBe(msg);
       });
     });
   });

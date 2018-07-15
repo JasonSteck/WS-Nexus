@@ -79,23 +79,28 @@ class Host {
     let {clientIDs, message} = req;
     if (clientIDs == null) {
       this.clients.array.forEach(client=>{
-        client.ws.send(message);
-      }
-      )
+        this._sendMessage(client, message);
+      });
     } else if (Array.isArray(clientIDs)) {
       clientIDs.forEach(id=>{
         const client = this.clients.hash[id];
         if (client) {
-          client.ws.send(message);
+          this._sendMessage(client, message);
         }
-      }
-      );
+      });
     } else {
       const client = this.clients.hash[clientIDs];
       if (client) {
-        client.ws.send(message);
+        this._sendMessage(client, message);
       }
     }
+  }
+
+  _sendMessage(client, message) {
+    client.ws.send(JSON.stringify({
+      type: 'MESSAGE',
+      message,
+    }))
   }
 }
 
