@@ -15,7 +15,7 @@ class ConnectionPool {
 
   findHost(req) {
     return this.hosts.find(h => (
-      req.hostID === h.hostID || req.hostName === h.hostName
+      req.hostID === h.publicData.id || req.hostName === h.publicData.name
     )) || null;
   }
 

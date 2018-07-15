@@ -38,7 +38,6 @@ describe('JS-Nexus', function() {
       });
     });
 
-
     it('can connect to a host by name', async function() {
       const name = 'Catch me if you can';
       const host = await Nexus(server).host(name);
@@ -51,6 +50,21 @@ describe('JS-Nexus', function() {
         });
       });
       await user.join(name);
+      await newClient;
+    });
+
+    it('can connect to a host by id', async function() {
+      const host = await Nexus(server).host("yo ho");
+      host.debug = true;
+
+      const newClient = host.newClient.then((id, request) => {
+        expect(id).toBe(1);
+        expect(request).toEqual({
+          type: 'CONNECT',
+          hostID: host.id,
+        });
+      });
+      await user.join(host.id);
       await newClient;
     });
   });
