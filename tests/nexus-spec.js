@@ -94,5 +94,25 @@ describe('JS-Nexus', function() {
         expect(message).toBe(msg);
       });
     });
+
+    when('attempting to connect to a non-existent host', function() {
+      it('triggers a .catch', async function() {
+        let caught = null;
+        user.join({ hostID: -18237867 });
+        await user.catch(() => caught = true);
+
+        expect(caught).toBe(true);
+      });
+
+      it('triggers the second parameter of a .then', async function() {
+        let caught = null;
+        user.join({ hostID: -18237867 });
+        await user.then(
+          () => 'should not call this',
+          () => caught = true,
+        );
+        expect(caught).toBe(true);
+      });
+    });
   });
 });

@@ -14,6 +14,9 @@ Client: {
         this.host = json.host;
         this.joined.resolve(this.host);
         break;
+      case 'NO_SUCH_HOST':
+        this.joined.reject(new Error('Cannot connect to host'));
+        break;
       case 'MESSAGE':
         this.onMessage.trigger(json.message);
         break;
@@ -137,11 +140,29 @@ class NexusBase {
 
   // Allow .then/await to be used on an instance of this class
   _setThen(promise) {
-    this.then = resolve => {
-      promise.then(()=>{
+    this.then = (resolved, rejected) => {
+      const doResolve = ()=>{
         this.then = undefined; // prevent infinite cycle when awaiting this thenable object that returns this same object
-        resolve(this);
+        this.catch = undefined;
+        resolved(this);
+      };
+      const doReject = (error) => {
+        this.then = undefined;
+        this.catch = undefined;
+        rejected(error);
+      };
+
+      const newPromise = promise.then(doResolve, rejected && doReject);
+      this._setThen(newPromise); // mimic promise chaining (and mutating)
+      return this;
+    }
+    this.catch = callback => {
+      const newPromise = promise.catch(error=>{
+        this.then = undefined;
+        this.catch = undefined;
+        callback(error);
       });
+      this._setThen(newPromise);
       return this;
     }
   }
