@@ -177,9 +177,9 @@ describe('JS-Nexus', function() {
       });
 
       it('can message exactly one of them at a time', async function() {
-        let msg1;
-        let msg2;
-        let msg3;
+        let msg1=null;
+        let msg2=null;
+        let msg3=null;
 
         client1.onMessage(m => msg1=m);
         client2.onMessage(m => msg2=m);
@@ -205,6 +205,32 @@ describe('JS-Nexus', function() {
         expect(msg1).toEqual('one');
         expect(msg2).toEqual('two');
         expect(msg3).toEqual('three');
+      });
+
+      it('does not let a message from one client leak to others', async function() {
+        let msg1=null;
+        let msg2=null;
+        let msg3=null;
+
+        client1.onMessage(m => msg1=m);
+        client2.onMessage(m => msg2=m);
+        client3.onMessage(m => msg3=m);
+
+        function verifySecret(msg, id) {
+          expect(msg).toEqual('secret');
+          expect(id).toEqual(2);
+        }
+
+        client2.send('secret');
+        await host.onMessage.then(verifySecret);
+
+        client2.send('another secret');
+        const msg = await host.onMessage;
+        expect(msg).toBe('another secret');
+
+        expect(msg1).toBe(null);
+        expect(msg2).toBe(null);
+        expect(msg3).toBe(null);
       });
     });
   });
