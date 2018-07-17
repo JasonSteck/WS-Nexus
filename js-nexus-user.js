@@ -230,12 +230,16 @@ function createPromiseEventListener() {
   let anyNonce = false;
   let listeners = [];
 
-  function promiseEventListener(callback, name) {
+  function promiseEventListener(callback) {
+    if(typeof callback !== 'function') throw new Error('Callbacks must be functions');
+
     listeners.push(callback);
     return promiseEventListener;
   }
 
-  promiseEventListener.then = function(callback, name) {
+  promiseEventListener.then = function(callback) {
+    if(typeof callback !== 'function') throw new Error('Callbacks must be functions');
+
     anyNonce = true;
     callback._PromiseEventNonce = true;
     listeners.push(callback);
