@@ -91,8 +91,10 @@ describe('JS-Nexus', function() {
           hostName: name,
         });
       });
-      await timebox(client.join(name));
-      await timebox(onNewClient);
+      await Promise.all([
+        client.join(name),
+        onNewClient,
+      ]);
     });
 
     it('can connect to a host by id', async function() {
@@ -105,8 +107,10 @@ describe('JS-Nexus', function() {
           hostID: host.id,
         });
       });
-      await timebox(client.join(host.id));
-      await timebox(onNewClient);
+      await Promise.all([
+        client.join(host.id),
+        onNewClient,
+      ]);
     });
 
     when('connected to a host', function() {
