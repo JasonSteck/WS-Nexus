@@ -236,6 +236,39 @@ describe('JS-Nexus', function() {
         expect(msg2).toBe(null);
         expect(msg3).toBe(null);
       });
+
+      it('can message multiple clients', async function() {
+        let msg1=null;
+        let msg2=null;
+        let msg3=null;
+
+        client1.onMessage(m => msg1=m);
+        client2.onMessage(m => msg2=m);
+        client3.onMessage(m => msg3=m);
+
+        const msgOneTwo = 'one and two';
+        const msgTwoThree = 'two and three';
+
+        host.send(msgOneTwo, [1, 2]);
+        await Promise.all([
+          client1.onMessage,
+          client2.onMessage,
+        ]);
+
+        expect(msg1).toBe(msgOneTwo);
+        expect(msg2).toBe(msgOneTwo);
+        expect(msg3).toBe(null);
+
+        host.send(msgTwoThree, [2, 3]);
+        await Promise.all([
+          client2.onMessage,
+          client3.onMessage,
+        ]);
+
+        expect(msg1).toBe(msgOneTwo);
+        expect(msg2).toBe(msgTwoThree);
+        expect(msg3).toBe(msgTwoThree);
+      });
     });
   });
 });
