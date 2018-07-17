@@ -298,16 +298,16 @@ describe('JS-Nexus', function() {
       });
 
       it('disconnects all clients when it closes (and handle clients that are already closed or closing)', async function() {
-        await timebox(client1.close()); // close 1 early
+        await client1.close(); // close 1 early
         host.close();
         const onClose2 = client2.close(); // close 2 at the same time as host
         const onClose3 = client3.onClose; // listen for 3 to close
 
-        await timebox(onClose2);
-        await timebox(onClose3.then((code, reason) => {
+        await onClose2;
+        await onClose3.then((code, reason) => {
           expect(code).toEqual(1001);
           expect(reason).toEqual('Host was closed');
-        }));
+        });
       });
     });
   });
