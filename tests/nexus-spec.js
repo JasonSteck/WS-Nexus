@@ -38,6 +38,55 @@ describe('JS-Nexus', function() {
       });
     });
 
+    when('the server is down', function() {
+      const badServer = 'ws://127.0.0.1:777';
+
+      it('triggers a .catch', async function() {
+        let caught = false;
+        await Nexus(badServer).catch(() => caught = true);
+        expect(caught).toBe(true);
+      });
+
+      it('triggers the second parameter of a .then', async function() {
+        let resolved = false;
+        let caught = false;
+
+        await Nexus(badServer).then(
+          () => resolved = true,
+          () => caught = true,
+        );
+        expect(resolved).toBe(false);
+        expect(caught).toBe(true);
+      });
+
+      it('triggers a .catch even if they tried to .join', async function() {
+        let caught = null;
+
+        await Nexus(badServer)
+          .join('The Game')
+          .catch(() => caught = true);
+
+        expect(caught).toBe(true);
+      });
+
+      it('triggers a .catch even if they tried to .host', async function() {
+        let caught = null;
+
+        await Nexus(badServer)
+          .host('The Game')
+          .catch(() => caught = true);
+
+        expect(caught).toBe(true);
+      });
+    });
+  });
+
+  describe('client:', function() {
+    let client;
+    beforeEach(async function(){
+      client = await Nexus(server);
+    });
+
     it('can connect to a host by name', async function() {
       const name = 'Frogger';
       const host = await Nexus(server).host(name);
@@ -49,7 +98,7 @@ describe('JS-Nexus', function() {
           hostName: name,
         });
       });
-      await user.join(name);
+      await client.join(name);
       await onNewClient;
     });
 
@@ -63,7 +112,7 @@ describe('JS-Nexus', function() {
           hostID: host.id,
         });
       });
-      await user.join(host.id);
+      await client.join(host.id);
       await onNewClient;
     });
 
@@ -71,14 +120,14 @@ describe('JS-Nexus', function() {
       beforeEach(async function() {
         this.host = await Nexus(server).host('Space Invaders');
 
-        user.join(this.host.id);
+        client.join(this.host.id);
         await this.host.onNewClient;
-        await user.joined;
+        await client.joined;
       });
 
       it('can send messages to the host', async function() {
         const msg = "Hello there!";
-        user.send(msg);
+        client.send(msg);
 
         await this.host.onMessage.then((message, id) => {
           expect(message).toBe(msg);
@@ -90,7 +139,7 @@ describe('JS-Nexus', function() {
         const msg = "General Kenobi";
         this.host.send(msg);
 
-        const message = await user.onMessage;
+        const message = await client.onMessage;
         expect(message).toBe(msg);
       });
     });
@@ -98,63 +147,21 @@ describe('JS-Nexus', function() {
     when('attempting to connect to a non-existent host', function() {
       it('triggers a .catch', async function() {
         let caught = null;
-        user.join({ hostID: -18237867 });
-        await user.catch(() => caught = true);
+        client.join({ hostID: -18237867 });
+        await client.catch(() => caught = true);
 
         expect(caught).toBe(true);
       });
 
       it('triggers the second parameter of a .then', async function() {
         let caught = null;
-        user.join({ hostID: -18237867 });
-        await user.then(
+        client.join({ hostID: -18237867 });
+        await client.then(
           () => 'should not call this',
           () => caught = true,
         );
         expect(caught).toBe(true);
       });
-    });
-  });
-
-  when('the server is down', function() {
-    const badServer = 'ws://127.0.0.1:666';
-
-    it('triggers a .catch', async function() {
-      let caught = false;
-      await timebox(Nexus(badServer).catch(() => caught = true));
-      expect(caught).toBe(true);
-    });
-
-    it('triggers the second parameter of a .then', async function() {
-      let resolved = false;
-      let caught = false;
-
-      await Nexus(badServer).then(
-        () => resolved = true,
-        () => caught = true,
-      );
-      expect(resolved).toBe(false);
-      expect(caught).toBe(true);
-    });
-
-    it('triggers a .catch even if they tried to .join', async function() {
-      let caught = null;
-
-      await Nexus(badServer)
-        .join('The Game')
-        .catch(() => caught = true);
-
-      expect(caught).toBe(true);
-    });
-
-    it('triggers a .catch even if they tried to .host', async function() {
-      let caught = null;
-
-      await Nexus(badServer)
-        .host('The Game')
-        .catch(() => caught = true);
-
-      expect(caught).toBe(true);
     });
   });
 });
