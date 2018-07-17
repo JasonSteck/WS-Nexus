@@ -157,4 +157,55 @@ describe('JS-Nexus', function() {
       });
     });
   });
+
+  describe('a host', function() {
+    let host;
+
+    beforeEach(async function() {
+      host = await Nexus(server).host('Tron');
+    });
+
+    when('it has clients', function() {
+      let client1;
+      let client2;
+      let client3;
+
+      beforeEach(async function() {
+        client1 = await Nexus(server).join(host.id);
+        client2 = await Nexus(server).join(host.id);
+        client3 = await Nexus(server).join(host.id);
+      });
+
+      it('can message exactly one of them at a time', async function() {
+        let msg1;
+        let msg2;
+        let msg3;
+
+        client1.onMessage(m => msg1=m);
+        client2.onMessage(m => msg2=m);
+        client3.onMessage(m => msg3=m);
+
+        host.send('one', 1);
+
+        await client1.onMessage;
+        expect(msg1).toEqual('one');
+        expect(msg2).not.toExist();
+        expect(msg3).not.toExist();
+
+        host.send('two', 2);
+
+        await client2.onMessage;
+        expect(msg1).toEqual('one');
+        expect(msg2).toEqual('two');
+        expect(msg3).not.toExist();
+
+        host.send('three', 3);
+
+        await client3.onMessage;
+        expect(msg1).toEqual('one');
+        expect(msg2).toEqual('two');
+        expect(msg3).toEqual('three');
+      });
+    });
+  });
 });

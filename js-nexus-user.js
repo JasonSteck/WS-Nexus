@@ -2,7 +2,7 @@ window.JSNexusUser = window.Nexus = (function() {
 
 // Experiment with morphing the current instance.
 const NexusTypes = {
-Client: {
+Client: () => ({
   host: null,
   onMessage: createPromiseEventListener(),
   send(message) {
@@ -24,9 +24,9 @@ Client: {
         this.default._onServerMessage(json);
     }
   }
-},
+}),
 
-Host: {
+Host: () => ({
   id: null,
   name: null,
   onNewClient: createPromiseEventListener(),
@@ -55,9 +55,9 @@ Host: {
         this.default._onServerMessage(json);
     }
   }
-},
+}),
 
-User: {
+User: () => ({
   host(hostType) {
     let req = hostTypeObject(hostType);
     req.type = 'HOST';
@@ -80,7 +80,7 @@ User: {
     this._andThen(this.joined);
     return this;
   }
-}};
+})};
 
 class NexusBase {
   constructor(nexusServerAddress) {
@@ -207,7 +207,8 @@ function addType(obj, typeName) {
     throw new Error('Invalid typeName when adding type:', typeName);
   }
 
-  const props = NexusTypes[typeName];
+  const type = NexusTypes[typeName];
+  const props = type();
   Object.assign(obj, props);
   obj._typeProps = Object.keys(props);
   obj._type = typeName;
