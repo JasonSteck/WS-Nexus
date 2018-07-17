@@ -162,7 +162,7 @@ describe('JS-Nexus', function() {
     });
   });
 
-  describe('a host', function() {
+  describe('host:', function() {
     let host;
 
     beforeEach(async function() {
