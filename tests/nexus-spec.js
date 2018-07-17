@@ -115,4 +115,26 @@ describe('JS-Nexus', function() {
       });
     });
   });
+
+  describe('when the server is not running', function() {
+    const badServer = 'ws://127.0.0.1:666';
+
+    it('triggers a .catch', async function() {
+      let caught = false;
+      await timebox(Nexus(badServer).catch(() => caught = true));
+      expect(caught).toBe(true);
+    });
+
+    it('triggers the second parameter of a .then', async function() {
+      let resolved = false;
+      let caught = false;
+
+      await Nexus(badServer).then(
+        () => resolved = true,
+        () => caught = true,
+      );
+      expect(resolved).toBe(false);
+      expect(caught).toBe(true);
+    });
+  });
 });

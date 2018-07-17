@@ -102,6 +102,10 @@ class NexusBase {
       this._onServerMessage(json);
     };
     this._ws.onopen = this.serverConnection.resolve;
+    this._ws.onerror = e => {
+      this.serverConnection.reject(e);
+      this.lostServerConnection.resolve(e);
+    };
     this._ws.onclose = this.lostServerConnection.resolve;
 
     this._setThen(this.serverConnection);
