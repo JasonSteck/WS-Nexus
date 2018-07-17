@@ -93,10 +93,10 @@ class NexusBase {
     this.default = this.__proto__;
 
     this.serverConnection = promise();
-    this.lostServerConnection = promise();
     this.hosting = promise(); // when we have registered as a host
     this.joined = promise(); // when we have joined a host
 
+    this.onClose = createPromiseEventListener();
     this.onList = createPromiseEventListener();
 
     this._ws = new WebSocket(nexusServerAddress);
@@ -109,9 +109,8 @@ class NexusBase {
     this._ws.onerror = () => {
       const error = new Error('Server connection failed');
       this.serverConnection.reject(error);
-      this.lostServerConnection.resolve(error);
     };
-    this._ws.onclose = this.lostServerConnection.resolve;
+    this._ws.onclose = ({ code, reason }) => this.onClose.trigger(code, reason);
 
     this._setThen(this.serverConnection);
     this._changeType('User');
@@ -128,7 +127,7 @@ class NexusBase {
 
   close(code=1000, reason="User closed their connection") {
     this._ws.close(code, reason);
-    return this.lostServerConnection;
+    return this.onClose;
   }
 
   _onServerMessage(json) {
