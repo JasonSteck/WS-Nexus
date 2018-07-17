@@ -269,6 +269,21 @@ describe('JS-Nexus', function() {
         expect(msg2).toBe(msgTwoThree);
         expect(msg3).toBe(msgTwoThree);
       });
+
+      it('can message all clients', async function() {
+        const msg = 'all';
+
+        host.send(msg);
+        await Promise.all([
+          client1.onMessage,
+          client2.onMessage,
+          client3.onMessage,
+        ]).then(([msg1, msg2, msg3]) => {
+          expect(msg1).toBe(msg);
+          expect(msg2).toBe(msg);
+          expect(msg3).toBe(msg);
+        });
+      });
     });
   });
 });
