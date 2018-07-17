@@ -32,7 +32,7 @@ describe('JS-Nexus', function() {
         this.expectHostToBeListed(host2, list);
 
         await host2.close();
-        list = await timebox(user.getHosts());
+        list = await user.getHosts();
         this.expectHostNotToBeListed(host1, list);
         this.expectHostNotToBeListed(host2, list);
       });
