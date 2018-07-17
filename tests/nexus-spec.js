@@ -11,7 +11,7 @@ describe('JS-Nexus', function() {
     // await this.closeAllConnections(); // comes from NexusSpecHelpers
   });
 
-  describe('a user', function() {
+  describe('user:', function() {
     let user;
     beforeEach(async function(){
       user = await Nexus(server);
@@ -116,7 +116,7 @@ describe('JS-Nexus', function() {
     });
   });
 
-  describe('when the server is not running', function() {
+  when('the server is down', function() {
     const badServer = 'ws://127.0.0.1:666';
 
     it('triggers a .catch', async function() {
@@ -134,6 +134,26 @@ describe('JS-Nexus', function() {
         () => caught = true,
       );
       expect(resolved).toBe(false);
+      expect(caught).toBe(true);
+    });
+
+    it('triggers a .catch even if they tried to .join', async function() {
+      let caught = null;
+
+      await Nexus(badServer)
+        .join('The Game')
+        .catch(() => caught = true);
+
+      expect(caught).toBe(true);
+    });
+
+    it('triggers a .catch even if they tried to .host', async function() {
+      let caught = null;
+
+      await Nexus(badServer)
+        .host('The Game')
+        .catch(() => caught = true);
+
       expect(caught).toBe(true);
     });
   });

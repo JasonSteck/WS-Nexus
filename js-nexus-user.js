@@ -64,9 +64,9 @@ User: {
 
     this.serverConnection.then(()=>{
       this._ws.send(JSON.stringify(req));
-    });
+    }, ()=>{}); // ignore failed server connections
     this._changeType('Host');
-    this._setThen(this.hosting);
+    this._andThen(this.hosting);
     return this;
   },
   join(hostType) {
@@ -75,9 +75,9 @@ User: {
 
     this.serverConnection.then(()=>{
       this._ws.send(JSON.stringify(req));
-    });
+    }, ()=>{}); // ignore failed server connections
     this._changeType('Client');
-    this._setThen(this.joined);
+    this._andThen(this.joined);
     return this;
   }
 }};
@@ -102,9 +102,10 @@ class NexusBase {
       this._onServerMessage(json);
     };
     this._ws.onopen = this.serverConnection.resolve;
-    this._ws.onerror = e => {
-      this.serverConnection.reject(e);
-      this.lostServerConnection.resolve(e);
+    this._ws.onerror = () => {
+      const error = new Error('Server connection failed');
+      this.serverConnection.reject(error);
+      this.lostServerConnection.resolve(error);
     };
     this._ws.onclose = this.lostServerConnection.resolve;
 
@@ -144,6 +145,7 @@ class NexusBase {
 
   // Allow .then/await to be used on an instance of this class
   _setThen(promise) {
+    this._currentPromise = promise;
     this.then = (resolved, rejected) => {
       const doResolve = ()=>{
         this.then = undefined; // prevent infinite cycle when awaiting this thenable object that returns this same object
@@ -169,6 +171,10 @@ class NexusBase {
       this._setThen(newPromise);
       return this;
     }
+  }
+
+  _andThen(promise) {
+    this._setThen(this._currentPromise.then(()=>promise));
   }
 
   // Modifies the properties on this object to make it a different "type"
