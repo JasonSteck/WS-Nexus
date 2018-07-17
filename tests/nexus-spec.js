@@ -284,6 +284,18 @@ describe('JS-Nexus', function() {
           expect(msg3).toBe(msg);
         });
       });
+
+      it('gets notified when a client disconnects', async function() {
+        let id;
+
+        client1.close();
+        id = await timebox(host.onLostClient);
+        expect(id).toEqual(1);
+
+        client2.close();
+        id = await timebox(host.onLostClient);
+        expect(id).toEqual(2);
+      });
     });
   });
 });

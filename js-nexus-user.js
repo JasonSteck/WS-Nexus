@@ -30,6 +30,7 @@ Host: () => ({
   id: null,
   name: null,
   onNewClient: createPromiseEventListener(),
+  onLostClient: createPromiseEventListener(),
   onMessage: createPromiseEventListener(),
   send(message, clientIDs) {
     this._ws.send(JSON.stringify({
@@ -47,6 +48,9 @@ Host: () => ({
         break;
       case 'NEW_CLIENT':
         this.onNewClient.trigger(json.clientID, json.request);
+        break;
+      case 'LOST_CLIENT':
+        this.onLostClient.trigger(json.clientID);
         break;
       case 'FROM_CLIENT':
         this.onMessage.trigger(json.message, json.clientID);
