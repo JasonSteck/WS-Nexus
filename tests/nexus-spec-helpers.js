@@ -21,11 +21,28 @@ window.timebox = (promise, msg='', ms=1000) => {
 
 // ===================== Spec Helpers ===================== //
 
-window.NexusSpecHelpers = class NexusSpecHelpers {
-  constructor() {
-//     this.connections = [];
-  }
+window.manageWebSockets = () => {
+  // Throw error if a Nexus server is not running
+  new EnsureConnection(WebSocket);
 
+  // Keep track of (future) websockets for cleanup
+  const connections = [];
+
+  const _WebSocket = window.WebSocket.bind(window);
+  window.WebSocket = function(...args) {
+    const ws = new _WebSocket(...args);
+    connections.push(ws);
+    return ws;
+  };
+
+  afterEach(async () => {
+    for(let i=0; i< connections.length; i++) {
+      await connections[i].close();
+    }
+  });
+};
+
+window.NexusSpecHelpers = class NexusSpecHelpers {
   findHost(hostList, id) {
     // hostList := [ host, host, ...]
     // host := { id: integer, name: string}
@@ -44,17 +61,10 @@ window.NexusSpecHelpers = class NexusSpecHelpers {
     let hostRegistry = this.findHost(hostList, host.id);
     expect(hostRegistry).toBe(undefined);
   }
-
-//   async closeAllConnections() {
-//     const conns = this.connections;
-//     for(let i=0; i< conns.length; i++) {
-//       await conns[i].close();
-//     }
-//   }
 }
 
-window.EnsureConnection = class EnsureConnection {
-  constructor() {
+class EnsureConnection {
+  constructor(WebSocket) {
     this.ws = new WebSocket(SERVER_ADDR);
     this._shouldClose = false;
 

@@ -1,15 +1,8 @@
 const server = 'ws://127.0.0.1:3000';
 
 describe('JS-Nexus', function() {
-
-  // Throw error if a Nexus server is not running
-  new EnsureConnection();
-
   setSpecHelper(NexusSpecHelpers);
-
-  afterEach(async function() {
-    // await this.closeAllConnections(); // comes from NexusSpecHelpers
-  });
+  manageWebSockets();
 
   describe('user:', function() {
     let user;
