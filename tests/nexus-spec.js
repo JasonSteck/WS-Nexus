@@ -77,12 +77,12 @@ describe('JS-Nexus', function() {
   describe('client:', function() {
     let client;
     beforeEach(async function(){
-      client = await Nexus(server);
+      client = await timebox(Nexus(server));
     });
 
     it('can connect to a host by name', async function() {
       const name = 'Frogger';
-      const host = await Nexus(server).host(name);
+      const host = await timebox(Nexus(server).host(name));
 
       const onNewClient = host.onNewClient.then((id, request) => {
         expect(id).toBe(1);
@@ -91,12 +91,12 @@ describe('JS-Nexus', function() {
           hostName: name,
         });
       });
-      await client.join(name);
-      await onNewClient;
+      await timebox(client.join(name));
+      await timebox(onNewClient);
     });
 
     it('can connect to a host by id', async function() {
-      const host = await Nexus(server).host("Asteroids");
+      const host = await timebox(Nexus(server).host("Asteroids"));
 
       const onNewClient = host.onNewClient.then((id, request) => {
         expect(id).toBe(1);
@@ -105,8 +105,8 @@ describe('JS-Nexus', function() {
           hostID: host.id,
         });
       });
-      await client.join(host.id);
-      await onNewClient;
+      await timebox(client.join(host.id));
+      await timebox(onNewClient);
     });
 
     when('connected to a host', function() {

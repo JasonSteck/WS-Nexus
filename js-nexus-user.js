@@ -97,7 +97,7 @@ class NexusBase {
 
     this._ws = new WebSocket(nexusServerAddress);
     this._ws.onmessage = e => {
-      this._log('_onServerMessage:', e.data);
+      this._log('* ServerMessage:', e.data);
       const json = JSON.parse(e.data);
       this._onServerMessage(json);
     };
@@ -138,7 +138,7 @@ class NexusBase {
   }
 
   _log(...args) {
-    if(this.debug) {
+    if(this.debug || Nexus.debug) {
       console.log(...args);
     }
   }
@@ -272,6 +272,7 @@ function hostTypeObject(hostType) {
   return obj;
 }
 
-return (serverAddress='ws://127.0.0.1:3000') => new NexusBase(serverAddress);
+const Nexus = (serverAddress='ws://127.0.0.1:3000') => new NexusBase(serverAddress);
+return Nexus;
 
 })();
