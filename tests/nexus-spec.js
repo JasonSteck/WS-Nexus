@@ -159,6 +159,16 @@ describe('JS-Nexus', function() {
         );
         expect(caught).toBe(true);
       });
+
+      it('can become a host itself', async function() {
+        client.joinOrHost('Defender');
+        await client.hosting;
+        expect(client.type).toBe('Host');
+
+        const user2 = Nexus(server).joinOrHost('Defender');
+        await user2.joined;
+        expect(user2.type).toBe('Client');
+      });
     });
   });
 

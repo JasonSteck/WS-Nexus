@@ -16,6 +16,7 @@ Client: () => ({
         break;
       case 'NO_SUCH_HOST':
         this.joined.reject(new Error('Cannot connect to host'));
+        this._changeType('User');
         break;
       case 'MESSAGE':
         this.onMessage.trigger(json.message);
@@ -82,6 +83,11 @@ User: () => ({
     }, ()=>{}); // ignore failed server connections
     this._changeType('Client');
     this._andThen(this.joined);
+    return this;
+  },
+  joinOrHost(hostType) {
+    this.join(hostType);
+    this.joined.catch(() => this.host(hostType));
     return this;
   }
 })};
