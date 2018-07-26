@@ -12,6 +12,7 @@ function promise(resolver=()=>{}) {
 describe('JS-Nexus', function() {
   setSpecHelper(NexusSpecHelpers);
   manageWebSockets();
+  catchMissedEvents();
 
   describe('user:', function() {
     let user;
@@ -312,6 +313,16 @@ describe('JS-Nexus', function() {
           expect(code).toEqual(1001);
           expect(reason).toEqual('Host was closed');
         });
+      });
+    });
+  });
+
+  describe('unhandled awaitableEvents', function() {
+    when('we fail to connect to the server', function() {
+      it('shows a warning', async function() {
+        const user = Nexus(server);
+        const [event] = await this.warningSpy('whenServerConnected');
+        expect(event.type).toEqual('open');
       });
     });
   });

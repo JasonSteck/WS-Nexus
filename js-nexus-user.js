@@ -3,9 +3,9 @@ window.JSNexusUser = window.Nexus = (function() {
 // Experiment with morphing the current instance.
 const NexusTypes = {
 Dead: () => ({}),
-Client: () => ({
+Client: function() { return {
   host: null,
-  onMessage: createAwaitableEvent(),
+  onMessage: createAwaitableEvent(this._missedEvent('Client onMessage')),
   send(message) {
     this._ws.send(message);
   },
@@ -26,14 +26,14 @@ Client: () => ({
         this.default._onServerMessage(json);
     }
   }
-}),
+}},
 
-Host: () => ({
+Host: function() { return {
   id: null,
   name: null,
-  onNewClient: createAwaitableEvent(),
-  onLostClient: createAwaitableEvent(),
-  onMessage: createAwaitableEvent(),
+  onNewClient: createAwaitableEvent(this._missedEvent('Host onNewClient')),
+  onLostClient: createAwaitableEvent(this._missedEvent('Host onLostClient')),
+  onMessage: createAwaitableEvent(this._missedEvent('Host onMessage')),
   send(message, clientIDs) {
     this._ws.send(JSON.stringify({
       type: 'SEND',
@@ -61,7 +61,7 @@ Host: () => ({
         this.default._onServerMessage(json);
     }
   }
-}),
+}},
 
 User: () => ({
   host(hostType) {
@@ -104,12 +104,21 @@ class NexusBase {
     this.nexusServerAddress = nexusServerAddress;
     this.default = this.__proto__;
 
-    this.whenServerConnected = createAwaitableResult();
-    this.whenHosting = createAwaitableResult(); // when we have registered as a host
-    this.whenJoined = createAwaitableResult(); // when we have joined a host
+    this.whenServerConnected = createAwaitableResult(
+      this._missedEvent('whenServerConnected'),
+      this._missedEvent('whenServerConnected.onError'),
+    );
+    this.whenHosting = createAwaitableResult( // when we have registered as a host
+      this._missedEvent('whenHosting'),
+      this._missedEvent('whenHosting.onError'),
+    );
+    this.whenJoined = createAwaitableResult( // when we have joined a host
+      this._missedEvent('whenJoined'),
+      this._missedEvent('whenJoined.onError'),
+    );
 
-    this.onClose = createAwaitableEvent();
-    this.onList = createAwaitableEvent();
+    this.onClose = createAwaitableEvent(this._missedEvent('onClose'));
+    this.onList = createAwaitableEvent(this._missedEvent('onList'));
 
     this._ws = new WebSocket(nexusServerAddress);
     this._ws.onmessage = e => {
@@ -149,6 +158,12 @@ class NexusBase {
         break;
       default:
         console.log('(Ignorning server message:', json);
+    }
+  }
+
+  _missedEvent(eventName) {
+    return (...payload) => {
+      console.warn('Unhandled awaitableEvent "%s":', eventName, ...payload);
     }
   }
 
@@ -212,13 +227,13 @@ function addType(obj, typeName) {
   }
 
   const type = NexusTypes[typeName];
-  const props = type();
+  const props = type.call(obj);
   Object.assign(obj, props);
   obj._typeProps = Object.keys(props);
   obj._type = typeName;
 }
 
-function createAwaitableEvent() {
+function createAwaitableEvent(defaultCallback) {
   let anyNonce = false;
   let listeners = [];
 
@@ -240,6 +255,10 @@ function createAwaitableEvent() {
 
   awaitableEvent.trigger = function(...args) {
     const current = listeners;
+    if(current.length === 0) {
+      defaultCallback && defaultCallback(...args);
+      return;
+    }
     if(anyNonce) {
       // Remove one-time listeners
       listeners = listeners.filter(l => {
@@ -253,12 +272,12 @@ function createAwaitableEvent() {
   return awaitableEvent;
 }
 
-function createAwaitableResult() {
+function createAwaitableResult(defaultThenCallback, defaultElseCallback) {
   let goodResult;
   let badResult;
 
-  let thenListeners = createAwaitableEvent();
-  let elseListeners = createAwaitableEvent();
+  let thenListeners = createAwaitableEvent(defaultThenCallback);
+  let elseListeners = createAwaitableEvent(defaultElseCallback);
 
   function awaitableResult(resolved, rejected) {
     if(resolved) thenListeners(resolved);
@@ -325,6 +344,8 @@ function hostTypeObject(hostType) {
   }
   return obj;
 }
+
+window.NexusBase = NexusBase;
 
 const Nexus = (serverAddress='ws://127.0.0.1:3000') => new NexusBase(serverAddress);
 return Nexus;

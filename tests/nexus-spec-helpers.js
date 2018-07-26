@@ -42,6 +42,23 @@ window.manageWebSockets = () => {
   });
 };
 
+window.catchMissedEvents = () => {
+  beforeEach(function(){
+    const listeners = {};
+    stub(NexusBase.prototype)._missedEvent = (name) => {
+      const spy = newSpy(name);
+      spy.callFake = (...args) => {
+//         console.log('<MISSED EVENT>', name, ...args);
+        const p = listeners[name];
+        p && p.resolve(args);
+      }
+      return spy;
+    };
+
+    this.warningSpy = (eventName) => listeners[eventName] = promise();
+  });
+}
+
 window.NexusSpecHelpers = class NexusSpecHelpers {
   findHost(hostList, id) {
     // hostList := [ host, host, ...]
