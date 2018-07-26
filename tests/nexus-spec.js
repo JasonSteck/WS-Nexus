@@ -369,5 +369,14 @@ describe('JS-Nexus', function() {
         expect(reason).toBe('You closed your connection');
       });
     });
+
+    when('we receive a host list', function() {
+      it('shows a warning', async function() {
+        Nexus(server).getHosts();
+
+        const [hosts] = await this.warningSpy('onList');
+        expect(Array.isArray(hosts)).toBe(true);
+      });
+    });
   });
 });

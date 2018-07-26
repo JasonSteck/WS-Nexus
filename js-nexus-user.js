@@ -142,7 +142,7 @@ class NexusBase {
   }
 
   getHosts() {
-    this._ws.send('{"type":"LIST"}');
+    this._awaitable.then(()=>this._ws.send('{"type":"LIST"}'));
     return this.onList;
   }
 
