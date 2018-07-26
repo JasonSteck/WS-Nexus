@@ -5,7 +5,7 @@ const NexusTypes = {
 Dead: () => ({}),
 Client: () => ({
   host: null,
-  onMessage: createPromiseEventListener(),
+  onMessage: createAwaitableEvent(),
   send(message) {
     this._ws.send(message);
   },
@@ -31,9 +31,9 @@ Client: () => ({
 Host: () => ({
   id: null,
   name: null,
-  onNewClient: createPromiseEventListener(),
-  onLostClient: createPromiseEventListener(),
-  onMessage: createPromiseEventListener(),
+  onNewClient: createAwaitableEvent(),
+  onLostClient: createAwaitableEvent(),
+  onMessage: createAwaitableEvent(),
   send(message, clientIDs) {
     this._ws.send(JSON.stringify({
       type: 'SEND',
@@ -108,8 +108,8 @@ class NexusBase {
     this.whenHosting = createAwaitableResult(); // when we have registered as a host
     this.whenJoined = createAwaitableResult(); // when we have joined a host
 
-    this.onClose = createPromiseEventListener();
-    this.onList = createPromiseEventListener();
+    this.onClose = createAwaitableEvent();
+    this.onList = createAwaitableEvent();
 
     this._ws = new WebSocket(nexusServerAddress);
     this._ws.onmessage = e => {
@@ -218,27 +218,27 @@ function addType(obj, typeName) {
   obj._type = typeName;
 }
 
-function createPromiseEventListener() {
+function createAwaitableEvent() {
   let anyNonce = false;
   let listeners = [];
 
-  function promiseEventListener(callback) {
+  function awaitableEvent(callback) {
     if(typeof callback !== 'function') throw new Error('Callbacks must be functions');
 
     listeners.push(callback);
-    return promiseEventListener;
+    return awaitableEvent;
   }
 
-  promiseEventListener.then = function(callback) {
+  awaitableEvent.then = function(callback) {
     if(typeof callback !== 'function') throw new Error('Callbacks must be functions');
 
     anyNonce = true;
     callback._PromiseEventNonce = true;
     listeners.push(callback);
-    return promiseEventListener;
+    return awaitableEvent;
   }
 
-  promiseEventListener.trigger = function(...args) {
+  awaitableEvent.trigger = function(...args) {
     const current = listeners;
     if(anyNonce) {
       // Remove one-time listeners
@@ -250,15 +250,15 @@ function createPromiseEventListener() {
     }
     current.forEach(callback => callback(...args));
   }
-  return promiseEventListener;
+  return awaitableEvent;
 }
 
 function createAwaitableResult() {
   let goodResult;
   let badResult;
 
-  let thenListeners = createPromiseEventListener();
-  let elseListeners = createPromiseEventListener();
+  let thenListeners = createAwaitableEvent();
+  let elseListeners = createAwaitableEvent();
 
   function awaitableResult(resolved, rejected) {
     if(resolved) thenListeners(resolved);
