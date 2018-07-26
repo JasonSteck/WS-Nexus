@@ -378,5 +378,16 @@ describe('JS-Nexus', function() {
         expect(Array.isArray(hosts)).toBe(true);
       });
     });
+
+    when('we receive a message as a client', function() {
+      it('shows a warning', async function() {
+        const host = await Nexus(server).host('Centipede')
+        await Nexus(server).join(host.id);
+        host.send('hello');
+
+        const [msg] = await this.warningSpy('Client onMessage');
+        expect(msg).toBe('hello');
+      });
+    });
   });
 });
