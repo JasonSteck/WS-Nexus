@@ -389,5 +389,16 @@ describe('JS-Nexus', function() {
         expect(msg).toBe('hello');
       });
     });
+
+    when('a client joins', function() {
+      it('shows a warning', async function() {
+        const host = await Nexus(server).host('Centipede')
+        Nexus(server).join(host.id);
+
+        const [id, request] = await this.warningSpy('Host onNewClient');
+        expect(id).toBe(1);
+        expect(request.hostID).toEqual(host.id);
+      });
+    });
   });
 });
