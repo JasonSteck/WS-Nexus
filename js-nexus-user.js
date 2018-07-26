@@ -2,6 +2,7 @@ window.JSNexusUser = window.Nexus = (function() {
 
 // Experiment with morphing the current instance.
 const NexusTypes = {
+Dead: () => ({}),
 Client: () => ({
   host: null,
   onMessage: createPromiseEventListener(),
@@ -12,11 +13,11 @@ Client: () => ({
     switch(json.type) {
       case 'CONNECTED':
         this.host = json.host;
-        this.joined.resolve(this.host);
+        this.whenJoined.success(this.host);
         break;
       case 'NO_SUCH_HOST':
-        this.joined.reject(new Error('Cannot connect to host'));
         this._changeType('User');
+        this.whenJoined.failure(new Error('Cannot connect to host'));
         break;
       case 'MESSAGE':
         this.onMessage.trigger(json.message);
@@ -45,7 +46,7 @@ Host: () => ({
       case 'REGISTERED':
         this.id = json.hostID;
         this.name = json.hostName;
-        this.hosting.resolve(json);
+        this.whenHosting.success(json);
         break;
       case 'NEW_CLIENT':
         this.onNewClient.trigger(json.clientID, json.request);
@@ -67,27 +68,32 @@ User: () => ({
     let req = hostTypeObject(hostType);
     req.type = 'HOST';
 
-    this.serverConnection.then(()=>{
+    this.whenServerConnected.then(()=>{
       this._ws.send(JSON.stringify(req));
-    }, ()=>{}); // ignore failed server connections
+    }).else(()=>{
+      // when we lose server connection, switch to Dead mode
+      this._changeType('Dead');
+    });
     this._changeType('Host');
-    this._andThen(this.hosting);
+    this._setThen(this.whenHosting);
     return this;
   },
   join(hostType) {
     let req = hostTypeObject(hostType);
     req.type = 'CONNECT';
 
-    this.serverConnection.then(()=>{
+    this.whenServerConnected.then(()=>{
       this._ws.send(JSON.stringify(req));
-    }, ()=>{}); // ignore failed server connections
+    }).else(()=>{
+      // when we lose server connection, switch to Dead mode
+      this._changeType('Dead');
+    });
     this._changeType('Client');
-    this._andThen(this.joined);
+    this._setThen(this.whenJoined);
     return this;
   },
   joinOrHost(hostType) {
-    this.join(hostType);
-    this.joined.catch(() => this.host(hostType));
+    this.join(hostType).else(() => this.host(hostType));
     return this;
   }
 })};
@@ -98,9 +104,9 @@ class NexusBase {
     this.nexusServerAddress = nexusServerAddress;
     this.default = this.__proto__;
 
-    this.serverConnection = promise();
-    this.hosting = promise(); // when we have registered as a host
-    this.joined = promise(); // when we have joined a host
+    this.whenServerConnected = createAwaitableResult();
+    this.whenHosting = createAwaitableResult(); // when we have registered as a host
+    this.whenJoined = createAwaitableResult(); // when we have joined a host
 
     this.onClose = createPromiseEventListener();
     this.onList = createPromiseEventListener();
@@ -111,14 +117,14 @@ class NexusBase {
       const json = JSON.parse(e.data);
       this._onServerMessage(json);
     };
-    this._ws.onopen = this.serverConnection.resolve;
+    this._ws.onopen = this.whenServerConnected.success;
     this._ws.onerror = () => {
       const error = new Error('Server connection failed');
-      this.serverConnection.reject(error);
+      this.whenServerConnected.failure(error);
     };
     this._ws.onclose = ({ code, reason }) => this.onClose.trigger(code, reason);
 
-    this._setThen(this.serverConnection);
+    this._setThen(this.whenServerConnected);
     this._changeType('User');
   }
 
@@ -153,37 +159,26 @@ class NexusBase {
   }
 
   // Allow .then/await to be used on an instance of this class
-  _setThen(promise) {
-    this._currentPromise = promise;
-    this.then = (resolved, rejected) => {
+  _setThen(awaitable) {
+    this.then = (resolved) => {
       const doResolve = ()=>{
         this.then = undefined; // prevent infinite cycle when awaiting this thenable object that returns this same object
-        this.catch = undefined;
         resolved(this);
       };
-      const doReject = (error) => {
-        this.then = undefined;
-        this.catch = undefined;
-        rejected(error);
+
+      awaitable.then(doResolve);
+      return this;
+    }
+
+    this.else = (rejected) => {
+      const doReject = ()=>{
+        this.then = undefined; // prevent infinite cycle when awaiting this thenable object that returns this same object
+        rejected(this);
       };
 
-      const newPromise = promise.then(doResolve, rejected && doReject);
-      this._setThen(newPromise); // mimic promise chaining (and mutating)
+      awaitable.else(doReject);
       return this;
     }
-    this.catch = callback => {
-      const newPromise = promise.catch(error=>{
-        this.then = undefined;
-        this.catch = undefined;
-        callback(error);
-      });
-      this._setThen(newPromise);
-      return this;
-    }
-  }
-
-  _andThen(promise) {
-    this._setThen(this._currentPromise.then(()=>promise));
   }
 
   // Modifies the properties on this object to make it a different "type"
@@ -223,15 +218,6 @@ function addType(obj, typeName) {
   obj._type = typeName;
 }
 
-function promise(resolver=()=>{}) {
-  let resolve;
-  let reject;
-  const promise = new Promise((res, rej)=>resolver(resolve = res, reject = rej));
-  promise.resolve = resolve;
-  promise.reject = reject;
-  return promise;
-}
-
 function createPromiseEventListener() {
   let anyNonce = false;
   let listeners = [];
@@ -265,6 +251,61 @@ function createPromiseEventListener() {
     current.forEach(callback => callback(...args));
   }
   return promiseEventListener;
+}
+
+function createAwaitableResult() {
+  let goodResult;
+  let badResult;
+
+  let thenListeners = createPromiseEventListener();
+  let elseListeners = createPromiseEventListener();
+
+  function awaitableResult(resolved, rejected) {
+    if(resolved) thenListeners(resolved);
+    if(rejected) elseListeners(rejected);
+
+    if(goodResult) {
+      resolved(...goodResult);
+    } else if(badResult) {
+      rejected(...badResult);
+    }
+
+    return awaitableResult;
+  }
+
+  awaitableResult.then = function(callback) {
+    if(goodResult) {
+      callback(...goodResult);
+    } else {
+      thenListeners.then(callback);
+    }
+    return awaitableResult;
+  }
+
+  awaitableResult.else = function(callback) {
+    if(badResult) {
+      callback(...badResult);
+    } else {
+      elseListeners.then(callback);
+    }
+    return awaitableResult;
+  }
+
+  awaitableResult.success = function(...args) {
+    goodResult = args;
+    badResult = null;
+
+    thenListeners.trigger(...args);
+  }
+
+  awaitableResult.failure = function(...args) {
+    goodResult = null;
+    badResult = args;
+
+    elseListeners.trigger(...args);
+  }
+
+  return awaitableResult;
 }
 
 function hostTypeObject(hostType) {
