@@ -381,7 +381,7 @@ describe('JS-Nexus', function() {
 
     when('we receive a message as a client', function() {
       it('shows a warning', async function() {
-        const host = await Nexus(server).host('Centipede')
+        const host = await Nexus(server).host('Centipede');
         await Nexus(server).join(host.id);
         host.send('hello');
 
@@ -392,12 +392,22 @@ describe('JS-Nexus', function() {
 
     when('a client joins', function() {
       it('shows a warning', async function() {
-        const host = await Nexus(server).host('Centipede')
+        const host = await Nexus(server).host('Centipede');
         Nexus(server).join(host.id);
 
         const [id, request] = await this.warningSpy('Host onNewClient');
         expect(id).toBe(1);
         expect(request.hostID).toEqual(host.id);
+      });
+    });
+
+    when('a client leaves', function() {
+      it('shows a warning', async function() {
+        const host = await Nexus(server).host('Centipede');
+        Nexus(server).join(host.id).close();
+
+        const [id] = await this.warningSpy('Host onLostClient');
+        expect(id).toBe(1);
       });
     });
   });
