@@ -359,5 +359,15 @@ describe('JS-Nexus', function() {
         expect(error.message).toBe('Cannot connect to host');
       });
     });
+
+    when('our connection closes', function() {
+      it('shows a warning', async function() {
+        Nexus(server).close();
+
+        const [code, reason] = await this.warningSpy('onClose');
+        expect(code).toBe(1000);
+        expect(reason).toBe('You closed your connection');
+      });
+    });
   });
 });

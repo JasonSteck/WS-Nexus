@@ -146,8 +146,10 @@ class NexusBase {
     return this.onList;
   }
 
-  close(code=1000, reason="User closed their connection") {
-    this._ws.close(code, reason);
+  close(code=1000, reason="You closed your connection") {
+    this._awaitable.then(()=>{
+      this._ws.close(code, reason);
+    });
     return this.onClose;
   }
 
@@ -175,6 +177,7 @@ class NexusBase {
 
   // Allow .then/await to be used on an instance of this class
   _setThen(awaitable) {
+    this._awaitable = awaitable;
     this.then = (resolved) => {
       const doResolve = ()=>{
         this.then = undefined; // prevent infinite cycle when awaiting this thenable object that returns this same object
