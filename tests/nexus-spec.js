@@ -350,5 +350,14 @@ describe('JS-Nexus', function() {
         expect(hostType.id).toExist();
       });
     });
+
+    when('we fail to join', function() {
+      it('shows a warning', async function() {
+        Nexus(server).join('Galaxian');
+
+        const [error] = await this.warningSpy('whenJoined.onError');
+        expect(error.message).toBe('Cannot connect to host');
+      });
+    });
   });
 });
