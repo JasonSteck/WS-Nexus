@@ -48,7 +48,7 @@ window.catchMissedEvents = () => {
     stub(NexusBase.prototype)._missedEvent = (name) => {
       const spy = newSpy(name);
       spy.callFake = (...args) => {
-//         console.log('<MISSED EVENT>', name, ...args);
+//      console.log('<MISSED EVENT>', name, ...args);
         const p = listeners[name];
         p && p.resolve(args);
       }

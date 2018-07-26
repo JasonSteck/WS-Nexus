@@ -1,4 +1,5 @@
 const server = 'ws://127.0.0.1:3000';
+const badServer = 'ws://127.0.0.1:777';
 
 function promise(resolver=()=>{}) {
   let resolve;
@@ -42,8 +43,6 @@ describe('JS-Nexus', function() {
     });
 
     when('the server is down', function() {
-      const badServer = 'ws://127.0.0.1:777';
-
       it('triggers an else', async function() {
         let caught = promise();
         let user = Nexus(badServer).else(caught.resolve);
@@ -317,13 +316,21 @@ describe('JS-Nexus', function() {
     });
   });
 
-  describe('unhandled awaitableEvents', function() {
-    when('we fail to connect to the server', function() {
+  describe('unhandled awaitableEvents:', function() {
+    when('we connect to the server', function() {
       it('shows a warning', async function() {
         const user = Nexus(server);
         const [event] = await this.warningSpy('whenServerConnected');
         expect(event.type).toEqual('open');
       });
     });
+
+    when('we fail to connect to the server', function() {
+      it('shows a warning', async function() {
+        const user = Nexus(badServer);
+        const [error] = await this.warningSpy('whenServerConnected.onError');
+        expect(error.message).toEqual('Server connection failed');
+      });
+    })
   });
 });
