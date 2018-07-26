@@ -331,6 +331,14 @@ describe('JS-Nexus', function() {
         const [error] = await this.warningSpy('whenServerConnected.onError');
         expect(error.message).toEqual('Server connection failed');
       });
-    })
+    });
+
+    when('we begin hosting', function() {
+      it('shows a warning', async function() {
+        const user = Nexus(server).host('Galaxian');
+        const [hostType]= await this.warningSpy('whenHosting');
+        expect(hostType.hostID).toExist();
+      });
+    });
   });
 });
