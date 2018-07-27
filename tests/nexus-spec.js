@@ -43,29 +43,29 @@ describe('JS-Nexus', function() {
     });
 
     when('the server is down', function() {
-      it('triggers an else', async function() {
+      it('triggers an .onError', async function() {
         let caught = promise();
-        let user = Nexus(badServer).else(caught.resolve);
+        let user = Nexus(badServer).onError(caught.resolve);
         await caught;
         expect(user.type).toBe('User');
       });
 
-      it('triggers a .else even if they tried to .join', async function() {
+      it('triggers a .onError even if they tried to .join', async function() {
         let caught = promise();
 
         let user = Nexus(badServer)
-          .else(() => caught.resolve())
+          .onError(() => caught.resolve())
           .join('The Game');
         await caught;
 
         expect(user.type).toBe('Dead');
       });
 
-      it('triggers a .else even if they tried to .host', async function() {
+      it('triggers a .onError even if they tried to .host', async function() {
         let caught = promise();
 
         let user = Nexus(badServer)
-          .else(() => caught.resolve())
+          .onError(() => caught.resolve())
           .host('The Game');
         await caught;
 
@@ -142,12 +142,12 @@ describe('JS-Nexus', function() {
     });
 
     when('attempting to connect to a non-existent host', function() {
-      it('triggers a .else', async function() {
+      it('triggers a .onError', async function() {
         let caught = promise();
 
         client
           .join({ hostID: -18237867 })
-          .else(caught.resolve);
+          .onError(caught.resolve);
 
         await caught;
 

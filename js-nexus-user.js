@@ -72,7 +72,7 @@ User: () => ({
 
     this.whenServerConnected.then(()=>{
       this._ws.send(JSON.stringify(req));
-    }).else(()=>{
+    }).onError(()=>{
       // when we lose server connection, switch to Dead mode
       this._changeType('Dead');
     });
@@ -86,7 +86,7 @@ User: () => ({
 
     this.whenServerConnected.then(()=>{
       this._ws.send(JSON.stringify(req));
-    }).else(()=>{
+    }).onError(()=>{
       // when we lose server connection, switch to Dead mode
       this._changeType('Dead');
     });
@@ -95,7 +95,7 @@ User: () => ({
     return this;
   },
   joinOrHost(hostType) {
-    this.join(hostType).else(() => this.host(hostType));
+    this.join(hostType).onError(() => this.host(hostType));
     return this;
   }
 })};
@@ -190,13 +190,13 @@ class NexusBase {
       return this;
     }
 
-    this.else = (rejected) => {
+    this.onError = (rejected) => {
       const doReject = ()=>{
         this.then = undefined; // prevent infinite cycle when awaiting this thenable object that returns this same object
         rejected(this);
       };
 
-      awaitable.else(doReject);
+      awaitable.onError(doReject);
       return this;
     }
   }
@@ -306,7 +306,7 @@ function createAwaitableResult(defaultThenCallback, defaultElseCallback) {
     return awaitableResult;
   }
 
-  awaitableResult.else = function(callback) {
+  awaitableResult.onError = function(callback) {
     if(badResult) {
       callback(...badResult);
     } else {
