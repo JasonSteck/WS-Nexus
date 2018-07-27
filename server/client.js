@@ -17,16 +17,17 @@ class Client {
     this.clientID = clientID;
   }
 
-  onMessage(str) {
+  onMessage(data) {
     try {
-      log('+ request from Client:', str);
+      log('+ request from Client:', data);
+      const json = JSON.parse(data);
       this.host.ws.send(JSON.stringify({
         type: 'FROM_CLIENT',
         clientID: this.clientID,
-        message: str,
+        message: json.message,
       }));
     } catch (e) {
-      log('ERROR client onMessage: ',e,'\n- Trying to Process: `'+str+'`');
+      log('ERROR client onMessage: ',e,'\n- Trying to Process: `'+data+'`');
     }
   }
 

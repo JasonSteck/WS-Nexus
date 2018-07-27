@@ -8,7 +8,10 @@ Client: function() { return {
   onMessage: createAwaitableEvent(this._missedEvent('Client onMessage')),
   send(message) {
     this.whenJoined.then(()=>{
-      this._ws.send(message);
+      this._ws.send(JSON.stringify({
+        type: 'SEND',
+        message,
+      }));
     });
   },
   _onServerMessage(json) {
