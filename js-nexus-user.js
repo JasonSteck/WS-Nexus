@@ -47,7 +47,7 @@ Host: function() { return {
     switch(json.type) {
       case 'REGISTERED':
         this.id = json.id;
-        this.name = json.hostName;
+        this.name = json.name;
         this.whenHosting.success(json);
         break;
       case 'NEW_CLIENT':
@@ -336,7 +336,7 @@ function hostTypeObject(hostType) {
   let obj;
   switch(typeof hostType) {
     case 'string':
-      obj = { hostName: hostType };
+      obj = { name: hostType };
       break;
     case 'number':
       obj = { id: hostType };

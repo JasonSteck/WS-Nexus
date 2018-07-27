@@ -88,7 +88,7 @@ describe('JS-Nexus', function() {
         expect(id).toBe(1);
         expect(request).toEqual({
           type: 'CONNECT',
-          hostName: name,
+          name: name,
         });
       });
       await Promise.all([
