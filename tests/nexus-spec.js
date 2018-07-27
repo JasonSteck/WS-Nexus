@@ -87,7 +87,7 @@ describe('JS-Nexus', function() {
       const onNewClient = host.onNewClient.then((id, request) => {
         expect(id).toBe(1);
         expect(request).toEqual({
-          type: 'CONNECT',
+          type: 'JOIN',
           name: name,
         });
       });
@@ -103,7 +103,7 @@ describe('JS-Nexus', function() {
       const onNewClient = host.onNewClient.then((id, request) => {
         expect(id).toBe(1);
         expect(request).toEqual({
-          type: 'CONNECT',
+          type: 'JOIN',
           id: host.id,
         });
       });

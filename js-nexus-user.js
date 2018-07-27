@@ -16,7 +16,7 @@ Client: function() { return {
   },
   _onServerMessage(json) {
     switch(json.type) {
-      case 'CONNECTED':
+      case 'JOINED':
         this.host = json.host;
         this.whenJoined.success(this.host);
         break;
@@ -48,7 +48,7 @@ Host: function() { return {
   },
   _onServerMessage(json) {
     switch(json.type) {
-      case 'REGISTERED':
+      case 'HOSTING':
         this.id = json.id;
         this.name = json.name;
         this.whenHosting.success(json);
@@ -85,7 +85,7 @@ User: () => ({
   },
   join(hostType) {
     let req = hostTypeObject(hostType);
-    req.type = 'CONNECT';
+    req.type = 'JOIN';
 
     this.whenServerConnected.then(()=>{
       this._ws.send(JSON.stringify(req));

@@ -8,7 +8,7 @@ class Client {
     this.host = options.host;
 
     this.ws.send(JSON.stringify({
-      type: 'CONNECTED',
+      type: 'JOINED',
       host: this.host.publicData,
     }));
   }

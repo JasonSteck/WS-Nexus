@@ -17,7 +17,7 @@ class Host {
     this.nextClientID = 1; // not an array position
 
     this.ws.send(JSON.stringify({
-      type: 'REGISTERED',
+      type: 'HOSTING',
       id: this.publicData.id,
       name: this.publicData.name,
     }));

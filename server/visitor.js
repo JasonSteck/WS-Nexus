@@ -15,7 +15,7 @@ class Visitor {
       log('+ request from Visitor:', str);
       const req = JSON.parse(str);
       switch(req.type) {
-        case 'CONNECT': //props: name AND/OR id AND/OR <anything>
+        case 'JOIN': //props: name AND/OR id AND/OR <anything>
           this._onConnect(req);
           break;
         case 'HOST': //props: name
