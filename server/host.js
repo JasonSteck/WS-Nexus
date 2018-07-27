@@ -1,12 +1,12 @@
 const IndexedList = require('./utils/indexed-list');
 
 class Host {
-  // options: { hostID, hostName, onClose }
+  // options: { id, hostName, onClose }
   constructor(ws, options) {
     this.ws = ws;
     this.options = options;
     this.publicData = {
-      id: options.hostID,
+      id: options.id,
       name: options.hostName,
     }
 
@@ -18,7 +18,7 @@ class Host {
 
     this.ws.send(JSON.stringify({
       type: 'REGISTERED',
-      hostID: this.publicData.id,
+      id: this.publicData.id,
       hostName: this.publicData.name,
     }));
   }

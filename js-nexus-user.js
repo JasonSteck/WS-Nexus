@@ -46,7 +46,7 @@ Host: function() { return {
   _onServerMessage(json) {
     switch(json.type) {
       case 'REGISTERED':
-        this.id = json.hostID;
+        this.id = json.id;
         this.name = json.hostName;
         this.whenHosting.success(json);
         break;
@@ -339,7 +339,7 @@ function hostTypeObject(hostType) {
       obj = { hostName: hostType };
       break;
     case 'number':
-      obj = { hostID: hostType };
+      obj = { id: hostType };
       break;
     case 'object':
       obj = hostType;

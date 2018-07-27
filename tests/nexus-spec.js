@@ -104,7 +104,7 @@ describe('JS-Nexus', function() {
         expect(id).toBe(1);
         expect(request).toEqual({
           type: 'CONNECT',
-          hostID: host.id,
+          id: host.id,
         });
       });
       await Promise.all([
@@ -146,7 +146,7 @@ describe('JS-Nexus', function() {
         let caught = promise();
 
         client
-          .join({ hostID: -18237867 })
+          .join({ id: -18237867 })
           .onError(caught.resolve);
 
         await caught;
@@ -337,7 +337,7 @@ describe('JS-Nexus', function() {
       it('shows a warning', async function() {
         const user = Nexus(server).host('Galaxian');
         const [hostType] = await this.warningSpy('whenHosting');
-        expect(hostType.hostID).toExist();
+        expect(hostType.id).toExist();
       });
     });
 
@@ -397,7 +397,7 @@ describe('JS-Nexus', function() {
 
         const [id, request] = await this.warningSpy('Host onNewClient');
         expect(id).toBe(1);
-        expect(request.hostID).toEqual(host.id);
+        expect(request.id).toEqual(host.id);
       });
     });
 

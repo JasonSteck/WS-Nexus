@@ -15,7 +15,7 @@ class ConnectionPool {
 
   findHost(req) {
     return this.hosts.find(h => (
-      req.hostID === h.publicData.id || req.hostName === h.publicData.name
+      req.id === h.publicData.id || req.hostName === h.publicData.name
     )) || null;
   }
 
@@ -46,7 +46,7 @@ class ConnectionPool {
 
   _onBecomeHost(connection, { ws, request }) {
     this.hosts.push(new Host(ws, {
-      hostID: this.nextHostID++,
+      id: this.nextHostID++,
       hostName: request.hostName,
       onClose: this._onLostHost,
     }));
