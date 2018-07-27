@@ -410,5 +410,16 @@ describe('JS-Nexus', function() {
         expect(id).toBe(1);
       });
     });
+
+    when('a host receives a message', function() {
+      it('shows a warning', async function() {
+        const host = await Nexus(server).host('Centipede');
+        Nexus(server).join(host.id).send('hello!');
+
+        const [msg, id] = await this.warningSpy('Host onMessage');
+        expect(msg).toBe('hello!');
+        expect(id).toBe(1);
+      });
+    });
   });
 });

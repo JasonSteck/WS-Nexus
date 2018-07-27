@@ -7,7 +7,9 @@ Client: function() { return {
   host: null,
   onMessage: createAwaitableEvent(this._missedEvent('Client onMessage')),
   send(message) {
-    this._ws.send(message);
+    this.whenJoined.then(()=>{
+      this._ws.send(message);
+    });
   },
   _onServerMessage(json) {
     switch(json.type) {
