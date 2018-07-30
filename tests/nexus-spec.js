@@ -1,3 +1,5 @@
+const apiVersion = '1.0.0';
+
 const server = 'ws://127.0.0.1:3000';
 const badServer = 'ws://127.0.0.1:777';
 
@@ -419,6 +421,66 @@ describe('JS-Nexus', function() {
         const [msg, id] = await this.warningSpy('Host onMessage');
         expect(msg).toBe('hello!');
         expect(id).toBe(1);
+      });
+    });
+  });
+
+  describe("server's and user's apiVersions:", function() {
+    let user;
+    beforeEach(function() {
+      stub(console).warn;
+      stub(console).error;
+
+      user = Nexus(server);
+
+      const fakeVersion = apiVersion.split('.');
+      this.setVersion = (index, val) => {
+        fakeVersion[index] = val;
+        user.apiVersion = fakeVersion.join('.')
+      }
+    });
+
+    when("they are the same", function() {
+      it("shows no warnings or errors", async function() {
+        await user.onServerInfo;
+        expect(console.warn).not.toHaveBeenCalled();
+        expect(console.error).not.toHaveBeenCalled();
+      });
+    })
+
+    when("their patch versions differ", function() {
+      beforeEach(async function() {
+        this.setVersion(2, '777');
+      });
+
+      it("shows no warnings or errors", async function() {
+        await user.onServerInfo;
+        expect(console.warn).not.toHaveBeenCalled();
+        expect(console.error).not.toHaveBeenCalled();
+      });
+    });
+
+    when("their minor versions differ", function() {
+      beforeEach(async function() {
+        this.setVersion(1, '777');
+      });
+
+      it("warns that optional features may not work", async function() {
+        await user.onServerInfo;
+        expect(console.warn).toHaveBeenCalled();
+        expect(console.error).not.toHaveBeenCalled();
+      });
+    });
+
+    when("their major versions differ", function() {
+      beforeEach(async function() {
+        this.setVersion(0, '777');
+      });
+
+      it("warns that required features may not work", async function() {
+        await user.onServerInfo;
+        expect(console.warn).not.toHaveBeenCalled();
+        expect(console.error).toHaveBeenCalled();
       });
     });
   });

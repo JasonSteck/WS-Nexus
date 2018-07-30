@@ -1,4 +1,5 @@
 window.JSNexusUser = window.Nexus = (function() {
+const apiVersion = '1.0.0';
 
 // Experiment with morphing the current instance.
 const NexusTypes = {
@@ -28,7 +29,7 @@ Client: function() { return {
         this.onMessage.trigger(json.message);
         break;
       default:
-        this.default._onServerMessage(json);
+        this.default._onServerMessage.bind(this)(json);
     }
   }
 }},
@@ -63,7 +64,7 @@ Host: function() { return {
         this.onMessage.trigger(json.message, json.clientID);
         break;
       default:
-        this.default._onServerMessage(json);
+        this.default._onServerMessage.bind(this)(json);
     }
   }
 }},
@@ -108,6 +109,7 @@ class NexusBase {
     this._type = null;
     this.nexusServerAddress = nexusServerAddress;
     this.default = this.__proto__;
+    this.apiVersion = apiVersion;
 
     this.whenServerConnected = createAwaitableResult(
       this._missedEvent('whenServerConnected'),
@@ -124,6 +126,20 @@ class NexusBase {
 
     this.onClose = createAwaitableEvent(this._missedEvent('onClose'));
     this.onList = createAwaitableEvent(this._missedEvent('onList'));
+    this.onServerInfo = createAwaitableEvent(this._missedEvent('onServerInfo'));
+    this.onServerInfo(json => { // event is always silent since we have this
+      if(json.apiVersion !== this.apiVersion) {
+        const server = json.apiVersion.split('.');
+        const self = this.apiVersion.split('.');
+
+        if(server[0] !== self[0]) { // major version is different
+          console.error("JSNexusUser Error: Core api features may not work. Your api version (%s) does not match the server's api version (%s)", this.apiVersion, json.apiVersion);
+        } else if(server[1] !== self[1]) { // minor version is different
+          console.warn("JSNexusUser Warning: Optional api features may not work. Your api version (%s) does not match the server's api version (%s)", this.apiVersion, json.apiVersion);
+        }
+        // (ignore patch versions)
+      }
+    });
 
     this._ws = new WebSocket(nexusServerAddress);
     this._ws.onmessage = e => {
@@ -163,8 +179,11 @@ class NexusBase {
       case 'LIST':
         this.onList.trigger(json.payload);
         break;
+      case 'SERVER_INFO':
+        this.onServerInfo.trigger(json);
+        break;
       default:
-        console.log('(Ignorning server message:', json);
+        console.log('(Unhandled server message:', json);
     }
   }
 
