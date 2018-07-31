@@ -363,12 +363,17 @@ describe('JS-Nexus', function() {
     });
 
     when('our connection closes', function() {
-      it('shows a warning', async function() {
-        Nexus(server).close();
+      it('shows a warning (but not to those who close themselves)', async function() {
+        const host = await Nexus(server).host('Centipede');
+        await Promise.all([
+          Nexus(server).join({ id: host.id }),
+          host.onNewClient,
+        ]);
+        host.close(); // causes the client to close too, which will throw the warning for them.
 
         const [code, reason] = await this.warningSpy('onClose');
-        expect(code).toBe(1000);
-        expect(reason).toBe('You closed your connection');
+        expect(code).toBe(1001);
+        expect(reason).toBe('Host was closed'); // expect the client to have the warning, not the host.
       });
     });
 

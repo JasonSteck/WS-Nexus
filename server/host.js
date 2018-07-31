@@ -66,7 +66,7 @@ class Host {
     try {
       this.clients.array.forEach(c => {
         c.close(1001, 'Host was closed');
-      })
+      });
     } catch(e) {
       log(e);
     }
@@ -100,7 +100,7 @@ class Host {
     client.ws.send(JSON.stringify({
       type: 'MESSAGE',
       message,
-    }))
+    }));
   }
 }
 
