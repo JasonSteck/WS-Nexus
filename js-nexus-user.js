@@ -118,15 +118,15 @@ class NexusBase {
     this.default = this.__proto__;
     this.apiVersion = apiVersion;
 
-    this.whenServerConnected = createAwaitableResult(
+    this.whenServerConnected = createAwaitableState(
       this._missedEvent('whenServerConnected'),
       this._missedEvent('whenServerConnected.onError'),
     );
-    this.whenHosting = createAwaitableResult( // when we have registered as a host
+    this.whenHosting = createAwaitableState( // when we have registered as a host
       this._missedEvent('whenHosting'),
       this._missedEvent('whenHosting.onError'),
     );
-    this.whenJoined = createAwaitableResult( // when we have joined a host
+    this.whenJoined = createAwaitableState( // when we have joined a host
       this._missedEvent('whenJoined'),
       this._missedEvent('whenJoined.onError'),
     );
@@ -307,59 +307,59 @@ function createAwaitableEvent(defaultCallback) {
   return awaitableEvent;
 }
 
-function createAwaitableResult(defaultThenCallback, defaultElseCallback) {
-  let goodResult;
-  let badResult;
+function createAwaitableState(defaultThenCallback, defaultElseCallback) {
+  let goodState;
+  let badState;
 
   let thenListeners = createAwaitableEvent(defaultThenCallback);
   let elseListeners = createAwaitableEvent(defaultElseCallback);
 
-  function awaitableResult(resolved, rejected) {
+  function awaitableState(resolved, rejected) {
     if(resolved) thenListeners(resolved);
     if(rejected) elseListeners(rejected);
 
-    if(goodResult) {
-      resolved(...goodResult);
-    } else if(badResult) {
-      rejected(...badResult);
+    if(goodState) {
+      resolved(...goodState);
+    } else if(badState) {
+      rejected(...badState);
     }
 
-    return awaitableResult;
+    return awaitableState;
   }
 
-  awaitableResult.then = function(callback) {
-    if(goodResult) {
-      callback(...goodResult);
+  awaitableState.then = function(callback) {
+    if(goodState) {
+      callback(...goodState);
     } else {
       thenListeners.then(callback);
     }
-    return awaitableResult;
+    return awaitableState;
   }
 
-  awaitableResult.onError = function(callback) {
-    if(badResult) {
-      callback(...badResult);
+  awaitableState.onError = function(callback) {
+    if(badState) {
+      callback(...badState);
     } else {
       elseListeners.then(callback);
     }
-    return awaitableResult;
+    return awaitableState;
   }
 
-  awaitableResult.success = function(...args) {
-    goodResult = args;
-    badResult = null;
+  awaitableState.success = function(...args) {
+    goodState = args;
+    badState = null;
 
     thenListeners.trigger(...args);
   }
 
-  awaitableResult.failure = function(...args) {
-    goodResult = null;
-    badResult = args;
+  awaitableState.failure = function(...args) {
+    goodState = null;
+    badState = args;
 
     elseListeners.trigger(...args);
   }
 
-  return awaitableResult;
+  return awaitableState;
 }
 
 function hostTypeObject(hostType) {
