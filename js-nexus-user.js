@@ -37,6 +37,7 @@ Client: function() { return {
 Host: function() { return {
   id: null,
   name: null,
+  clientIDs: [],
   onNewClient: createAwaitableEvent(this._missedEvent('Host onNewClient')),
   onLostClient: createAwaitableEvent(this._missedEvent('Host onLostClient')),
   onMessage: createAwaitableEvent(this._missedEvent('Host onMessage')),
@@ -55,9 +56,15 @@ Host: function() { return {
         this.whenHosting.success(json);
         break;
       case 'NEW_CLIENT':
+        this.clientIDs.push(json.clientID);
         this.onNewClient.trigger(json.clientID, json.request);
         break;
       case 'LOST_CLIENT':
+        const index = this.clientIDs.indexOf(json.clientID);
+        this.clientIDs = [
+          ...this.clientIDs.slice(0, index),
+          ...this.clientIDs.slice(index + 1),
+        ];
         this.onLostClient.trigger(json.clientID);
         break;
       case 'FROM_CLIENT':

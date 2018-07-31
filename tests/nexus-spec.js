@@ -181,9 +181,37 @@ describe('JS-Nexus', function() {
       let client3;
 
       beforeEach(async function() {
+        let numClients = 0;
+        const hasAllClients = promise();
+        host.onNewClient(id => {
+          numClients++;
+          if(numClients==3) hasAllClients.resolve();
+        });
+
         client1 = await Nexus(server).join(host.id);
         client2 = await Nexus(server).join(host.id);
         client3 = await Nexus(server).join(host.id);
+        await hasAllClients;
+      });
+
+      it('keeps track of the current client ids', async function() {
+        let id;
+        expect(host.clientIDs).toEqual([1,2,3]);
+
+        client2.close();
+        id = await host.onLostClient;
+        expect(id).toBe(2);
+        expect(host.clientIDs).toEqual([1,3]);
+
+        client3.close();
+        id = await host.onLostClient;
+        expect(id).toBe(3);
+        expect(host.clientIDs).toEqual([1]);
+
+        client1.close();
+        id = await host.onLostClient;
+        expect(id).toBe(1);
+        expect(host.clientIDs).toEqual([]);
       });
 
       it('does not let a message from one client leak to others', async function() {
