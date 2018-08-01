@@ -350,7 +350,7 @@ describe('JS-Nexus', function() {
     when('we connect to the server', function() {
       it('shows a warning', async function() {
         const user = Nexus(server);
-        const [event] = await this.warningSpy('whenServerConnected');
+        const [event] = await this.warningSpy('.whenServerConnected.then');
         expect(event.type).toEqual('open');
       });
     });
@@ -358,7 +358,7 @@ describe('JS-Nexus', function() {
     when('we fail to connect to the server', function() {
       it('shows a warning', async function() {
         const user = Nexus(badServer);
-        const [error] = await this.warningSpy('whenServerConnected.onError');
+        const [error] = await this.warningSpy('.whenServerConnected.onError');
         expect(error.message).toEqual('Server connection failed');
       });
     });
@@ -366,7 +366,7 @@ describe('JS-Nexus', function() {
     when('we begin hosting', function() {
       it('shows a warning', async function() {
         const user = Nexus(server).host('Galaxian');
-        const [hostType] = await this.warningSpy('whenHosting');
+        const [hostType] = await this.warningSpy('.whenHosting.then');
         expect(hostType.id).toExist();
       });
     });
@@ -376,7 +376,7 @@ describe('JS-Nexus', function() {
         await Nexus(server).host('Galaxian');
         Nexus(server).join('Galaxian');
 
-        const [hostType] = await this.warningSpy('whenJoined');
+        const [hostType] = await this.warningSpy('.whenJoined.then');
         expect(hostType.id).toExist();
       });
     });
@@ -385,7 +385,7 @@ describe('JS-Nexus', function() {
       it('shows a warning', async function() {
         Nexus(server).join('Galaxian');
 
-        const [error] = await this.warningSpy('whenJoined.onError');
+        const [error] = await this.warningSpy('.whenJoined.onError');
         expect(error.message).toBe('Cannot connect to host');
       });
     });
@@ -399,7 +399,7 @@ describe('JS-Nexus', function() {
         ]);
         host.close(); // causes the client to close too, which will throw the warning for them.
 
-        const [code, reason] = await this.warningSpy('onClose');
+        const [code, reason] = await this.warningSpy('.onClose.then');
         expect(code).toBe(1001);
         expect(reason).toBe('Host was closed'); // expect the client to have the warning, not the host.
       });
@@ -409,7 +409,7 @@ describe('JS-Nexus', function() {
       it('shows a warning', async function() {
         Nexus(server).getHosts();
 
-        const [hosts] = await this.warningSpy('onList');
+        const [hosts] = await this.warningSpy('.onList.then');
         expect(Array.isArray(hosts)).toBe(true);
       });
     });
@@ -420,7 +420,7 @@ describe('JS-Nexus', function() {
         await Nexus(server).join(host.id);
         host.send('hello');
 
-        const [msg] = await this.warningSpy('Client onMessage');
+        const [msg] = await this.warningSpy('<Client>.onMessage.then');
         expect(msg).toBe('hello');
       });
     });
@@ -430,7 +430,7 @@ describe('JS-Nexus', function() {
         const host = await Nexus(server).host('Centipede');
         Nexus(server).join(host.id);
 
-        const [id, request] = await this.warningSpy('Host onNewClient');
+        const [id, request] = await this.warningSpy('<Host>.onNewClient.then');
         expect(id).toBe(1);
         expect(request.id).toEqual(host.id);
       });
@@ -441,7 +441,7 @@ describe('JS-Nexus', function() {
         const host = await Nexus(server).host('Centipede');
         Nexus(server).join(host.id).close();
 
-        const [id] = await this.warningSpy('Host onLostClient');
+        const [id] = await this.warningSpy('<Host>.onLostClient.then');
         expect(id).toBe(1);
       });
     });
@@ -451,7 +451,7 @@ describe('JS-Nexus', function() {
         const host = await Nexus(server).host('Centipede');
         Nexus(server).join(host.id).send('hello!');
 
-        const [msg, id] = await this.warningSpy('Host onMessage');
+        const [msg, id] = await this.warningSpy('<Host>.onMessage.then');
         expect(msg).toBe('hello!');
         expect(id).toBe(1);
       });

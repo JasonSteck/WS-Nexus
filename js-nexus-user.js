@@ -6,7 +6,7 @@ const NexusTypes = {
 Dead: () => ({}),
 Client: function() { return {
   host: null,
-  onMessage: createAwaitableEvent(this._missedEvent('Client onMessage')),
+  onMessage: createAwaitableEvent(this._missedEvent('<Client>.onMessage.then')),
   send(message) {
     this.whenJoined.then(()=>{
       this._ws.send(JSON.stringify({
@@ -38,9 +38,9 @@ Host: function() { return {
   id: null,
   name: null,
   clientIDs: [],
-  onNewClient: createAwaitableEvent(this._missedEvent('Host onNewClient')),
-  onLostClient: createAwaitableEvent(this._missedEvent('Host onLostClient')),
-  onMessage: createAwaitableEvent(this._missedEvent('Host onMessage')),
+  onNewClient: createAwaitableEvent(this._missedEvent('<Host>.onNewClient.then')),
+  onLostClient: createAwaitableEvent(this._missedEvent('<Host>.onLostClient.then')),
+  onMessage: createAwaitableEvent(this._missedEvent('<Host>.onMessage.then')),
   send(message, clientIDs) {
     this._ws.send(JSON.stringify({
       type: 'SEND',
@@ -119,21 +119,21 @@ class NexusBase {
     this.apiVersion = apiVersion;
 
     this.whenServerConnected = createAwaitableState(
-      this._missedEvent('whenServerConnected'),
-      this._missedEvent('whenServerConnected.onError'),
+      this._missedEvent('.whenServerConnected.then'),
+      this._missedEvent('.whenServerConnected.onError'),
     );
     this.whenHosting = createAwaitableState( // when we have registered as a host
-      this._missedEvent('whenHosting'),
-      this._missedEvent('whenHosting.onError'),
+      this._missedEvent('.whenHosting.then'),
+      this._missedEvent('.whenHosting.onError'),
     );
     this.whenJoined = createAwaitableState( // when we have joined a host
-      this._missedEvent('whenJoined'),
-      this._missedEvent('whenJoined.onError'),
+      this._missedEvent('.whenJoined.then'),
+      this._missedEvent('.whenJoined.onError'),
     );
 
-    this.onClose = createAwaitableEvent(this._missedEvent('onClose'));
-    this.onList = createAwaitableEvent(this._missedEvent('onList'));
-    this.onServerInfo = createAwaitableEvent(this._missedEvent('onServerInfo'));
+    this.onClose = createAwaitableEvent(this._missedEvent('.onClose.then'));
+    this.onList = createAwaitableEvent(this._missedEvent('.onList.then'));
+    this.onServerInfo = createAwaitableEvent(this._missedEvent('.onServerInfo.then'));
     this.onServerInfo(json => { // event is always silent since we have this
       if(json.apiVersion !== this.apiVersion) {
         const server = json.apiVersion.split('.');
