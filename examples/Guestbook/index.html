@@ -4,14 +4,20 @@
   <meta charset="utf-8">
   <title> Guestbook </title>
   <meta name="description" content="An example application using a JS Nexus server">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="main.css">
 </head>
 
 <body>
-  <div id="names"/>
+  <h1> Guestbook </h1>
+  <input id="server" value='ws://127.0.0.1:3000' autofocus /> <button id="connect"> Connect </button>
+  <div id="content" style="display:none">
+    <div id="name-list"> (empty) </div>
+    <input id="name-input" placeholder="name" />
+    <button id="add"> Add </button>
+  </div>
 
-  <input id="new-name" placeholder="name or message"/>
   <script src="../../js-nexus-user.js"></script>
   <script src="./Guestbook.js"></script>
+  <script src="./ui.js"></script>
 </body>
 </html>

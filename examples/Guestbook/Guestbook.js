@@ -1,6 +1,9 @@
 class Guestbook {
-  constructor(server='ws://127.0.0.1:3000') {
+  constructor(server='ws://127.0.0.1:3000', { onList, onName, onServer, onLostServer }) {
     this.server = server;
+    this.onList = onList;
+    this.onName = onName;
+
     this.list = [];
     this.isOfficialHost = false;
 
@@ -11,6 +14,9 @@ class Guestbook {
     this.host.onMessage((name, id) => this.onNewName(name, id));
     // make sure we're hosting before we try to join anything (so we can join ourselves)
     this.host.whenHosting.then(() => this.joinGuestbook());
+
+    this.host.whenServerConnected.then(onServer);
+    this.host.onClose.then(onLostServer);
   }
 
   add(name) {
@@ -33,6 +39,7 @@ class Guestbook {
 
     if(this.isOfficialHost) {
       this.list.push(name);
+      this.onName(name);
       this.host.send(name); // send new value to everyone
     } else {
       // forward request to official host
@@ -43,12 +50,15 @@ class Guestbook {
   /* ================= Client functions ================= */
 
   joinGuestbook() {
-    this.client = Nexus(this.server).join('Guestbook');
+    this.client = Nexus(this.server);
+    this.client.whenServerConnected.then(()=>{
+      this.client.join('Guestbook');
 
-    // setup event listeners
-    this.client.whenJoined.then(hostType => this.onJoined(hostType));
-    this.client.onMessage(nameOrList => this.onUpdate(nameOrList));
-    this.client.onClose(() => this.onOtherHostClosed());
+      // setup event listeners
+      this.client.whenJoined.then(hostType => this.onJoined(hostType));
+      this.client.onMessage(nameOrList => this.onUpdate(nameOrList));
+      this.client.onClose(() => this.onOtherHostClosed());
+    });
   }
 
   onJoined(hostType) {
@@ -74,8 +84,10 @@ class Guestbook {
 
       if(Array.isArray(nameOrList)) {
         this.list = nameOrList;
+        this.onList(nameOrList);
       } else {
         this.list.push(nameOrList);
+        this.onName(nameOrList);
       }
 
       this.host.send(nameOrList); // forward list to anyone connected to us
