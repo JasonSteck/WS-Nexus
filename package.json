@@ -1,23 +1,23 @@
 {
-  "name": "js-nexus",
+  "name": "ws-nexus",
   "version": "1.0.0",
   "description": "Creates a websocket proxy to let browsers communicate directly with each other.",
-  "main": "js-nexus-server.js",
+  "main": "ws-nexus-server.js",
   "scripts": {
-    "start": "node js-nexus-server.js",
-    "debug": "node --inspect js-nexus-server.js",
+    "start": "node ws-nexus-server.js",
+    "debug": "node --inspect ws-nexus-server.js",
     "test": "echo \"Error: To run tests, open ./tests/run.html\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JasonSteck/JS-Nexus.git"
+    "url": "git+https://github.com/JasonSteck/WS-Nexus.git"
   },
   "author": "Jason Steck",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/JasonSteck/JS-Nexus/issues"
+    "url": "https://github.com/JasonSteck/WS-Nexus/issues"
   },
-  "homepage": "https://github.com/JasonSteck/JS-Nexus#readme",
+  "homepage": "https://github.com/JasonSteck/WS-Nexus#readme",
   "dependencies": {
     "ws": "^3.2.0"
   }

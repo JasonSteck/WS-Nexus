@@ -1,4 +1,4 @@
-window.JSNexusUser = window.Nexus = (function() {
+window.WSNexusUser = window.Nexus = (function() {
 const apiVersion = '1.0.0';
 
 // Experiment with morphing the current instance.
@@ -140,9 +140,9 @@ class NexusBase {
         const self = this.apiVersion.split('.');
 
         if(server[0] !== self[0]) { // major version is different
-          console.error("JSNexusUser Error: Core api features may not work. Your api version (%s) does not match the server's api version (%s)", this.apiVersion, json.apiVersion);
+          console.error("WSNexusUser Error: Core api features may not work. Your api version (%s) does not match the server's api version (%s)", this.apiVersion, json.apiVersion);
         } else if(server[1] !== self[1]) { // minor version is different
-          console.warn("JSNexusUser Warning: Optional api features may not work. Your api version (%s) does not match the server's api version (%s)", this.apiVersion, json.apiVersion);
+          console.warn("WSNexusUser Warning: Optional api features may not work. Your api version (%s) does not match the server's api version (%s)", this.apiVersion, json.apiVersion);
         }
         // (ignore patch versions)
       }

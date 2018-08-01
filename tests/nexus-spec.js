@@ -12,7 +12,7 @@ function promise(resolver=()=>{}) {
   return promise;
 }
 
-describe('JS-Nexus', function() {
+describe('WS-Nexus', function() {
   setSpecHelper(NexusSpecHelpers);
   manageWebSockets();
   catchMissedEvents();
