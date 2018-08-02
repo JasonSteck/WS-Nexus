@@ -35,6 +35,7 @@ class Guestbook {
   onNewName(name, id) {
     // sanitize input
     if(typeof name !== 'string') return;
+    if(name.length === 0) return;
 
     console.log('(#%d)', id, name);
 
