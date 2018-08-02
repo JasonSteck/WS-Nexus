@@ -1,9 +1,10 @@
 class Guestbook {
-  constructor(server='ws://127.0.0.1:3000', { onList, onName, onServer, onLostServer, onOfficialHost }) {
+  constructor(server='ws://127.0.0.1:3000', { onList, onName, onServer, onLostServer, onOfficialHost, onUserCountChanged }) {
     this.server = server;
     this.onList = onList;
     this.onName = onName;
     this.onOfficialHost = onOfficialHost;
+    this.onUserCountChanged = onUserCountChanged;
 
     this.list = [];
     this.isOfficialHost = false;
@@ -12,6 +13,7 @@ class Guestbook {
 
     // setup event listeners
     this.host.onNewClient(id => this.onNewConnection(id));
+    this.host.onLostClient(id => this.onLostConnection(id));
     this.host.onMessage((name, id) => this.onNewName(name, id));
     // make sure we're hosting before we try to join anything (so we can join ourselves)
     this.host.whenHosting.then(() => this.joinGuestbook());
@@ -30,6 +32,12 @@ class Guestbook {
     console.log('New client (#%d) joined.', id);
     // send the list to the new client
     this.host.send(this.list, id);
+    this.onUserCountChanged(this.host.clientIDs.length);
+  }
+
+  onLostConnection(id) {
+    console.log('Lost client (#%d).', id);
+    this.onUserCountChanged(this.host.clientIDs.length);
   }
 
   onNewName(name, id) {

@@ -85,7 +85,11 @@ body {
   border-color: #3498db;
 }
 
-#server-status {
+#status-container {
   margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+#watcher-container {
   margin-bottom: 5rem;
 }

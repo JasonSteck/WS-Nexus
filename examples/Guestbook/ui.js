@@ -11,6 +11,8 @@ const nameList = $('#name-list');
 const nameInput = $('#name-input');
 const addButton = $('#add');
 const status = $('#status');
+const watcherContainer = $('#watcher-container');
+const watchers = $('#watchers');
 
 function onName(name) {
   const div = document.createElement('li');
@@ -44,6 +46,19 @@ function onLostServer() {
 
 function onOfficialHost() {
   status.innerText = "You are the official Host!";
+  watcherContainer.style.display = '';
+}
+
+function onUserCountChanged(count) {
+  const others = count - 1;
+  watchers.innerText = others;
+
+  // Warn us if we're the last ones
+  if(others) {
+    window.onbeforeunload = null;
+  } else {
+    window.onbeforeunload = ()=>1;
+  }
 }
 
 function connect() {
@@ -53,6 +68,7 @@ function connect() {
     onServer,
     onLostServer,
     onOfficialHost,
+    onUserCountChanged,
   });
 }
 
