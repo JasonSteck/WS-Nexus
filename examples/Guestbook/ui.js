@@ -3,7 +3,6 @@
 const $ = document.querySelector.bind(document);
 
 let guestbook;
-let listEmpty = true;
 
 const serverInput = $('#server');
 const connectButton = $('#connect');
@@ -13,17 +12,14 @@ const nameInput = $('#name-input');
 const addButton = $('#add');
 
 function onName(name) {
-  if(listEmpty) {
-    listEmpty = false;
-    nameList.innerHTML = "";
-  }
   const div = document.createElement('div');
   div.innerText = name;
   nameList.appendChild(div);
-
 }
 
 function onList(list) {
+  // wipe out existing stuff
+  nameList.innerHTML = "";
   list.forEach(onName);
 }
 
