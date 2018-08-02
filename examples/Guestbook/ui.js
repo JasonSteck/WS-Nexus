@@ -28,6 +28,7 @@ function onServer() {
   serverInput.style.display = 'none';
   connectButton.style.display = 'none';
   contentDiv.style.display = '';
+  nameList.innerHTML = '';
   nameInput.focus();
 
   status.innerText = "Connected";
