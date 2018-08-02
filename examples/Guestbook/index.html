@@ -9,14 +9,19 @@
 
 <body>
   <h1> Guestbook </h1>
-  <input id="server" value='ws://127.0.0.1:3000' autofocus /> <button id="connect"> Connect </button>
-  <div id="content" style="display:none">
-    <div id="name-list"></div>
-    <input id="name-input" placeholder="Name" />
-    <button id="add"> Add </button>
+  <div class="input-container">
+    <input class="input-container__input" id="server" value='ws://127.0.0.1:3000' autofocus />
+    <button class="input-container__button" id="connect"> Connect </button>
   </div>
-  <div>
-  Status: <span id="status"> No server connection </span>
+  <div id="content" style="display:none">
+    <ul id="name-list"></ul>
+    <div class="input-container">
+      <input class="input-container__input" id="name-input" placeholder="Name" />
+      <button class="input-container__button" id="add"> Add </button>
+    </div>
+  </div>
+  <div id="server-status">
+    Status: <span id="status"> No server connection </span>
   </div>
 
   <script src="../../ws-nexus-user.js"></script>

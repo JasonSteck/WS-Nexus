@@ -13,7 +13,7 @@ const addButton = $('#add');
 const status = $('#status');
 
 function onName(name) {
-  const div = document.createElement('div');
+  const div = document.createElement('li');
   div.innerText = name;
   nameList.appendChild(div);
 }
