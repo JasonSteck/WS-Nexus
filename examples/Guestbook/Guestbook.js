@@ -1,8 +1,9 @@
 class Guestbook {
-  constructor(server='ws://127.0.0.1:3000', { onList, onName, onServer, onLostServer }) {
+  constructor(server='ws://127.0.0.1:3000', { onList, onName, onServer, onLostServer, onOfficialHost }) {
     this.server = server;
     this.onList = onList;
     this.onName = onName;
+    this.onOfficialHost = onOfficialHost;
 
     this.list = [];
     this.isOfficialHost = false;
@@ -66,6 +67,7 @@ class Guestbook {
       // if we joined ourselves, then we know we're at the top of the list, and thus the offical host
       this.isOfficialHost = true;
       console.log('You are the official Guestbook host!');
+      this.onOfficialHost();
     } else {
       console.log('Joined host #' + hostType.id);
     }

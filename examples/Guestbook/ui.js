@@ -10,6 +10,7 @@ const contentDiv = $('#content');
 const nameList = $('#name-list');
 const nameInput = $('#name-input');
 const addButton = $('#add');
+const status = $('#status');
 
 function onName(name) {
   const div = document.createElement('div');
@@ -28,12 +29,20 @@ function onServer() {
   connectButton.style.display = 'none';
   contentDiv.style.display = '';
   nameInput.focus();
+
+  status.innerText = "Connected";
 }
 
 function onLostServer() {
   serverInput.style.display = '';
   connectButton.style.display = '';
   contentDiv.style.display = 'none';
+
+  status.innerText = "Lost connection to server";
+}
+
+function onOfficialHost() {
+  status.innerText = "You are the official Host!";
 }
 
 function connect() {
@@ -42,6 +51,7 @@ function connect() {
     onName,
     onServer,
     onLostServer,
+    onOfficialHost,
   });
 }
 
