@@ -129,7 +129,7 @@ Nexus.ignoreWarnings = true; // all connections
 host.ignoreWarnings = true; // just this host connection
 ```
 
-Note: The [&lt;Host&gt;](#&lt;host&gt;) in the warning indicates the event is only available on host connections, and likewise, [&lt;Client&gt;](#&lt;client&gt;) for client connections. If neither are specified then you can use it on any type of nexus connection (e.g. before you even request to be a host or a client)
+Note: The [&lt;Host&gt;](#host) in the warning indicates the event is only available on host connections, and likewise, [&lt;Client&gt;](#client) for client connections. If neither are specified then you can use it on any type of nexus connection (e.g. before you even request to be a host or a client)
 
 ### API Wrapper Details
 
