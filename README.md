@@ -37,7 +37,7 @@ These properties are always available on any instance of a Nexus connection (e.g
 |.whenServerConnected.then( () => {} )| [awaitableState](#awaitablestate): Adds the one-time success listener for if/when we join a Nexus server. |
 |.whenServerConnected.onError( error => {} )| [awaitableState](#awaitablestate): Adds the one-time error listener for if/when we lose connection to the a Nexus server or if we fail to join one in the first place. |
 
-#### <User>
+#### &lt;User&gt;
 (connected to server, but not yet a client or host)
 
 | Property | Description |
@@ -46,7 +46,7 @@ These properties are always available on any instance of a Nexus connection (e.g
 |.host(hostInfo)| Tries to register as a host with the given hostInfo. See [hostInfo]() for more details, except you cannot request a specific host ID. |
 
 
-#### <Host>
+#### &lt;Host&gt;
 A host is a connection that clients can join.
 
 | Property | Description |
@@ -64,7 +64,7 @@ A host is a connection that clients can join.
 | .onMessage( (json, clientID) => {} ) | [awaitableEvent](#awaitableevent): Adds the listener for when a client sends you a message. |
 | .onMessage.then( (json, clientID) => {} ) | [awaitableEvent](#awaitableevent): Adds the one-time listener for when a client sends you a message. |
 
-#### <Client>
+#### &lt;Client&gt;
 A client is a connection that has joined a host.
 
 | Property | Description |
