@@ -88,4 +88,17 @@ nameInput.onkeydown = e => {
   if(e.key=='Enter') add();
 };
 
+
+var regex = /[?&]([^=#]+)=([^&#]*)/g,
+    url = window.location.href,
+    params = {},
+    match;
+while(match = regex.exec(url)) {
+    params[match[1]] = match[2];
+}
+
+if('server' in params) {
+  serverInput.value = params.server;
+}
+
 })();
