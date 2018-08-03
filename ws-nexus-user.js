@@ -160,7 +160,7 @@ class NexusBase {
       const error = new Error('Server connection failed');
       this.whenServerConnected.failure(error);
     };
-    this._ws.onclose = ({ code, reason }) => this.onClose.trigger(code, reason);
+    this._ws.onclose = ({ code, reason }) => this.onClose.trigger(reason, code);
 
     this._setThen(this.whenServerConnected);
     this._changeType('User');
@@ -175,7 +175,7 @@ class NexusBase {
     return this.onList;
   }
 
-  close(code=1000, reason="You closed your connection") {
+  close(reason="You closed your connection", code=1000) {
     this._awaitable.then(()=>{
       this.onClose.then(()=>{}); // ensure we hide onClose default warnings
       this._ws.close(code, reason);

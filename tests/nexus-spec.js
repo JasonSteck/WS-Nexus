@@ -338,9 +338,9 @@ describe('WS-Nexus', function() {
         const onClose3 = client3.onClose; // listen for 3 to close
 
         await onClose2;
-        await onClose3.then((code, reason) => {
-          expect(code).toEqual(1001);
+        await onClose3.then((reason, code) => {
           expect(reason).toEqual('Host was closed');
+          expect(code).toEqual(1001);
         });
       });
     });
@@ -399,9 +399,9 @@ describe('WS-Nexus', function() {
         ]);
         host.close(); // causes the client to close too, which will throw the warning for them.
 
-        const [code, reason] = await this.warningSpy('.onClose.then');
-        expect(code).toBe(1001);
+        const [reason, code] = await this.warningSpy('.onClose.then');
         expect(reason).toBe('Host was closed'); // expect the client to have the warning, not the host.
+        expect(code).toBe(1001);
       });
     });
 
