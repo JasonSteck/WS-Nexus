@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ws-nexus-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: ws-nexus
+      labels:
+        service: ws-nexus
+    spec:
+      containers:
+      - name: ws-nexus-container
+        image: ws-nexus:2512f3f6aede130a612750100a0511ec35cdeff9
+      restartPolicy: Always
