@@ -1,2 +1,9 @@
 node_modules
 npm-debug.log
+tests
+examples
+ws-nexus-user.js
+module.js
+README.md
+LICENSE
+.gitignore
