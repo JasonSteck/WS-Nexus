@@ -116,6 +116,7 @@ class NexusBase {
     this._type = null;
     this.nexusServerAddress = nexusServerAddress;
     this.default = this.__proto__;
+    this.ignoreWarnings = false;
     this.apiVersion = apiVersion;
 
     this.whenServerConnected = createAwaitableState(
@@ -197,7 +198,9 @@ class NexusBase {
 
   _missedEvent(eventName) {
     return (...payload) => {
-      console.warn('Unhandled awaitableEvent "%s":', eventName, ...payload);
+      if(!this.ignoreWarnings && !Nexus.ignoreWarnings) {
+        console.warn('Unhandled awaitableEvent "%s":', eventName, ...payload);
+      }
     }
   }
 
