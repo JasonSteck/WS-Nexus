@@ -32,12 +32,12 @@ describe('WS-Nexus', function() {
         this.expectHostToBeListed(host1, list);
         this.expectHostToBeListed(host2, list);
 
-        await host1.close();
+        await host1.close(); // still has a potential race condition
         list = await user.getHosts();
         this.expectHostNotToBeListed(host1, list);
         this.expectHostToBeListed(host2, list);
 
-        await host2.close();
+        await host2.close(); // still has a potential race condition
         list = await user.getHosts();
         this.expectHostNotToBeListed(host1, list);
         this.expectHostNotToBeListed(host2, list);
