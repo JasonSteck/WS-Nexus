@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const ConnectionPool = require('./connection-pool.js');
+const keepAlive = require('./utils/keep-alive');
 
 const apiVersion = '1.0.0';
 
@@ -15,6 +16,8 @@ class Server {
 
     try {
       wss.on('connection', ws => {
+        keepAlive(ws);
+
         ws.on('error', e => log('ws error:\n', e));
         try {
           log('New Connection');
