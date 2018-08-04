@@ -2,16 +2,16 @@ const WebSocket = require('ws');
 const ConnectionPool = require('./connection-pool.js');
 
 const apiVersion = '1.0.0';
-const port = 3000;
 
 class Server {
-  constructor() {
+  constructor(port=3000) {
+    this.port = port;
     this.conPool = new ConnectionPool();
   }
 
   start() {
-    const wss = new WebSocket.Server({ port: port });
-    log('Listening on port %d...', port);
+    const wss = new WebSocket.Server({ port: this.port });
+    log('Listening on port %d...', this.port);
 
     try {
       wss.on('connection', ws => {

@@ -1,6 +1,9 @@
 console.clear && console.clear();
 
 const { Server } = require('./server');
+const getParams = require('./server/utils/get-params.js');
+
+const params = getParams(process.argv.slice(2));
 
 global.SHOW_DEBUG_MESSAGES = true;
 global.log = (...args) => {
@@ -9,5 +12,5 @@ global.log = (...args) => {
   }
 }
 
-global.server = new Server(); // for debug convenience
+global.server = new Server(params.p); // for debug convenience
 server.start();
