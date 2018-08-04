@@ -16,13 +16,16 @@ class Visitor {
       const req = JSON.parse(str);
       switch(req.type) {
         case 'JOIN': //props: name AND/OR id AND/OR <anything>
-          this._onConnect(req);
+          this._onJoinRequest(req);
           break;
         case 'HOST': //props: name
-          this._onHost(req);
+          this._onHostRequest(req);
+          break;
+        case 'JOIN_OR_HOST':
+          this._onJoinOrHostRequest(req);
           break;
         case 'LIST':
-          this._onList(req);
+          this._onListRequest(req);
           break;
         default:
           log('Unknown request type:', req.type, 'for:', req);
@@ -36,7 +39,7 @@ class Visitor {
     log('* Lost Visitor Connection');
   }
 
-  _onConnect(req) {
+  _onJoinRequest(req) {
     const success = this.options.onBecomeClient(this, {
       ws: this.ws,
       request: req,
@@ -45,15 +48,17 @@ class Visitor {
     if(success) {
       this.ws.removeListener('message', this.onMessage);
       this.ws.removeListener('close', this.onClose);
+      return true;
     } else {
       this.ws.send(JSON.stringify({
         type: 'NO_SUCH_HOST',
         request: req,
       }));
+      return false;
     }
   }
 
-  _onHost(req) {
+  _onHostRequest(req) {
     this.ws.removeListener('message', this.onMessage);
     this.ws.removeListener('close', this.onClose);
 
@@ -63,7 +68,14 @@ class Visitor {
     });
   }
 
-  _onList(req) {
+  _onJoinOrHostRequest(req) {
+    const joined = this._onJoinRequest(req);
+    if(!joined) {
+      this._onHostRequest(req);
+    }
+  }
+
+  _onListRequest(req) {
     this.ws.send(JSON.stringify({
       type: 'LIST',
       payload: this.options.getDisplayList(),

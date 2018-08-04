@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const ConnectionPool = require('./connection-pool.js');
 const keepAlive = require('./utils/keep-alive');
 
-const apiVersion = '1.0.0';
+const apiVersion = '1.1.0';
 
 class Server {
   constructor(port=3000) {

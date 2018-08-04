@@ -1,4 +1,4 @@
-const apiVersion = '1.0.0';
+const apiVersion = '1.1.0';
 
 const server = 'ws://127.0.0.1:3000';
 const badServer = 'ws://127.0.0.1:777';
@@ -158,11 +158,11 @@ describe('WS-Nexus', function() {
 
       it('can become a host itself', async function() {
         client.joinOrHost('Defender');
-        await client.whenHosting;
+        await timebox(client.whenHosting);
         expect(client.type).toBe('Host');
 
         const user2 = Nexus(server).joinOrHost('Defender');
-        await user2.whenJoined;
+        await timebox(user2.whenJoined);
         expect(user2.type).toBe('Client');
       });
     });

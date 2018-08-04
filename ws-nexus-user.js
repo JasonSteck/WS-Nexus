@@ -1,5 +1,5 @@
 window.WSNexusUser = window.Nexus = (function() {
-const apiVersion = '1.0.0';
+const apiVersion = '1.1.0';
 
 // Experiment with morphing the current instance.
 const NexusTypes = {
@@ -106,7 +106,24 @@ User: () => ({
     return this;
   },
   joinOrHost(hostType) {
-    this.join(hostType).onError(() => this.host(hostType));
+    let req = hostTypeObject(hostType);
+    req.type = 'JOIN_OR_HOST';
+
+    this.whenServerConnected.then(()=>{
+      this._ws.send(JSON.stringify(req));
+    }).onError(()=>{
+      // when we lose server connection, switch to Dead mode
+      this._changeType('Dead');
+    });
+    this._changeType('Client');
+
+//     this.whenJoined.then(() => {
+//       // todo remove onError handler
+//     });
+    this.whenJoined.onError(() => {
+      this._changeType('Host');
+    });
+
     return this;
   }
 })};
