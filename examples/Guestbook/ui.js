@@ -42,6 +42,7 @@ function onLostServer() {
   contentDiv.style.display = 'none';
 
   status.innerText = "Lost connection to server";
+  watcherContainer.style.display = 'none';
 }
 
 function onOfficialHost() {
