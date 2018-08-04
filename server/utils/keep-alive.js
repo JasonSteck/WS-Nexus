@@ -1,14 +1,24 @@
 function noop(){}
 
+
+
 module.exports = function(ws) {
-  let isAlive = true;
+  let awake = true;
 
-  ws.on('pong', () => isAlive = true);
+  ws.on('pong', () => awake = true);
 
-  setInterval(function ping() {
-    if(!isAlive) return ws.terminate();
+  const id = setInterval(function ping() {
+    if(!awake) return isAlive() && ws.terminate();
 
-    isAlive = false;
-    ws.ping(noop);
+    awake = false;
+    isAlive() && ws.ping(noop);
   }, 15000);
+
+  function isAlive() {
+    if(ws.readyState === ws.OPEN || ws.readyState === ws.CONNECTING) {
+      return true;
+    }
+    clearInterval(id);
+    return false;
+  }
 };
