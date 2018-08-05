@@ -5,10 +5,11 @@ const janitor = require('./utils/janitor.js');
 const ConnectionPool = require('./connection-pool.js');
 
 const apiVersion = '1.1.0';
+const defaultPort = 34777;
 
 class Server {
   constructor(params) {
-    this.port = params.port || 56777;
+    this.port = params.port || defaultPort;
     this.usingSSL = !!params.credentials;
     this.server = this._loadServer(params.credentials);
     this.conPool = new ConnectionPool();

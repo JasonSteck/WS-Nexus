@@ -1,6 +1,6 @@
 (function(){
 
-const SERVER_ADDR = 'ws://127.0.0.1:3000';
+const SERVER_ADDR = 'ws://127.0.0.1:34777';
 
 window.timebox = (promise, msg='', ms=1000) => {
   const error = new Error('timebox timeout: ' + msg);
