@@ -74,6 +74,7 @@ body {
   color: #fff;
   -webkit-appearance: none;
   -moz-appearance: none;
+  transition: background-color .5s;
 }
 
 .input-container__button:hover {
@@ -85,8 +86,13 @@ body {
   border-color: #3498db;
 }
 
+.input-container__button[disabled] {
+  background-color: #acacac;
+  border: 1px solid #acacac;
+}
+
 #status-container {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
@@ -102,5 +108,5 @@ body {
 }
 
 #watcher-container {
-  margin-bottom: 5rem;
+  margin-bottom: 1rem;
 }
