@@ -11,7 +11,7 @@
 <body>
   <h1> Guestbook </h1>
   <div class="input-container">
-    <input class="input-container__input" id="server" value='ws://127.0.0.1:3000' autofocus />
+    <input class="input-container__input" id="server" value='ws://127.0.0.1:34777' autofocus />
     <button class="input-container__button" id="connect"> Connect </button>
   </div>
   <div id="content" style="display:none">
@@ -22,7 +22,7 @@
     </div>
   </div>
   <div id="status-container">
-    Status: <span id="status"> No server connection </span>
+    <span id="status-dot"></span> <span id="status">Not Connected</span>
   </div>
   <div id="watcher-container" style="display:none">
     Clients Connected: <span id="watchers"></span>

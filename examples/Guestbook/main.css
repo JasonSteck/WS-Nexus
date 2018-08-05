@@ -88,6 +88,17 @@ body {
 #status-container {
   margin-top: 2rem;
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+#status-dot {
+  height: 12px;
+  width: 12px;
+  background-color: #bbb;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 6px;
 }
 
 #watcher-container {

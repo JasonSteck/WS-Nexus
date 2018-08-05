@@ -10,9 +10,19 @@ const contentDiv = $('#content');
 const nameList = $('#name-list');
 const nameInput = $('#name-input');
 const addButton = $('#add');
+const statusDot = $('#status-dot');
 const status = $('#status');
 const watcherContainer = $('#watcher-container');
 const watchers = $('#watchers');
+
+function setStatusDot(color=null) {
+  if(color) {
+    statusDot.style.display = '';
+    statusDot.style.backgroundColor = color;
+  } else {
+    statusDot.style.display = 'none';
+  }
+}
 
 function onName(name) {
   const div = document.createElement('li');
@@ -34,14 +44,17 @@ function onServer() {
   nameInput.focus();
 
   status.innerText = "Connected";
+  setStatusDot('green');
 }
 
 function onLostServer() {
   serverInput.style.display = '';
+  connectButton.disabled = false;
   connectButton.style.display = '';
   contentDiv.style.display = 'none';
 
-  status.innerText = "Lost connection to server";
+  status.innerText = "Server Connection Failed";
+  setStatusDot('red');
   watcherContainer.style.display = 'none';
 }
 
@@ -63,6 +76,7 @@ function onUserCountChanged(count) {
 }
 
 function connect() {
+  connectButton.disabled = true;
   guestbook = new Guestbook(serverInput.value, {
     onList,
     onName,
