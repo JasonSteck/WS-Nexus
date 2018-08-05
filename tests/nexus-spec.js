@@ -463,6 +463,7 @@ describe('WS-Nexus', function() {
     beforeEach(function() {
       stub(console).warn;
       stub(console).error;
+      Nexus.resetApiWarnings();
 
       user = Nexus(server);
 

@@ -1,5 +1,6 @@
 window.WSNexusUser = window.Nexus = (function() {
 const apiVersion = '1.1.0';
+let hadApiWarning = {};
 
 // Experiment with morphing the current instance.
 const NexusTypes = {
@@ -154,6 +155,10 @@ class NexusBase {
     this.onServerInfo = createAwaitableEvent(this._missedEvent('.onServerInfo.then'));
     this.onServerInfo(json => { // event is always silent since we have this
       if(json.apiVersion !== this.apiVersion) {
+        // if we already had an api warning for this server, do nothing
+        if(hadApiWarning[this.nexusServerAddress]) return;
+        hadApiWarning[this.nexusServerAddress] = true;
+
         const server = json.apiVersion.split('.');
         const self = this.apiVersion.split('.');
 
@@ -162,7 +167,7 @@ class NexusBase {
         } else if(server[1] !== self[1]) { // minor version is different
           console.warn("WSNexusUser Warning: Optional api features may not work. Your api version (%s) does not match the server's api version (%s)", this.apiVersion, json.apiVersion);
         }
-        // (ignore patch versions)
+        // (ignore different patch versions)
       }
     });
 
@@ -403,6 +408,15 @@ function hostTypeObject(hostType) {
 window.NexusBase = NexusBase;
 
 const Nexus = (serverAddress='ws://127.0.0.1:3000') => new NexusBase(serverAddress);
+
+Nexus.resetApiWarnings = (serverAddress=null) => {
+  if(serverAddress) {
+    delete hadApiWarning[serverAddress];
+  } else {
+    hadApiWarning = {};
+  }
+};
+
 return Nexus;
 
 })();
