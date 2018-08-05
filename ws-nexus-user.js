@@ -118,11 +118,10 @@ User: () => ({
     });
     this._changeType('Client');
 
-//     this.whenJoined.then(() => {
-//       // todo remove onError handler
-//     });
-    this.whenJoined.onError(() => {
-      this._changeType('Host');
+    const joinFailed = () => this._changeType('Host');
+    this.whenJoined.onError(joinFailed);
+    this.whenJoined.then(() => {
+      this.whenJoined.onError.remove(joinFailed);
     });
 
     return this;
@@ -313,6 +312,11 @@ function createAwaitableEvent(defaultCallback) {
     return awaitableEvent;
   }
 
+  awaitableEvent.remove = function(callback) {
+    listeners = listeners.filter(l => l!==callback);
+    return awaitableEvent;
+  }
+
   awaitableEvent.trigger = function(...args) {
     const current = listeners;
     if(current.length === 0) {
@@ -352,6 +356,13 @@ function createAwaitableState(defaultThenCallback, defaultElseCallback) {
     return awaitableState;
   }
 
+  awaitableState.remove = function(resolved, rejected) {
+    if(resolved) thenListeners.remove(resolved);
+    if(rejected) elseListeners.remove(rejected);
+
+    return awaitableState;
+  }
+
   awaitableState.then = function(callback) {
     if(goodState) {
       callback(...goodState);
@@ -361,6 +372,10 @@ function createAwaitableState(defaultThenCallback, defaultElseCallback) {
     return awaitableState;
   }
 
+  awaitableState.then.remove = function(callback) {
+    thenListeners.remove(callback);
+  }
+
   awaitableState.onError = function(callback) {
     if(badState) {
       callback(...badState);
@@ -368,6 +383,10 @@ function createAwaitableState(defaultThenCallback, defaultElseCallback) {
       elseListeners.then(callback);
     }
     return awaitableState;
+  }
+
+  awaitableState.onError.remove = function(callback) {
+    elseListeners.remove(callback);
   }
 
   awaitableState.success = function(...args) {
