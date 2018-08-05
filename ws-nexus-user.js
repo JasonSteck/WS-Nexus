@@ -78,8 +78,8 @@ Host: function() { return {
 }},
 
 User: () => ({
-  host(hostType) {
-    let req = hostTypeObject(hostType);
+  host(hostInfo) {
+    let req = hostInfoObject(hostInfo);
     req.type = 'HOST';
 
     this.whenServerConnected.then(()=>{
@@ -92,8 +92,8 @@ User: () => ({
     this._setThen(this.whenHosting);
     return this;
   },
-  join(hostType) {
-    let req = hostTypeObject(hostType);
+  join(hostInfo) {
+    let req = hostInfoObject(hostInfo);
     req.type = 'JOIN';
 
     this.whenServerConnected.then(()=>{
@@ -106,8 +106,8 @@ User: () => ({
     this._setThen(this.whenJoined);
     return this;
   },
-  joinOrHost(hostType) {
-    let req = hostTypeObject(hostType);
+  joinOrHost(hostInfo) {
+    let req = hostInfoObject(hostInfo);
     req.type = 'JOIN_OR_HOST';
 
     this.whenServerConnected.then(()=>{
@@ -406,20 +406,20 @@ function createAwaitableState(defaultThenCallback, defaultElseCallback) {
   return awaitableState;
 }
 
-function hostTypeObject(hostType) {
+function hostInfoObject(hostInfo) {
   let obj;
-  switch(typeof hostType) {
+  switch(typeof hostInfo) {
     case 'string':
-      obj = { name: hostType };
+      obj = { name: hostInfo };
       break;
     case 'number':
-      obj = { id: hostType };
+      obj = { id: hostInfo };
       break;
     case 'object':
-      obj = hostType;
+      obj = hostInfo;
       break;
     default:
-      throw new Error('Invalid hostType:', hostType);
+      throw new Error('Invalid hostInfo:', hostInfo);
   }
   return obj;
 }

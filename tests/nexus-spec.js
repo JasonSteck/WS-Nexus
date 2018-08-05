@@ -366,8 +366,8 @@ describe('WS-Nexus', function() {
     when('we begin hosting', function() {
       it('shows a warning', async function() {
         const user = Nexus(server).host('Galaxian');
-        const [hostType] = await this.warningSpy('.whenHosting.then');
-        expect(hostType.id).toExist();
+        const [hostInfo] = await this.warningSpy('.whenHosting.then');
+        expect(hostInfo.id).toExist();
       });
     });
 
@@ -376,8 +376,8 @@ describe('WS-Nexus', function() {
         await Nexus(server).host('Galaxian');
         Nexus(server).join('Galaxian');
 
-        const [hostType] = await this.warningSpy('.whenJoined.then');
-        expect(hostType.id).toExist();
+        const [hostInfo] = await this.warningSpy('.whenJoined.then');
+        expect(hostInfo.id).toExist();
       });
     });
 

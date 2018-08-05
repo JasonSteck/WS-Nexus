@@ -65,20 +65,20 @@ class Guestbook {
       this.client.join('Guestbook');
 
       // setup event listeners
-      this.client.whenJoined.then(hostType => this.onJoined(hostType));
+      this.client.whenJoined.then(hostInfo => this.onJoined(hostInfo));
       this.client.onMessage(nameOrList => this.onUpdate(nameOrList));
       this.client.onClose(() => this.onOtherHostClosed());
     });
   }
 
-  onJoined(hostType) {
-    if(hostType.id === this.host.id) {
+  onJoined(hostInfo) {
+    if(hostInfo.id === this.host.id) {
       // if we joined ourselves, then we know we're at the top of the list, and thus the offical host
       this.isOfficialHost = true;
       console.log('You are the official Guestbook host!');
       this.onOfficialHost();
     } else {
-      console.log('Joined host #' + hostType.id);
+      console.log('Joined host #' + hostInfo.id);
     }
   }
 
