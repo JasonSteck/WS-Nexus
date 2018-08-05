@@ -2,6 +2,7 @@ console.clear && console.clear();
 
 const { Server } = require('./server');
 const getParams = require('./server/utils/get-params.js');
+const loadCredentials = require('./server/utils/load-credentials.js');
 
 const params = getParams(process.argv.slice(2));
 
@@ -12,5 +13,8 @@ global.log = (...args) => {
   }
 }
 
-global.server = new Server(params.p); // for debug convenience
+const port = params.p;
+const credentials = loadCredentials(params.key, params.cert);
+
+global.server = new Server({ port, credentials });
 server.start();

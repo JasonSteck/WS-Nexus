@@ -1,17 +1,28 @@
+const http = require('http');
+const https = require('https');
 const WebSocket = require('ws');
-const ConnectionPool = require('./connection-pool.js');
 const janitor = require('./utils/janitor.js');
+const ConnectionPool = require('./connection-pool.js');
 
 const apiVersion = '1.1.0';
 
 class Server {
-  constructor(port=3000) {
-    this.port = port;
+  constructor(params) {
+    this.port = params.port || 56777;
+    this.usingSSL = !!params.credentials;
+    this.server = this._loadServer(params.credentials);
     this.conPool = new ConnectionPool();
+
+    this._processRequest = this._processRequest.bind(this);
   }
 
   start() {
-    const wss = new WebSocket.Server({ port: this.port });
+    const server = this.server;
+
+    server.listen(this.port);
+    const wss = new WebSocket.Server({ server });
+
+    log('TLS: %s', this.usingSSL ? 'Enabled' : 'Disabled');
     log('Listening on port %d...', this.port);
 
     try {
@@ -31,6 +42,17 @@ class Server {
     } catch(e) {
       log('ERROR listening for connections:\n', e);
     }
+  }
+
+  _loadServer(cred=null) {
+    return cred ?
+      https.createServer(cred, this._processRequest):
+      http.createServer(this._processRequest);
+  }
+
+  _processRequest(req, res) {
+    res.writeHead(200);
+    res.end("WS-Nexus Server online! Please use the `ws://` or `wss://` protocol.\n");
   }
 }
 
