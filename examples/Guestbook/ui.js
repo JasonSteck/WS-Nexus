@@ -64,15 +64,7 @@ function onOfficialHost() {
 }
 
 function onUserCountChanged(count) {
-  const others = count - 1;
-  watchers.innerText = others;
-
-  // Warn us if we're the last ones
-  if(others) {
-    window.onbeforeunload = null;
-  } else {
-    window.onbeforeunload = ()=>1;
-  }
+  watchers.innerText = count - 1;
 }
 
 function connect() {
