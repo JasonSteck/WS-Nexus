@@ -8,6 +8,7 @@ class Host {
     this.publicData = {
       id: options.id,
       name: options.name,
+      maxClients: options.maxClients,
     }
 
     ws.on('message', this.onMessage.bind(this));

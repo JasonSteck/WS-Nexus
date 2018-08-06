@@ -32,15 +32,15 @@ describe('WS-Nexus', function() {
         this.expectHostToBeListed(host1, list);
         this.expectHostToBeListed(host2, list);
 
-        await host1.close(); // still has a potential race condition
+        await host1.close();
         list = await user.getHosts();
-        this.expectHostNotToBeListed(host1, list);
+        this.expectHostNotToBeListed(host1, list); // potential race condition
         this.expectHostToBeListed(host2, list);
 
-        await host2.close(); // still has a potential race condition
+        await host2.close();
         list = await user.getHosts();
         this.expectHostNotToBeListed(host1, list);
-        this.expectHostNotToBeListed(host2, list);
+        this.expectHostNotToBeListed(host2, list); // potential race condition
       });
     });
 
@@ -342,6 +342,29 @@ describe('WS-Nexus', function() {
           expect(reason).toEqual('Host was closed');
           expect(code).toEqual(1001);
         });
+      });
+    });
+  });
+
+  describe('host options:', function() {
+    let host;
+
+    describe('when maxClients is specified', function() {
+      it('only that many clients can join', async function() {
+        host = await Nexus(server).host({
+          name: 'Minesweeper',
+          maxClients: 2,
+        });
+
+        const client1 = await Nexus(server).join(host.id);
+        const client2 = await Nexus(server).join(host.id);
+
+        let correctlyFailed = promise();
+        const client3 = Nexus(server).join(host.id);
+        client3.whenJoined.onError(e => correctlyFailed.resolve(e));
+
+        const error = await timebox(correctlyFailed);
+        expect(error.message).toEqual("Cannot connect to host");
       });
     });
   });

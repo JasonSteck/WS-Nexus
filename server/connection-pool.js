@@ -14,9 +14,14 @@ class ConnectionPool {
   }
 
   findHost(req) {
-    return this.hosts.find(h => (
-      req.id === h.publicData.id || req.name === h.publicData.name
-    )) || null;
+    return this.hosts.find(h => {
+      if(req.id === h.publicData.id || req.name === h.publicData.name) {
+        if(h.clients.array.length >= h.publicData.maxClients) {
+          return null;
+        }
+        return h;
+      };
+    }) || null;
   }
 
   newVisitor(ws) {
@@ -44,10 +49,11 @@ class ConnectionPool {
     }
   }
 
-  _onBecomeHost(connection, { ws, request }) {
+  _onBecomeHost({ ws, request }) {
     this.hosts.push(new Host(ws, {
       id: this.nextHostID++,
       name: request.name,
+      maxClients: request.maxClients,
       onClose: this._onLostHost,
     }));
   }

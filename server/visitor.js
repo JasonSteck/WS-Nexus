@@ -62,7 +62,7 @@ class Visitor {
     this.ws.removeListener('message', this.onMessage);
     this.ws.removeListener('close', this.onClose);
 
-    this.options.onBecomeHost(this, {
+    this.options.onBecomeHost({
       ws: this.ws,
       request: req,
     });
