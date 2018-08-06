@@ -23,7 +23,10 @@ class Server {
     server.listen(this.port);
     const wss = new WebSocket.Server({ server });
 
-    log('TLS: %s', this.usingSSL ? 'Enabled' : 'Disabled');
+    log('TLS: %s (Use "%s" for connections)',
+      this.usingSSL ? 'Enabled' : 'Disabled',
+      this.usingSSL ? 'wss://' : 'ws://',
+    );
     log('Listening on port %d...', this.port);
 
     try {
