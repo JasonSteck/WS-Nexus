@@ -349,13 +349,15 @@ describe('WS-Nexus', function() {
   describe('host options:', function() {
     let host;
 
-    describe('when maxClients is specified', function() {
-      it('only that many clients can join', async function() {
+    when('maxClients is specified', function() {
+      beforeEach(async function() {
         host = await Nexus(server).host({
           name: 'Minesweeper',
           maxClients: 2,
         });
+      });
 
+      it('only allows that many clients to join', async function() {
         const client1 = await Nexus(server).join(host.id);
         const client2 = await Nexus(server).join(host.id);
 
@@ -365,6 +367,41 @@ describe('WS-Nexus', function() {
 
         const error = await timebox(correctlyFailed);
         expect(error.message).toEqual("Cannot connect to host");
+      });
+    });
+
+    when('status is specified', function() {
+      let readyHost;
+      let lastReadyHost;
+
+      beforeEach(async function() {
+        host = await Nexus(server).host({
+          name: 'Minesweeper',
+          status: 'Not ready :(',
+        });
+        readyHost = await Nexus(server).host({
+          name: 'Minesweeper',
+          status: 'Ready!',
+        });
+        lastReadyHost = await Nexus(server).host({
+          name: 'Minesweeper',
+          status: 'Ready!',
+        });
+      });
+
+      it('clients can see and join by status', async function() {
+        const client = await Nexus(server);
+
+        const hosts = await client.getHosts();
+        const entry = hosts.find(h => h.id === host.id);
+        expect(entry.status).toBe("Not ready :(");
+
+        await timebox(client.join({
+          name: 'Minesweeper',
+          status: 'Ready!',
+        }));
+
+        expect(client.host.id).toBe(readyHost.id);
       });
     });
   });

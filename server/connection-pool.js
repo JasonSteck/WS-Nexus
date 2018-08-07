@@ -15,12 +15,19 @@ class ConnectionPool {
 
   findHost(req) {
     return this.hosts.find(h => {
-      if(req.id === h.publicData.id || req.name === h.publicData.name) {
-        if(h.clients.array.length >= h.publicData.maxClients) {
-          return null;
-        }
-        return h;
-      };
+      const keys = Object.keys(req);
+      // Everything in the request must match the host
+      for(let i=0; i<keys.length; i++) {
+        const key = keys[i];
+        const mismatch = (key in h.publicData) && req[key] !== h.publicData[key];
+        if(mismatch) return false;
+      }
+
+      if(h.clients.array.length >= h.publicData.maxClients) {
+        return false;
+      }
+
+      return h;
     }) || null;
   }
 
@@ -55,6 +62,7 @@ class ConnectionPool {
       name: request.name,
       maxClients: request.maxClients,
       onClose: this._onLostHost,
+      status: request.status,
     }));
   }
 

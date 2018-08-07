@@ -9,6 +9,7 @@ class Host {
       id: options.id,
       name: options.name,
       maxClients: options.maxClients,
+      status: options.status,
     }
 
     ws.on('message', this.onMessage.bind(this));
