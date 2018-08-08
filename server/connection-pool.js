@@ -59,9 +59,11 @@ class ConnectionPool {
   _onBecomeHost({ ws, request }) {
     this.hosts.push(new Host(ws, {
       id: this.nextHostID++,
+      onClose: this._onLostHost,
+      request,
+
       name: request.name,
       maxClients: request.maxClients,
-      onClose: this._onLostHost,
       status: request.status,
     }));
   }

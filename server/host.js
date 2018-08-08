@@ -7,10 +7,10 @@ class Host {
     this.options = options;
     this.publicData = {
       id: options.id,
-      name: options.name,
-      maxClients: options.maxClients,
-      status: options.status,
     }
+
+    this.publicDataWhitelist = ['name', 'maxClients', 'status'];
+    this.updateInfo(options.request);
 
     ws.on('message', this.onMessage.bind(this));
     ws.on('close', this.onClose.bind(this));
@@ -55,6 +55,9 @@ class Host {
       case 'SEND':
         this._onSend(req);
         break;
+      case 'UPDATE':
+        this._onUpdate(req);
+        break;
       default:
         log('! Unknown request from a host:', str);
       }
@@ -75,6 +78,22 @@ class Host {
     this.clients.clear();
     this.options.onClose(this);
     log('* Lost Host Connection');
+  }
+
+  updateInfo(hostInfo) {
+    this.publicDataWhitelist.forEach(name => {
+      if(name in hostInfo) {
+        this.publicData[name] = hostInfo[name];
+      }
+    });
+  }
+
+  _onUpdate(req) {
+    this.updateInfo(req);
+    this.ws.send(JSON.stringify({
+      type: 'UPDATED',
+      publicData: this.publicData,
+    }));
   }
 
   _onSend(req) {

@@ -42,6 +42,7 @@ Host: function() { return {
   onNewClient: createAwaitableEvent(this._missedEvent('<Host>.onNewClient.then')),
   onLostClient: createAwaitableEvent(this._missedEvent('<Host>.onLostClient.then')),
   onMessage: createAwaitableEvent(this._missedEvent('<Host>.onMessage.then')),
+  onUpdate: createAwaitableEvent(), // don't show any console warnings if event is unhandled
   send(message, clientIDs) {
     this._ws.send(JSON.stringify({
       type: 'SEND',
@@ -49,12 +50,27 @@ Host: function() { return {
       clientIDs,
     }));
   },
+  update(hostInfo) {
+    let req = hostInfoObject(hostInfo);
+    req.type = 'UPDATE';
+
+    this.whenHosting.then(()=>{
+      this._ws.send(JSON.stringify(req));
+    });
+    return this.onUpdate;
+  },
   _onServerMessage(json) {
     switch(json.type) {
       case 'HOSTING':
         this.id = json.id;
         this.name = json.name;
         this.whenHosting.success(json);
+        break;
+      case 'UPDATED':
+        this.id = json.publicData.id; // duplicate id and name directly on obj for convenience
+        this.name = json.publicData.name;
+        this.publicData = json.publicData;
+        this.onUpdate.trigger(json.publicData);
         break;
       case 'NEW_CLIENT':
         this.clientIDs.push(json.clientID);

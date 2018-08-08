@@ -175,6 +175,27 @@ describe('WS-Nexus', function() {
       host = await Nexus(server).host('Tron');
     });
 
+    it('can update its hostInfo', async function() {
+      const updatedInfo = {
+        name: 'Tron 2',
+        status: 'updated',
+        maxClients: 1,
+      };
+      function hasUpdatedInfo(obj) {
+        expect(obj.name).toBe(updatedInfo.name);
+        expect(obj.status).toBe(updatedInfo.status);
+        expect(obj.maxClients).toBe(updatedInfo.maxClients);
+      }
+
+      const hostInfo = await host.update(updatedInfo);
+      hasUpdatedInfo(hostInfo);
+      hasUpdatedInfo(host.publicData);
+
+      const client = await Nexus(server).join('Tron 2');
+      expect(client.host.id).toBe(host.id);
+      hasUpdatedInfo(client.host);
+    });
+
     when('it has clients', function() {
       let client1;
       let client2;
