@@ -4,7 +4,7 @@ const WebSocket = require('ws');
 const janitor = require('./utils/janitor.js');
 const ConnectionPool = require('./connection-pool.js');
 
-const apiVersion = '1.1.0';
+const apiVersion = '1.2.0';
 const defaultPort = 34777;
 
 class Server {

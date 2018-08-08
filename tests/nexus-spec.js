@@ -1,4 +1,4 @@
-const apiVersion = '1.1.0';
+const apiVersion = '1.2.0';
 
 const server = 'ws://127.0.0.1:34777';
 const badServer = 'ws://127.0.0.1:777';
