@@ -39,6 +39,7 @@ Host: function() { return {
   id: null,
   name: null,
   clientIDs: [],
+  publicData: {},
   onNewClient: createAwaitableEvent(this._missedEvent('<Host>.onNewClient.then')),
   onLostClient: createAwaitableEvent(this._missedEvent('<Host>.onLostClient.then')),
   onMessage: createAwaitableEvent(this._missedEvent('<Host>.onMessage.then')),
@@ -64,6 +65,7 @@ Host: function() { return {
       case 'HOSTING':
         this.id = json.id;
         this.name = json.name;
+        this.publicData = json.publicData;
         this.whenHosting.success(json);
         break;
       case 'UPDATED':

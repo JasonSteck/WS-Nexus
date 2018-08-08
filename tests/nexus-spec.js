@@ -378,6 +378,10 @@ describe('WS-Nexus', function() {
         });
       });
 
+      it('has maxClients on its publicData', function() {
+        expect(host.publicData.maxClients).toBe(2);
+      });
+
       it('only allows that many clients to join', async function() {
         const client1 = await Nexus(server).join(host.id);
         const client2 = await Nexus(server).join(host.id);
@@ -408,6 +412,10 @@ describe('WS-Nexus', function() {
           name: 'Minesweeper',
           status: 'Ready!',
         });
+      });
+
+      it('has status on its publicData', function() {
+        expect(host.publicData.status).toBe('Not ready :(');
       });
 
       it('clients can see and join by status', async function() {

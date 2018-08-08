@@ -22,6 +22,7 @@ class Host {
       type: 'HOSTING',
       id: this.publicData.id,
       name: this.publicData.name,
+      publicData: this.publicData,
     }));
   }
 
