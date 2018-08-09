@@ -63,6 +63,9 @@ function NexusGame() {
             maxClients: 1,
             status: 'Open',
         });
+        socket.whenServerConnected.then(() => {
+            self.didConnect = true;
+        });
         socket.whenServerConnected.onError(() => {
             game.setStatus(`WS-Nexus connection failed (${server})`);
         });
@@ -96,9 +99,11 @@ function NexusGame() {
             }
         });
         socket.onClose.then(() => {
-            enemy.hide();
-            if(!self.isDone) {
-                game.setStatus("The other player left :(");
+            if(self.didConnect) {
+                enemy.hide();
+                if(!self.isDone) {
+                    game.setStatus("The other player left :(");
+                }
             }
         });
     };
@@ -160,8 +165,8 @@ if(window.nexusScriptLoading) {
     game.start();
 } else {
     const s = document.createElement('script');
-    s.setAttribute("integrity", "sha384-6OE83fg6+Q1TCg+85xEQX1QWQiPEeQPpD3sEh4PuUrMn/Rz1dDCIXLPLlMmuN8qC");
-    s.setAttribute("src", "https://cdn.jsdelivr.net/gh/JasonSteck/WS-Nexus@1.2.1/ws-nexus-user.js");
+    s.setAttribute("integrity", "sha384-LXhWZtSqdJ8g+HgacRQ/Hpy1hXDMqeSBOsh9Tnvvvq1hnYOl9hgsd9f29QLBREaQ");
+    s.setAttribute("src", "https://cdn.jsdelivr.net/gh/JasonSteck/WS-Nexus@1.2.2/ws-nexus-user.js");
     s.setAttribute("crossorigin", "anonymous");
     s.onload = () => game.start();
 
