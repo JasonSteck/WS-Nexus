@@ -165,8 +165,8 @@ if(window.nexusScriptLoading) {
     game.start();
 } else {
     const s = document.createElement('script');
-    s.setAttribute("integrity", "sha384-LXhWZtSqdJ8g+HgacRQ/Hpy1hXDMqeSBOsh9Tnvvvq1hnYOl9hgsd9f29QLBREaQ");
-    s.setAttribute("src", "https://cdn.jsdelivr.net/gh/JasonSteck/WS-Nexus@1.2.2/ws-nexus-user.js");
+    s.setAttribute("integrity", "sha384-FY84i4sgPkgb8kW2UTG5eI+Yxp9bSilufgxS3OTuxrbnkHALs0VFv1uBelNYhcC4");
+    s.setAttribute("src", "https://cdn.jsdelivr.net/gh/JasonSteck/WS-Nexus@1.2.4/ws-nexus-user.js");
     s.setAttribute("crossorigin", "anonymous");
     s.onload = () => game.start();
 
