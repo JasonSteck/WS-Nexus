@@ -176,10 +176,7 @@ class NexusBase {
       this._missedEvent('.whenJoined.then'),
       this._missedEvent('.whenJoined.onError'),
     );
-    this.whenJoinedOrHosting = createAwaitableState( // when we have joined a host or become one
-      this._missedEvent('.whenJoinedOrHosting.then'),
-      this._missedEvent('.whenJoinedOrHosting.onError'),
-    );
+    this.whenJoinedOrHosting = createAwaitableState(); // when we have joined a host or become one
 
     this.onClose = createAwaitableEvent(this._missedEvent('.onClose.then'));
     this.onList = createAwaitableEvent(this._missedEvent('.onList.then'));
