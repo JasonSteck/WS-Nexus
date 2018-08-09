@@ -7,7 +7,6 @@ const NexusTypes = {
 Dead: () => ({}),
 Client: function() { return {
   host: null,
-  onMessage: createAwaitableEvent(this._missedEvent('<Client>.onMessage.then')),
   send(message) {
     this.whenJoined.then(()=>{
       this._ws.send(JSON.stringify({
@@ -42,7 +41,6 @@ Host: function() { return {
   publicData: {},
   onNewClient: createAwaitableEvent(this._missedEvent('<Host>.onNewClient.then')),
   onLostClient: createAwaitableEvent(this._missedEvent('<Host>.onLostClient.then')),
-  onMessage: createAwaitableEvent(this._missedEvent('<Host>.onMessage.then')),
   onUpdate: createAwaitableEvent(), // don't show any console warnings if event is unhandled
   send(message, clientIDs) {
     this._ws.send(JSON.stringify({
@@ -66,7 +64,7 @@ Host: function() { return {
         this.id = json.id;
         this.name = json.name;
         this.publicData = json.publicData;
-        this.whenHosting.success(json);
+        this.whenHosting.success(json.publicData);
         break;
       case 'UPDATED':
         this.id = json.publicData.id; // duplicate id and name directly on obj for convenience
@@ -136,11 +134,23 @@ User: () => ({
     });
     this._changeType('Client');
 
-    const joinFailed = () => this._changeType('Host');
+    const joinFailed = () => {
+      this._changeType('Host');
+      this.whenHosting.onError(hostFailed);
+      this.whenHosting.then(publicData => {
+        this.whenHosting.onError.remove(hostFailed);
+        this.whenJoinedOrHosting.success(publicData);
+      });
+    }
+    const hostFailed = () => {
+      this.whenJoinedOrHosting.failure();
+    }
     this.whenJoined.onError(joinFailed);
-    this.whenJoined.then(() => {
+    this.whenJoined.then(publicData => {
       this.whenJoined.onError.remove(joinFailed);
+      this.whenJoinedOrHosting.success(publicData);
     });
+    this._setThen(this.whenJoinedOrHosting);
 
     return this;
   }
@@ -166,6 +176,10 @@ class NexusBase {
       this._missedEvent('.whenJoined.then'),
       this._missedEvent('.whenJoined.onError'),
     );
+    this.whenJoinedOrHosting = createAwaitableState( // when we have joined a host or become one
+      this._missedEvent('.whenJoinedOrHosting.then'),
+      this._missedEvent('.whenJoinedOrHosting.onError'),
+    );
 
     this.onClose = createAwaitableEvent(this._missedEvent('.onClose.then'));
     this.onList = createAwaitableEvent(this._missedEvent('.onList.then'));
@@ -187,6 +201,7 @@ class NexusBase {
         // (ignore different patch versions)
       }
     });
+    this.onMessage = createAwaitableEvent(this._missedEvent('.onMessage.then')),
 
     this._ws = new WebSocket(nexusServerAddress);
     this._ws.onmessage = e => {

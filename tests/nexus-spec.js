@@ -74,17 +74,52 @@ describe('WS-Nexus', function() {
         expect(user.type).toBe('Dead');
       });
     });
+
+    describe('.joinOrHost', function() {
+      it('can become a host itself', async function() {
+        user.joinOrHost('Defender');
+        await user.whenHosting;
+        expect(user.type).toBe('Host');
+
+        const user2 = Nexus(server).joinOrHost('Defender');
+        await user2.whenJoined;
+        expect(user2.type).toBe('Client');
+      });
+
+      it('preserves onMessage listeners', async function() {
+        let msg;
+        let hostMessage = promise();
+        let clientMessage = promise();
+
+        user.joinOrHost('Defender');
+        user.onMessage(hostMessage.resolve);
+
+        const client = Nexus(server).joinOrHost('Defender');
+        client.onMessage(clientMessage.resolve);
+
+        await client.whenJoined;
+        await user.whenHosting;
+
+        user.send('Hello Client');
+        msg = await clientMessage;
+        expect(msg).toBe('Hello Client');
+
+        client.send('Hello Host');
+        msg = await hostMessage;
+        expect(msg).toBe('Hello Host');
+      });
+    });
   });
 
   describe('client:', function() {
     let client;
     beforeEach(async function(){
-      client = await timebox(Nexus(server));
+      client = await Nexus(server);
     });
 
     it('can connect to a host by name', async function() {
       const name = 'Frogger';
-      const host = await timebox(Nexus(server).host(name));
+      const host = await Nexus(server).host(name);
 
       const onNewClient = host.onNewClient.then((id, request) => {
         expect(id).toBe(1);
@@ -100,7 +135,7 @@ describe('WS-Nexus', function() {
     });
 
     it('can connect to a host by id', async function() {
-      const host = await timebox(Nexus(server).host("Asteroids"));
+      const host = await Nexus(server).host("Asteroids");
 
       const onNewClient = host.onNewClient.then((id, request) => {
         expect(id).toBe(1);
@@ -154,16 +189,6 @@ describe('WS-Nexus', function() {
         await caught;
 
         expect(client.type).toBe('User');
-      });
-
-      it('can become a host itself', async function() {
-        client.joinOrHost('Defender');
-        await timebox(client.whenHosting);
-        expect(client.type).toBe('Host');
-
-        const user2 = Nexus(server).joinOrHost('Defender');
-        await timebox(user2.whenJoined);
-        expect(user2.type).toBe('Client');
       });
     });
   });
@@ -390,7 +415,7 @@ describe('WS-Nexus', function() {
         const client3 = Nexus(server).join(host.id);
         client3.whenJoined.onError(e => correctlyFailed.resolve(e));
 
-        const error = await timebox(correctlyFailed);
+        const error = await correctlyFailed;
         expect(error.message).toEqual("Cannot connect to host");
       });
     });
@@ -425,10 +450,10 @@ describe('WS-Nexus', function() {
         const entry = hosts.find(h => h.id === host.id);
         expect(entry.status).toBe("Not ready :(");
 
-        await timebox(client.join({
+        await client.join({
           name: 'Minesweeper',
           status: 'Ready!',
-        }));
+        });
 
         expect(client.host.id).toBe(readyHost.id);
       });
@@ -509,7 +534,7 @@ describe('WS-Nexus', function() {
         await Nexus(server).join(host.id);
         host.send('hello');
 
-        const [msg] = await this.warningSpy('<Client>.onMessage.then');
+        const [msg] = await this.warningSpy('.onMessage.then');
         expect(msg).toBe('hello');
       });
     });
@@ -540,7 +565,7 @@ describe('WS-Nexus', function() {
         const host = await Nexus(server).host('Centipede');
         Nexus(server).join(host.id).send('hello!');
 
-        const [msg, id] = await this.warningSpy('<Host>.onMessage.then');
+        const [msg, id] = await this.warningSpy('.onMessage.then');
         expect(msg).toBe('hello!');
         expect(id).toBe(1);
       });
