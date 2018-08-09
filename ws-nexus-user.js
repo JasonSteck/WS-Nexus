@@ -1,5 +1,5 @@
 window.WSNexusUser = window.Nexus = (function() {
-const apiVersion = '1.2.2';
+const apiVersion = '1.2.3';
 let hadApiWarning = {};
 
 // Experiment with morphing the current instance.
